@@ -1,0 +1,10 @@
+{
+  "name": "my-angular",
+  "dependencies": {},
+  "globalDependencies": {
+    "jasmine": "registry:dt/jasmine#2.5.0+20161025102649",
+    "jquery": "registry:dt/jquery#1.10.0+20160929162922",
+    "lodash": "registry:dt/lodash#4.14.0+20161110215204",
+    "sinon": "registry:dt/sinon#1.16.1+20161208163514"
+  }
+}
