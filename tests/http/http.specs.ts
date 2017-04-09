@@ -96,4 +96,25 @@ describe("setupModuleLoader", () => {
         expect(response.data).toBe(null);
         expect(response.config.url).toEqual(url);
     });
+
+    it("uses GET method by default", () => {
+        $http({
+            url: url
+        });
+        expect(requests.length).toBe(1);
+        expect(requests[0].method).toBe("GET");
+    });
+
+    it("sets headers on request", () => {
+        $http({
+            url: url,
+            headers: {
+                "Accept": "text/plain",
+                "Cache-Control": "no-cache"
+            }
+        });
+        expect(requests.length).toBe(1);
+        expect(requests[0].requestHeaders["Accept"]).toBe("text/plain");
+        expect(requests[0].requestHeaders["Cache-Control"]).toBe("no-cache");
+    });
 });

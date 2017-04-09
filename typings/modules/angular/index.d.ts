@@ -1479,7 +1479,7 @@ namespace angular {
         /**
          * HTTP method (e.g. 'GET', 'POST', etc)
          */
-        method: string;
+        method?: string;
         /**
          * Absolute or relative URL of the resource that is being requested.
          */

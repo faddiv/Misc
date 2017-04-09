@@ -228,5 +228,5 @@ interface IPromiseState {
     pending?: [IDeferred<any>, (value: any) => any, (value: any) => any, (value: any) => any][];
 }
 
-//596
-//Default Request Configuration
+//599
+//There are also some default headers that are set

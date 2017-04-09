@@ -1,11 +1,16 @@
 //import * as _ from 'lodash';
 import { IHttpBackendService, IQService, IRequestConfig, IRootScopeService } from 'angular';
 import * as ain from './angularInterfaces';
+import * as _ from "lodash";
 
 export function $HttpProvider() {
     this.$get = ["$httpBackend", "$q", "$rootScope", function ($httpBackend: IHttpBackendService, $q: IQService, $rootScope: IRootScopeService) {
-        return function $http(config: IRequestConfig) {
+        return function $http(requestConfig: IRequestConfig) {
             var deferred = $q.defer();
+            
+            var config = _.extend({
+                method: "GET"
+            }, requestConfig);
 
             function isSuccess(status: number) {
                 return 200 <= status && status < 300;
@@ -24,7 +29,7 @@ export function $HttpProvider() {
                     $rootScope.$apply();
                 }
             }
-            $httpBackend(config.method, config.url, config.data, done);
+            $httpBackend(config.method, config.url, config.data, done, config.headers);
             return deferred.promise;
         }
     }];

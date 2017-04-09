@@ -1,6 +1,7 @@
 ## Ignore Visual Studio code stuff
 
 .vscode
+.vs
 jspm_packages
 node_modules
 npm-debug.log
