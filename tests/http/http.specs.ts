@@ -2,7 +2,7 @@ import * as sinon from 'sinon';
 import * as _ from "lodash";
 import { setupModuleLoader } from '../../src/loader';
 import { createInjector } from '../../src/injector';
-import { IHttpService, IHttpPromiseCallbackArg } from "angular";
+import { IHttpService, IHttpPromiseCallbackArg, IHttpProvider } from "angular";
 import { publishExternalAPI } from "../../src/angular_public";
 
 describe("setupModuleLoader", () => {
@@ -157,5 +157,62 @@ describe("setupModuleLoader", () => {
         });
         expect(requests.length).toBe(1);
         expect(requests[0].requestHeaders["Content-Type"]).toBe("text/plain;charset=utf-8");
+    });
+
+    //exposes default headers through provider moved to httpProvider.specs.ts
+
+    it("merges deafult headers case-insensitively", () => {
+        $http({
+            method: "POST",
+            url: url,
+            data: "42",
+            headers: {
+                "content-type": "text/plain;charset=utf-8"
+            }
+        });
+        expect(requests.length).toBe(1);
+        expect(requests[0].requestHeaders["content-type"]).toBe("text/plain;charset=utf-8");
+        expect(requests[0].requestHeaders["Content-Type"]).toBeUndefined();
+    });
+
+    it("does not send content-type header when no data", () => {
+        $http({
+            method: "POST",
+            url: url,
+            headers: {
+                "content-type": "application/json;charset=utf-8"
+            }
+        });
+        expect(requests.length).toBe(1);
+        expect(requests[0].requestHeaders["Content-Type"]).not.toBe("application/json;charset=utf-8");
+    });
+
+    it("supports functions as header values", () => {
+        var contentTypeSpy = jasmine.createSpy("contentTypeSpy").and.returnValue(
+            "text/plain;charset=utf-8");
+        $http.defaults.headers.post["Content-Type"] = contentTypeSpy;
+        $http({
+            method: "POST",
+            url: url,
+            data: 42
+        });
+        expect(requests.length).toBe(1);
+        expect(requests[0].requestHeaders["Content-Type"]).toBe("text/plain;charset=utf-8");
+
+    });
+
+    it("ignores header function value when null/undefined", () => {
+        var cacheControlSpy = jasmine.createSpy("Cache-Control").and.returnValue(null);
+        $http.defaults.headers.post["Cache-Control"] = cacheControlSpy;
+        var request = {
+            method: "POST",
+            url: url,
+            data: 42
+        };
+        $http(request);
+        expect(cacheControlSpy).toHaveBeenCalledWith(request);
+        expect(requests.length).toBe(1);
+        expect(requests[0].requestHeaders["Cache-Control"]).toBeUndefined();
+
     });
 });
