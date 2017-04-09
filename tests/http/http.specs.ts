@@ -1,4 +1,5 @@
 import * as sinon from 'sinon';
+import * as _ from "lodash";
 import { setupModuleLoader } from '../../src/loader';
 import { createInjector } from '../../src/injector';
 import { IHttpService, IHttpPromiseCallbackArg } from "angular";
@@ -116,5 +117,45 @@ describe("setupModuleLoader", () => {
         expect(requests.length).toBe(1);
         expect(requests[0].requestHeaders["Accept"]).toBe("text/plain");
         expect(requests[0].requestHeaders["Cache-Control"]).toBe("no-cache");
+    });
+
+    it("sets default headers on request", () => {
+        $http({
+            url: url
+        });
+        expect(requests.length).toBe(1);
+        expect(requests[0].requestHeaders["Accept"]).toBe("applictaion/json, text/plain, */*");
+    });
+
+    _.forEach(["POST", "PUT", "PATCH"], method => {
+        it("sets method-specific default headers on request " + method, () => {
+            $http({
+                url: url,
+                method: method,
+                data: 42
+            });
+            expect(requests.length).toBe(1);
+            expect(requests[0].requestHeaders["Content-Type"]).toBe("application/json;charset=utf-8");
+        });
+    });
+    //Additional test
+    it("do not sets Content-Type for GET", () => {
+        $http({
+            url: url,
+            method: "GET"
+        });
+        expect(requests.length).toBe(1);
+        expect(requests[0].requestHeaders["Content-Type"]).toBe("text/plain;charset=utf-8");
+    });
+
+    it("exposes default headers for overriding", () => {
+        $http.defaults.headers.post["Content-Type"] = "text/plain;charset=utf-8";
+        $http({
+            url: url,
+            method: "POST",
+            data: 42
+        });
+        expect(requests.length).toBe(1);
+        expect(requests[0].requestHeaders["Content-Type"]).toBe("text/plain;charset=utf-8");
     });
 });
