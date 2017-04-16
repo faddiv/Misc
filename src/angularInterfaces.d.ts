@@ -228,5 +228,5 @@ interface IPromiseState {
     pending?: [IDeferred<any>, (value: any) => any, (value: any) => any, (value: any) => any][];
 }
 
-//607
-//Response Headers
+//617
+//Response Transforms

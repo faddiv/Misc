@@ -10,11 +10,14 @@ export function $HttpBackendProvider() {
             _.forEach(headers, function (value, key) {
                 xhr.setRequestHeader(key, value);
             })
+            if(withCredentials) {
+                xhr.withCredentials = true;
+            }
             xhr.send(post || null);
             xhr.onload = function () {
                 var response = ("response" in xhr) ? xhr.response : xhr.responseText;
                 var statusText = xhr.statusText || "";
-                callback(xhr.status, response, statusText);
+                callback(xhr.status, response, xhr.getAllResponseHeaders(), statusText);
             };
             xhr.onerror = function () {
                 callback(-1, null, "");

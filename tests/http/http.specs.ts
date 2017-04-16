@@ -215,4 +215,128 @@ describe("setupModuleLoader", () => {
         expect(requests[0].requestHeaders["Cache-Control"]).toBeUndefined();
 
     });
+
+    it("makes response headers available", () => {
+        var response: IHttpPromiseCallbackArg<any>;
+        $http({
+            method: "POST",
+            url: url,
+            data: 42
+        }).then(r => {
+            response = r;
+        });
+
+        requests[0].respond(200, { "Content-Type": "text/plain" }, "Hello");
+
+        expect(response.headers).toBeDefined();
+        expect(response.headers instanceof Function).toBe(true);
+        expect(response.headers("Content-Type")).toBe("text/plain");
+        expect(response.headers("content-type")).toBe("text/plain");
+    });
+
+    it("may returns all response headers", () => {
+        var response: IHttpPromiseCallbackArg<any>;
+        $http({
+            method: "POST",
+            url: url,
+            data: 42
+        }).then(r => {
+            response = r;
+        });
+
+        requests[0].respond(200, { "Content-Type": "text/plain", "Server": "asp-net" }, "Hello");
+
+        expect(response.headers()).toEqual({ "content-type": "text/plain", "server": "asp-net" });
+    });
+
+    it("allows setting withCredentials", () => {
+        $http({
+            method: "POST",
+            url: url,
+            data: 42,
+            withCredentials: true
+        });
+
+        expect(requests[0].withCredentials).toBe(true);
+    });
+
+    it("allows setting withCredentials from defaults", () => {
+        $http.defaults.withCredentials = true;
+
+        $http({
+            method: "POST",
+            url: url,
+            data: 42
+        });
+
+        expect(requests[0].withCredentials).toBe(true);
+    });
+
+    it("allows transforming requests with functions", () => {
+        $http({
+            method: "POST",
+            url: url,
+            data: 42,
+            transformRequest(data) {
+                return "*" + data + "*";
+            }
+        });
+
+        expect(requests[0].requestBody).toBe("*42*");
+    });
+
+    it("allows multiple transform functions", () => {
+        $http({
+            method: "POST",
+            url: url,
+            data: 42,
+            transformRequest: [
+                function (data) {
+                    return "*" + data + "*";
+                }, function (data) {
+                    return "-" + data + "-";
+                }
+            ]
+        });
+
+        expect(requests[0].requestBody).toBe("-*42*-");
+    });
+
+    it("allows settings transforms in defaults", () => {
+        $http.defaults.transformRequest = [
+            function (data) {
+                return "*" + data + "*";
+            }, function (data) {
+                return "-" + data + "-";
+            }
+        ];
+
+        $http({
+            method: "POST",
+            url: url,
+            data: 42,
+        });
+
+        expect(requests[0].requestBody).toBe("-*42*-");
+    });
+
+    it("passes request headers getter to transforms", () => {
+        $http.defaults.transformRequest = function (data, headers) {
+            if (headers("Content-Type") === "text/emphasized") {
+                return "*" + data + "*";
+            } else {
+                return data;
+            }
+        };
+        $http({
+            method: "POST",
+            url: url,
+            data: 42,
+            headers: {
+                "content-type": "text/emphasized"
+            }
+        });
+
+        expect(requests[0].requestBody).toBe("*42*");
+    });
 });
