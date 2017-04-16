@@ -5,7 +5,7 @@ import { createInjector } from '../../src/injector';
 import { IHttpService, IHttpPromiseCallbackArg, IHttpProvider } from "angular";
 import { publishExternalAPI } from "../../src/angular_public";
 
-describe("setupModuleLoader", () => {
+describe("$http", () => {
     var $http: IHttpService;
     var xhr: Sinon.SinonFakeXMLHttpRequest;
     var requests: Sinon.SinonFakeXMLHttpRequest[] = [];
@@ -338,5 +338,227 @@ describe("setupModuleLoader", () => {
         });
 
         expect(requests[0].requestBody).toBe("*42*");
+    });
+
+    it("allows transforming responses with functions", () => {
+        var response;
+        $http({
+            method: "POST",
+            url: url,
+            data: 42,
+            transformResponse(data) {
+                return "*" + data + "*";
+            }
+        }).then(r => {
+            response = r;
+        });
+
+        requests[0].respond(200, { "Content-Type": "text/plain" }, "Hello");
+
+        expect(response.data).toEqual("*Hello*");
+    });
+
+    it("passes response headers to transform functions", () => {
+        var response;
+        $http({
+            method: "POST",
+            url: url,
+            data: 42,
+            transformResponse(data, headers) {
+                if (headers("content-type") === "text/decorated") {
+                    return "*" + data + "*";
+                } else {
+                    return data;
+                }
+            }
+        }).then(r => {
+            response = r;
+        });
+
+        requests[0].respond(200, { "Content-Type": "text/decorated" }, "Hello");
+
+        expect(response.data).toEqual("*Hello*");
+    });
+
+    it("allows setting default response transforms", () => {
+        $http.defaults.transformResponse = [function (data) {
+            return "*" + data + "*";
+        }];
+        var response;
+        $http({
+            method: "POST",
+            url: url,
+            data: 42
+        }).then(r => {
+            response = r;
+        });
+
+        requests[0].respond(200, { "Content-Type": "text/plain" }, "Hello");
+
+        expect(response.data).toEqual("*Hello*");
+    });
+
+    it("transforms error responses also", () => {
+        var response;
+        $http({
+            method: "POST",
+            url: url,
+            data: 42,
+            transformResponse(data) {
+                return "*" + data + "*";
+            }
+        }).catch(r => {
+            response = r;
+        });
+
+        requests[0].respond(401, { "Content-Type": "text/plain" }, "Fail");
+
+        expect(response.data).toEqual("*Fail*");
+    });
+
+    it("passes HTTP status to response transformers", () => {
+        var response;
+        $http({
+            url: url,
+            transformResponse(data, headers, status) {
+                if (status === 401) {
+                    return "unauthorized";
+                } else {
+                    return data;
+                }
+            }
+        }).catch(r => {
+            response = r;
+        });
+
+        requests[0].respond(401, { "Content-Type": "text/plain" }, "Fail");
+
+        expect(response.data).toEqual("unauthorized");
+    });
+
+    it("serializes object data to JSON for requests", () => {
+        $http({
+            method: "POST",
+            url: url,
+            data: { aKey: 42 }
+        });
+
+        expect(requests[0].requestBody).toBe('{"aKey":42}');
+    });
+
+    it("serializes array data to JSON for requests", () => {
+        $http({
+            method: "POST",
+            url: url,
+            data: [1, "two", 3]
+        });
+
+        expect(requests[0].requestBody).toBe('[1,"two",3]');
+    });
+
+    it("does not serialize blobs for requests", () => {
+        var blob;
+        if (window.Blob) {
+            blob = new Blob(["hello"]);
+        } else {
+            var BlobBuilder = window["BlobBuilder"] || window["WebKitBlobBuilder"] ||
+                window["MozBlobBuilder"] || window["MSBlobBuilder"];
+            var bb = new BlobBuilder();
+            bb.append("hello");
+            blob = bb.getBlob("text/plain");
+        }
+        $http({
+            method: "POST",
+            url: url,
+            data: blob
+        });
+
+        expect(requests[0].requestBody).toBe(blob);
+    });
+
+    it("does not serialize form data for requests", () => {
+        var formData = new FormData();
+        formData.append("aField", "aValue");
+
+        $http({
+            method: "POST",
+            url: url,
+            data: formData
+        });
+
+        expect(requests[0].requestBody).toBe(formData);
+    });
+
+    it("parses JSON data for JSON responses", () => {
+        var response;
+
+        $http({
+            method: "GET",
+            url: url,
+        }).then(r => {
+            response = r;
+        });
+
+        requests[0].respond(200, { "Content-Type": "application/json" }, '{"message":"hello"}');
+        expect(_.isObject(response.data)).toBe(true);
+        expect(response.data).toEqual({ message: "hello" });
+    });
+
+    it("parses JSON object response without content type", () => {
+        var response;
+
+        $http({
+            method: "GET",
+            url: url,
+        }).then(r => {
+            response = r;
+        });
+
+        requests[0].respond(200, {}, '{"message":"hello"}');
+        expect(_.isObject(response.data)).toBe(true);
+        expect(response.data).toEqual({ message: "hello" });
+    });
+
+    it("parses JSON array response without content type", () => {
+        var response;
+
+        $http({
+            method: "GET",
+            url: url,
+        }).then(r => {
+            response = r;
+        });
+
+        requests[0].respond(200, {}, '[1,"2",3]');
+        expect(_.isArray(response.data)).toBe(true);
+        expect(response.data).toEqual([1, "2", 3]);
+    });
+
+    it("does not choke on response resembling JSON but not valid", () => {
+        var response;
+
+        $http({
+            method: "GET",
+            url: url,
+        }).then(r => {
+            response = r;
+        });
+
+        requests[0].respond(200, {}, '{1,"2",3]');
+        expect(response.data).toEqual('{1,"2",3]');
+    });
+    
+    it("does not try to parse interpolation expr as JSON", () => {
+        var response;
+
+        $http({
+            method: "GET",
+            url: url,
+        }).then(r => {
+            response = r;
+        });
+
+        requests[0].respond(200, {}, "{{expr}}");
+        expect(response.data).toEqual("{{expr}}");
     });
 });

@@ -7,7 +7,8 @@ import {
     IHttpProviderDefaults,
     IHttpService,
     IHttpRequestConfigHeaders,
-    IHttpRequestTransformer
+    IHttpRequestTransformer,
+    IHttpResponseTransformer
 } from 'angular';
 import * as ain from './angularInterfaces';
 import * as _ from "lodash";
@@ -27,8 +28,49 @@ export function $HttpProvider() {
             patch: {
                 "Content-Type": "application/json;charset=utf-8"
             }
-        }
+        },
+        transformRequest: [
+            function (data) {
+                if (_.isObject(data) && !isBlob(data) && !isFile(data) && !isFormData(data)) {
+                    return JSON.stringify(data);
+                } else {
+                    return data;
+                }
+            }
+        ],
+        transformResponse: [defaultHttpResponseTransform]
     };
+
+    function isBlob(data: Object) {
+        return data.toString() === "[object Blob]";
+    }
+
+    function isFile(data) {
+        return data.toString() === "[object File]";
+    }
+
+    function isFormData(data) {
+        return data.toString() === "[object FormData]";
+    }
+
+    function defaultHttpResponseTransform(data, headers) {
+        if (_.isString(data)) {
+            var contentType = headers("Content-Type");
+            if ((contentType && contentType.indexOf("application/json") === 0)
+                || isJsonLike(data)) {
+                return JSON.parse(data);
+            }
+        }
+        return data;
+    }
+
+    function isJsonLike(data: string) {
+        if (data.match(/^\{(?!\{)/)) {
+            return data.match(/\}$/);
+        } else if (data.match(/^\[/)) {
+            return data.match(/\]$/);
+        }
+    }
 
     function mergeHeaders(config: IRequestConfig): IHttpRequestConfigHeaders {
         var reqHeaders: IHttpRequestConfigHeaders = _.extend(
@@ -95,42 +137,27 @@ export function $HttpProvider() {
         }
     }
 
-    function transformData(data: any, headers: any, transformRequest: IHttpRequestTransformer | IHttpRequestTransformer[]) {
+    function transformData(data: any, headers: any, status: number, transformResponse: IHttpResponseTransformer | IHttpResponseTransformer[]);
+    function transformData(data: any, headers: any, status: number, transformRequest: IHttpRequestTransformer | IHttpRequestTransformer[]);
+    function transformData(data: any, headers: any, status: number, transformRequest: Function | Function[]) {
+        if (_.isUndefined(transformRequest)) {
+            return data;
+        }
         if (_.isFunction(transformRequest)) {
-            return transformRequest(data, headers);
+            return transformRequest(data, headers, status);
         } else {
             return _.reduce(transformRequest, (data, fn) => {
-                return fn(data, headers);
+                return fn(data, headers, status);
             }, data);
         }
     }
+
+
+
     this.$get = ["$httpBackend", "$q", "$rootScope", function ($httpBackend: IHttpBackendService, $q: IQService, $rootScope: IRootScopeService) {
-        function $http(requestConfig: IRequestConfig) {
+
+        function sendReq(config, reqData) {
             var deferred = $q.defer();
-
-            var config = _.extend({
-                method: "GET",
-                transformRequest: defaults.transformRequest
-            }, requestConfig);
-            config.headers = mergeHeaders(requestConfig)
-
-            if (_.isUndefined(config.withCredentials) &&
-                !_.isUndefined(defaults.withCredentials)) {
-                config.withCredentials = defaults.withCredentials;
-            }
-            var reqData = transformData(
-                config.data,
-                headersGetter(config.headers),
-                config.transformRequest);
-
-            if (_.isUndefined(reqData)) {
-                _.forEach(config.headers, function (v, k) {
-                    if (k.toLowerCase() === "content-type") {
-                        delete config.headers[k];
-                    }
-                });
-            }
-
             function done(status: number, response: any, headersString: string, statusText: string) {
                 status = Math.max(status, 0);
                 var finishMethod = isSuccess(status) ? "resolve" : "reject";
@@ -154,6 +181,51 @@ export function $HttpProvider() {
                 undefined,
                 config.withCredentials);
             return deferred.promise;
+        }
+
+        function $http(requestConfig: IRequestConfig) {
+            var config = _.extend({
+                method: "GET",
+                transformRequest: defaults.transformRequest,
+                transformResponse: defaults.transformResponse
+            }, requestConfig);
+            config.headers = mergeHeaders(requestConfig)
+
+            if (_.isUndefined(config.withCredentials) &&
+                !_.isUndefined(defaults.withCredentials)) {
+                config.withCredentials = defaults.withCredentials;
+            }
+            var reqData = transformData(
+                config.data,
+                headersGetter(config.headers),
+                undefined,
+                config.transformRequest);
+
+            if (_.isUndefined(reqData)) {
+                _.forEach(config.headers, function (v, k) {
+                    if (k.toLowerCase() === "content-type") {
+                        delete config.headers[k];
+                    }
+                });
+            }
+
+            function transformResponse(response) {
+                if (response.data) {
+                    response.data = transformData(
+                        response.data,
+                        response.headers,
+                        response.status
+                        config.transformResponse);
+                }
+                if (isSuccess(response.status)) {
+                    return response;
+                } else {
+                    return $q.reject(response);
+                }
+            }
+
+            return sendReq(config, reqData)
+                .then(transformResponse, transformResponse);
         }
         (<IHttpService>$http).defaults = defaults;
         return $http;
