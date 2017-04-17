@@ -2,7 +2,7 @@ import * as sinon from 'sinon';
 import * as _ from "lodash";
 import { setupModuleLoader } from '../../src/loader';
 import { createInjector } from '../../src/injector';
-import { IHttpService, IHttpPromiseCallbackArg, IHttpProvider } from "angular";
+import { IHttpService, IHttpPromiseCallbackArg, IHttpProvider, auto } from "angular";
 import { publishExternalAPI } from "../../src/angular_public";
 
 describe("$http", () => {
@@ -10,10 +10,11 @@ describe("$http", () => {
     var xhr: Sinon.SinonFakeXMLHttpRequest;
     var requests: Sinon.SinonFakeXMLHttpRequest[] = [];
     var url = "http://teropa.info";
+    var injector: auto.IInjectorService;
 
     beforeEach(() => {
         publishExternalAPI();
-        var injector = createInjector(["ng"]);
+        injector = createInjector(["ng"]);
         $http = injector.get("$http");
         xhr = sinon.useFakeXMLHttpRequest();
         xhr.onCreate = function (req) {
@@ -547,7 +548,7 @@ describe("$http", () => {
         requests[0].respond(200, {}, '{1,"2",3]');
         expect(response.data).toEqual('{1,"2",3]');
     });
-    
+
     it("does not try to parse interpolation expr as JSON", () => {
         var response;
 
@@ -560,5 +561,103 @@ describe("$http", () => {
 
         requests[0].respond(200, {}, "{{expr}}");
         expect(response.data).toEqual("{{expr}}");
+    });
+
+    it("adds params to URL", () => {
+        $http({
+            url: url,
+            params: {
+                a: 42,
+                b: 43
+            }
+        });
+
+        expect(requests[0].url).toBe(url + "?a=42&b=43");
+    });
+
+    it("adds additional params to URL", () => {
+        $http({
+            url: url + "?a=42",
+            params: {
+                b: 43
+            }
+        });
+
+        expect(requests[0].url).toBe(url + "?a=42&b=43");
+    });
+
+    it("escapes url characters in params", () => {
+        $http({
+            url: url,
+            params: {
+                "==": "&&"
+            }
+        });
+
+        expect(requests[0].url).toBe(url + "?%3D%3D=%26%26");
+    });
+
+    it("does not attach null or undefined params", () => {
+        $http({
+            url: url,
+            params: {
+                a: null,
+                b: undefined
+            }
+        });
+
+        expect(requests[0].url).toBe(url);
+    });
+
+    it("attaches multiple params for arrays", () => {
+        $http({
+            url: url,
+            params: {
+                a: [42, 43]
+            }
+        });
+
+        expect(requests[0].url).toBe(url + "?a=42&a=43");
+    });
+
+    it("serializes objects to json", () => {
+        $http({
+            url: url,
+            params: {
+                a: { b: 42 }
+            }
+        });
+
+        expect(requests[0].url).toBe(url + "?a=%7B%22b%22%3A42%7D");
+    });
+
+    it("serializes dates to ISO strings", () => {
+        $http({
+            url: url,
+            params: {
+                a: new Date(2015, 0, 1, 12, 0, 0, 0)
+            }
+        });
+        var $rootScope = injector.get("$rootScope");
+        $rootScope.$apply();
+
+        expect(/\d{4}-\d{2}-\d{2}T\d{2}%3A\d{2}%3A\d{2}/.test(requests[0].url)).toBeTruthy();
+    });
+
+    it("allows substituting param serializer", () => {
+        $http({
+            url: url,
+            params: {
+                a: 42,
+                b: 43
+            },
+            paramSerializer(params: any): string {
+                return _.map(params, (v, k) => {
+                    return k + "=" + v + "lol";
+                }).join("&");
+            }
+        });
+
+        expect(requests[0].url).toBe(url + "?a=42lol&b=43lol");
     });
 });

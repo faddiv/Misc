@@ -38,7 +38,8 @@ export function $HttpProvider() {
                 }
             }
         ],
-        transformResponse: [defaultHttpResponseTransform]
+        transformResponse: [defaultHttpResponseTransform],
+        paramSerializer: serializeParams
     };
 
     function isBlob(data: Object) {
@@ -92,6 +93,7 @@ export function $HttpProvider() {
         });
         return executeHeaderFns(reqHeaders, config);
     }
+
     function executeHeaderFns(headers: IHttpRequestConfigHeaders, config): IHttpRequestConfigHeaders {
         return _.transform(headers, function (result, v, k) {
             if (_.isFunction(v)) {
@@ -104,6 +106,7 @@ export function $HttpProvider() {
             }
         }, headers);
     }
+    
     function isSuccess(status: number) {
         return 200 <= status && status < 300;
     }
@@ -154,9 +157,36 @@ export function $HttpProvider() {
 
 
 
+    function serializeParams(params: any): string {
+        var parts = [];
+        _.forEach(params, (value, key) => {
+            if (_.isUndefined(value) || _.isNull(value)) {
+                return;
+            }
+            if (!_.isArray<string>(value)) {
+                value = [value];
+            }
+            _.forEach(value, function (v) {
+                if (_.isObject(v)) {
+                    v = JSON.stringify(v);
+                }
+                parts.push(encodeURIComponent(key) + "=" + encodeURIComponent(v));
+            })
+        });
+        return parts.join("&");
+    }
+
+    function buildUrl(url: string, params: string): string {
+        if (params.length) {
+            url += (url.indexOf("?") === -1) ? "?" : "&";
+            url += params;
+        }
+        return url;
+    }
+
     this.$get = ["$httpBackend", "$q", "$rootScope", function ($httpBackend: IHttpBackendService, $q: IQService, $rootScope: IRootScopeService) {
 
-        function sendReq(config, reqData) {
+        function sendReq(config: IRequestConfig, reqData) {
             var deferred = $q.defer();
             function done(status: number, response: any, headersString: string, statusText: string) {
                 status = Math.max(status, 0);
@@ -172,9 +202,10 @@ export function $HttpProvider() {
                     $rootScope.$apply();
                 }
             }
+            var url = buildUrl(config.url, config.paramSerializer(config.params));
             $httpBackend(
                 config.method,
-                config.url,
+                url,
                 reqData,
                 done,
                 config.headers,
@@ -187,7 +218,8 @@ export function $HttpProvider() {
             var config = _.extend({
                 method: "GET",
                 transformRequest: defaults.transformRequest,
-                transformResponse: defaults.transformResponse
+                transformResponse: defaults.transformResponse,
+                paramSerializer: defaults.paramSerializer
             }, requestConfig);
             config.headers = mergeHeaders(requestConfig)
 

@@ -228,5 +228,5 @@ interface IPromiseState {
     pending?: [IDeferred<any>, (value: any) => any, (value: any) => any, (value: any) => any][];
 }
 
-//630
-//URL Parameters
+//637
+//allows substituting param serializer through DI
