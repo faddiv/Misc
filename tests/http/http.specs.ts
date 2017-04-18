@@ -2,7 +2,7 @@ import * as sinon from 'sinon';
 import * as _ from "lodash";
 import { setupModuleLoader } from '../../src/loader';
 import { createInjector } from '../../src/injector';
-import { IHttpService, IHttpPromiseCallbackArg, IHttpProvider, auto } from "angular";
+import { IHttpService, IHttpPromiseCallbackArg, IHttpProvider, IHttpParamSerializer, auto } from "angular";
 import { publishExternalAPI } from "../../src/angular_public";
 
 describe("$http", () => {
@@ -661,4 +661,79 @@ describe("$http", () => {
         expect(requests[0].url).toBe(url + "?a=42lol&b=43lol");
     });
 
+    it("makes default param serializer available through DI", () => {
+        injector.invoke(function ($httpParamSerializer: IHttpParamSerializer) {
+            var result = $httpParamSerializer({ a: 42, b: 43 });
+            expect(result).toEqual("a=42&b=43");
+        });
+    });
+
+    describe("JQ-like param serialization", () => {
+
+        beforeEach(() => {
+            $http.defaults.paramSerializer = "$httpParamSerializerJQLike";
+        })
+        it("is possible", () => {
+            $http({
+                url: url,
+                params: {
+                    a: 42,
+                    b: 43
+                }
+            });
+            expect(requests[0].url).toBe(url + "?a=42&b=43");
+        });
+
+        it("does not attach null or undefined params", () => {
+            $http({
+                url: url,
+                params: {
+                    a: null,
+                    b: undefined
+                }
+            });
+
+            expect(requests[0].url).toBe(url);
+        });
+
+        it("uses square brackets in arrays", () => {
+            $http({
+                url: url,
+                params: {
+                    a: [42, 43]
+                }
+            });
+            expect(requests[0].url).toEqual(url + "?a%5B%5D=42&a%5B%5D=43");
+        });
+
+        it("uses square brackets in objects", () => {
+            $http({
+                url: url,
+                params: {
+                    a: { b: 42, c: 43 }
+                }
+            });
+            expect(requests[0].url).toEqual(url + "?a%5Bb%5D=42&a%5Bc%5D=43");
+        });
+
+        it("supports nesting in objects", () => {
+            $http({
+                url: url,
+                params: {
+                    a: { b: { c: 42 } }
+                }
+            });
+            expect(requests[0].url).toEqual(url + "?a%5Bb%5D%5Bc%5D=42");
+        });
+
+        it("appends array indexes when items are objects", () => {
+            $http({
+                url: url,
+                params: {
+                    a: [{ b: 42 }]
+                }
+            });
+            expect(requests[0].url).toEqual(url + "?a%5B0%5D%5Bb%5D=42");
+        });
+    });
 });

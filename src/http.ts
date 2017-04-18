@@ -18,6 +18,64 @@ interface ISanitizedRequestConfig extends IRequestConfig {
     paramSerializer?: (obj: any) => string;
 }
 
+export function $HttpParamSerializerProvider() {
+    this.$get = function () {
+        function serializeParams(params: any): string {
+            var parts = [];
+            _.forEach(params, (value, key) => {
+                if (_.isUndefined(value) || _.isNull(value)) {
+                    return;
+                }
+                if (!_.isArray<string>(value)) {
+                    value = [value];
+                }
+                _.forEach(value, function (v) {
+                    if (_.isObject(v)) {
+                        v = JSON.stringify(v);
+                    }
+                    parts.push(encodeURIComponent(key) + "=" + encodeURIComponent(v));
+                })
+            });
+            return parts.join("&");
+        }
+        return serializeParams;
+    }
+}
+
+export function $HttpParamSerializerJQLikeProvider() {
+    this.$get = function () {
+        function serializeParams(params: any): string {
+            var parts = [];
+
+            function serialize(value, prefix: string, topLevel?: boolean) {
+                if (_.isUndefined(value) || _.isNull(value)) {
+                    return;
+                }
+                if (_.isArray(value)) {
+                    _.forEach(value, function (v, i) {
+                        serialize(v, prefix + "[" +
+                            (_.isObject(v) ? i : "") + 
+                            "]");
+                    });
+                } else if (_.isObject(value) && !_.isDate(value)) {
+                    _.forEach(value, function (v, k) {
+                        var pre = prefix +
+                            (topLevel ? "" : "[") +
+                            k +
+                            (topLevel ? "" : "]");
+                        serialize(v, pre);
+                    });
+                } else {
+                    parts.push(encodeURIComponent(prefix) + "=" + encodeURIComponent(value));
+                }
+            }
+            serialize(params, "", true);
+            return parts.join("&");
+        }
+        return serializeParams;
+    }
+}
+
 export function $HttpProvider() {
     var defaults: IHttpProviderDefaults = this.defaults = {
         headers: {
@@ -44,7 +102,7 @@ export function $HttpProvider() {
             }
         ],
         transformResponse: [defaultHttpResponseTransform],
-        paramSerializer: serializeParams
+        paramSerializer: "$httpParamSerializer"
     };
 
     function isBlob(data: Object) {
@@ -158,27 +216,6 @@ export function $HttpProvider() {
                 return fn(data, headers, status);
             }, data);
         }
-    }
-
-
-
-    function serializeParams(params: any): string {
-        var parts = [];
-        _.forEach(params, (value, key) => {
-            if (_.isUndefined(value) || _.isNull(value)) {
-                return;
-            }
-            if (!_.isArray<string>(value)) {
-                value = [value];
-            }
-            _.forEach(value, function (v) {
-                if (_.isObject(v)) {
-                    v = JSON.stringify(v);
-                }
-                parts.push(encodeURIComponent(key) + "=" + encodeURIComponent(v));
-            })
-        });
-        return parts.join("&");
     }
 
     function buildUrl(url: string, params: string): string {
