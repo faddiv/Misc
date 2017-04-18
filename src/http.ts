@@ -8,10 +8,15 @@ import {
     IHttpService,
     IHttpRequestConfigHeaders,
     IHttpRequestTransformer,
-    IHttpResponseTransformer
+    IHttpResponseTransformer,
+    auto
 } from 'angular';
 import * as ain from './angularInterfaces';
 import * as _ from "lodash";
+
+interface ISanitizedRequestConfig extends IRequestConfig {
+    paramSerializer?: (obj: any) => string;
+}
 
 export function $HttpProvider() {
     var defaults: IHttpProviderDefaults = this.defaults = {
@@ -106,7 +111,7 @@ export function $HttpProvider() {
             }
         }, headers);
     }
-    
+
     function isSuccess(status: number) {
         return 200 <= status && status < 300;
     }
@@ -123,12 +128,12 @@ export function $HttpProvider() {
                 }
             }, {});
         } else {
-            return _.transform(headers, function (result, v, k: string) {
+            return _.transform(headers, function (result, v: string, k: string) {
                 result[_.trim(k.toLowerCase())] = _.trim(v);
             }, {});
         }
     }
-    function headersGetter(headers: string) {
+    function headersGetter(headers: string | any) {
         var headersObj: any;
         return function (name: string) {
             headersObj = headersObj || parseHeaders(headers);
@@ -184,9 +189,9 @@ export function $HttpProvider() {
         return url;
     }
 
-    this.$get = ["$httpBackend", "$q", "$rootScope", function ($httpBackend: IHttpBackendService, $q: IQService, $rootScope: IRootScopeService) {
+    this.$get = ["$httpBackend", "$q", "$rootScope", "$injector", function ($httpBackend: IHttpBackendService, $q: IQService, $rootScope: IRootScopeService, $injector: auto.IInjectorService) {
 
-        function sendReq(config: IRequestConfig, reqData) {
+        function sendReq(config: ISanitizedRequestConfig, reqData) {
             var deferred = $q.defer();
             function done(status: number, response: any, headersString: string, statusText: string) {
                 status = Math.max(status, 0);
@@ -215,13 +220,16 @@ export function $HttpProvider() {
         }
 
         function $http(requestConfig: IRequestConfig) {
-            var config = _.extend({
+            var config: IRequestConfig = _.extend({
                 method: "GET",
                 transformRequest: defaults.transformRequest,
                 transformResponse: defaults.transformResponse,
                 paramSerializer: defaults.paramSerializer
             }, requestConfig);
-            config.headers = mergeHeaders(requestConfig)
+            config.headers = mergeHeaders(requestConfig);
+            if (_.isString(config.paramSerializer)) {
+                config.paramSerializer = $injector.get<(obj: any) => string>(config.paramSerializer);
+            }
 
             if (_.isUndefined(config.withCredentials) &&
                 !_.isUndefined(defaults.withCredentials)) {
@@ -246,7 +254,7 @@ export function $HttpProvider() {
                     response.data = transformData(
                         response.data,
                         response.headers,
-                        response.status
+                        response.status,
                         config.transformResponse);
                 }
                 if (isSuccess(response.status)) {
@@ -256,7 +264,7 @@ export function $HttpProvider() {
                 }
             }
 
-            return sendReq(config, reqData)
+            return sendReq(<any>config, reqData)
                 .then(transformResponse, transformResponse);
         }
         (<IHttpService>$http).defaults = defaults;

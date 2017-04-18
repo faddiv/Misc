@@ -660,4 +660,5 @@ describe("$http", () => {
 
         expect(requests[0].url).toBe(url + "?a=42lol&b=43lol");
     });
+
 });
