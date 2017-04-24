@@ -228,5 +228,5 @@ interface IPromiseState {
     pending?: [IDeferred<any>, (value: any) => any, (value: any) => any, (value: any) => any][];
 }
 
-//646
-//Shorthand Methods
+//651
+//'allows referencing existing interceptor factories'

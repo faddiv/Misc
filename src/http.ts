@@ -19,6 +19,7 @@ interface ISanitizedRequestConfig extends IRequestConfig {
 }
 
 export function $HttpParamSerializerProvider() {
+
     this.$get = function () {
         function serializeParams(params: any): string {
             var parts = [];
@@ -54,7 +55,7 @@ export function $HttpParamSerializerJQLikeProvider() {
                 if (_.isArray(value)) {
                     _.forEach(value, function (v, i) {
                         serialize(v, prefix + "[" +
-                            (_.isObject(v) ? i : "") + 
+                            (_.isObject(v) ? i : "") +
                             "]");
                     });
                 } else if (_.isObject(value) && !_.isDate(value)) {
@@ -77,6 +78,7 @@ export function $HttpParamSerializerJQLikeProvider() {
 }
 
 export function $HttpProvider() {
+    var interceptorFactories = this.interceptors = [];
     var defaults: IHttpProviderDefaults = this.defaults = {
         headers: {
             common: {
@@ -191,6 +193,7 @@ export function $HttpProvider() {
             }, {});
         }
     }
+
     function headersGetter(headers: string | any) {
         var headersObj: any;
         return function (name: string) {
@@ -227,6 +230,10 @@ export function $HttpProvider() {
     }
 
     this.$get = ["$httpBackend", "$q", "$rootScope", "$injector", function ($httpBackend: IHttpBackendService, $q: IQService, $rootScope: IRootScopeService, $injector: auto.IInjectorService) {
+
+        var interceptors = _.map(interceptorFactories, function(fn: any) { 
+            return $injector.invoke(fn);
+         })
 
         function sendReq(config: ISanitizedRequestConfig, reqData) {
             var deferred = $q.defer();
@@ -305,6 +312,25 @@ export function $HttpProvider() {
                 .then(transformResponse, transformResponse);
         }
         (<IHttpService>$http).defaults = defaults;
+
+        _.forEach(["get", "head", "delete"], function (method: string) {
+            $http[method] = function (url: string, config: IRequestConfig) {
+                return $http(_.extend(config || {}, {
+                    method: method.toUpperCase(),
+                    url: url
+                }));
+            };
+        });
+
+        _.forEach(["post", "put", "patch"], function (method: string) {
+            $http[method] = function (url: string, data: any, config: IRequestConfig) {
+                return $http(_.extend(config || {}, {
+                    method: method.toUpperCase(),
+                    url: url,
+                    data: data
+                }));
+            };
+        });
         return $http;
     }];
 }

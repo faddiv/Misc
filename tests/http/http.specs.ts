@@ -736,4 +736,68 @@ describe("$http", () => {
             expect(requests[0].url).toEqual(url + "?a%5B0%5D%5Bb%5D=42");
         });
     });
+
+    it("supports shorthand method for GET", () => {
+        $http.get(url, {
+            params: {q:42}
+        });
+
+        expect(requests.length).toBe(1);
+        expect(requests[0].url).toBe(url+"?q=42");
+        expect(requests[0].method).toBe("GET");
+    });
+
+    it("supports shorthand method for HEAD", () => {
+        $http.head(url, {
+            params: {q:42}
+        });
+
+        expect(requests.length).toBe(1);
+        expect(requests[0].url).toBe(url+"?q=42");
+        expect(requests[0].method).toBe("HEAD");
+    });
+
+    it("supports shorthand method for DELETE", () => {
+        $http.delete(url, {
+            params: {q:42}
+        });
+
+        expect(requests.length).toBe(1);
+        expect(requests[0].url).toBe(url+"?q=42");
+        expect(requests[0].method).toBe("DELETE");
+    });
+
+    it("supports shorthand method for POST with data", () => {
+        $http.post(url, "data", {
+            params: {q:42}
+        });
+
+        expect(requests.length).toBe(1);
+        expect(requests[0].url).toBe(url+"?q=42");
+        expect(requests[0].method).toBe("POST");
+        expect(requests[0].requestBody).toBe("data");
+    });
+    
+    it("supports shorthand method for PUT with data", () => {
+        $http.put(url, "data", {
+            params: {q:42}
+        });
+
+        expect(requests.length).toBe(1);
+        expect(requests[0].url).toBe(url+"?q=42");
+        expect(requests[0].method).toBe("PUT");
+        expect(requests[0].requestBody).toBe("data");
+    });
+
+    it("supports shorthand method for PATCH with data", () => {
+        $http.patch(url, "data", {
+            params: {q:42}
+        });
+
+        expect(requests.length).toBe(1);
+        expect(requests[0].url).toBe(url+"?q=42");
+        expect(requests[0].method).toBe("PATCH");
+        expect(requests[0].requestBody).toBe("data");
+    });
+
 });
