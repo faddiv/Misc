@@ -228,5 +228,5 @@ interface IPromiseState {
     pending?: [IDeferred<any>, (value: any) => any, (value: any) => any, (value: any) => any][];
 }
 
-//651
-//'allows referencing existing interceptor factories'
+//655
+//Interceptors are objects that have one or more of four keys: request, requestError, response, 

@@ -41,4 +41,17 @@ describe("setupModuleLoader", () => {
 
         expect(interceptorFactorySpy).toHaveBeenCalledWith($rootScope);
     });
+
+    it("allows referencing existing interceptor factories", () => {
+        
+        var interceptorFactorySpy = jasmine.createSpy("interceptorFactorySpy").and.returnValue({});
+        var injector = createInjector(["ng", function ($provide: auto.IProvideService, $httpProvider: IHttpProvider) {
+            $provide.factory("myInterceptor", interceptorFactorySpy);
+            $httpProvider.interceptors.push("myInterceptor");
+        }]);
+
+        $http = injector.get("$http");
+
+        expect(interceptorFactorySpy).toHaveBeenCalled();
+    });
 });

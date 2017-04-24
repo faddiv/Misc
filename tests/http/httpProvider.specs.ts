@@ -34,6 +34,7 @@ describe("setupModuleLoader", () => {
             method: "POST",
             data: 42
         });
+        injector.get("$rootScope").$apply();
         expect(requests.length).toBe(1);
         expect(requests[0].requestHeaders["Content-Type"]).toBe("text/plain;charset=utf-8");
     });
@@ -58,7 +59,7 @@ describe("setupModuleLoader", () => {
                 paramSerializer: "mySpecialSerializer"
             });
         });
-
+        injector.get("$rootScope").$apply();
         expect(requests[0].url).toEqual(url + "?a=42lol&b=43lol");
     });
 });
