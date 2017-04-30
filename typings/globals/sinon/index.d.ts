@@ -236,8 +236,7 @@ declare namespace Sinon {
         withCredentials: boolean;
         upload: SinonFakeUploadProgress;
         responseXML: Document;
-        getResponseHeader(header: string): string;
-        getAllResponseHeaders(): any;
+        aborted: boolean;
 
         // Methods
         restore(): void;
@@ -247,6 +246,8 @@ declare namespace Sinon {
         setResponseBody(body: string): void;
         respond(status: number, headers: any, body: string): void;
         autoRespond(ms: number): void;
+        getResponseHeader(header: string): string;
+        getAllResponseHeaders(): any;
     }
 
     interface SinonFakeXMLHttpRequestStatic {

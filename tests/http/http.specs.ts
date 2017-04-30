@@ -8,7 +8,8 @@ import {
     IHttpProvider,
     IHttpParamSerializer,
     IRootScopeService,
-    auto
+    auto,
+    IHttpHeadersGetter
 } from "angular";
 import { publishExternalAPI } from "../../src/angular_public";
 
@@ -822,6 +823,43 @@ describe("$http", () => {
         expect(requests[0].url).toBe(url + "?q=42");
         expect(requests[0].method).toBe("PATCH");
         expect(requests[0].requestBody).toBe("data");
+    });
+
+    //Promise Extensions
+    it("allows attaching success handlers", () => {
+        var data, status, headers: IHttpHeadersGetter, config;
+        $http.get(url).success(function (d, s, h, c) {
+            data = d;
+            status = s;
+            headers = h;
+            config = c;
+        });
+        $rootScope.$apply();
+
+        requests[0].respond(200, { "Cache-Control": "no-cache" }, "Hello");
+
+        expect(data).toBe("Hello");
+        expect(status).toBe(200);
+        expect(headers("Cache-Control")).toBe("no-cache");
+        expect(config.method).toBe("GET");
+    });
+
+    it("allows attaching error handlers", () => {
+        var data, status, headers: IHttpHeadersGetter, config;
+        $http.get(url).error(function (d, s, h, c) {
+            data = d;
+            status = s;
+            headers = h;
+            config = c;
+        });
+        $rootScope.$apply();
+
+        requests[0].respond(401, { "Cache-Control": "no-cache" }, "Fail");
+
+        expect(data).toBe("Fail");
+        expect(status).toBe(401);
+        expect(headers("Cache-Control")).toBe("no-cache");
+        expect(config.method).toBe("GET");
     });
 
 });

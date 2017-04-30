@@ -9,7 +9,13 @@ import {
     IHttpRequestConfigHeaders,
     IHttpRequestTransformer,
     IHttpResponseTransformer,
-    auto
+    auto,
+    Injectable,
+    IHttpInterceptor,
+    IHttpInterceptorFactory,
+    IHttpPromiseCallbackArg,
+    IPromise,
+    IHttpPromise
 } from 'angular';
 import * as ain from './angularInterfaces';
 import * as _ from "lodash";
@@ -78,7 +84,18 @@ export function $HttpParamSerializerJQLikeProvider() {
 }
 
 export function $HttpProvider() {
-    var interceptorFactories = this.interceptors = [];
+    var interceptorFactories: IHttpInterceptorFactory[] = this.interceptors = [];
+
+    var useApplyAsync = false;
+    this.useApplyAsync = function (value?: boolean) {
+        if (_.isUndefined(value)) {
+            return useApplyAsync;
+        } else {
+            useApplyAsync = !!value;
+            return this;
+        }
+    };
+
     var defaults: IHttpProviderDefaults = this.defaults = {
         headers: {
             common: {
@@ -231,7 +248,7 @@ export function $HttpProvider() {
 
     this.$get = ["$httpBackend", "$q", "$rootScope", "$injector", function ($httpBackend: IHttpBackendService, $q: IQService, $rootScope: IRootScopeService, $injector: auto.IInjectorService) {
 
-        var interceptors = _.map(interceptorFactories, function (fn: any) {
+        var interceptors: IHttpInterceptor[] = _.map(interceptorFactories, function (fn: any) {
             return _.isString(fn)
                 ? $injector.get(fn)
                 : $injector.invoke(fn);
@@ -239,18 +256,31 @@ export function $HttpProvider() {
 
         function sendReq(config: ISanitizedRequestConfig, reqData) {
             var deferred = $q.defer();
+            (<IHttpService>$http).pendingRequests.push(config);
+            deferred.promise.then(function () {
+                _.remove((<IHttpService>$http).pendingRequests, config);
+            }, function () {
+                _.remove((<IHttpService>$http).pendingRequests, config);
+            })
             function done(status: number, response: any, headersString: string, statusText: string) {
                 status = Math.max(status, 0);
-                var finishMethod = isSuccess(status) ? "resolve" : "reject";
-                deferred[finishMethod]({
-                    status: status,
-                    data: response,
-                    statusText: statusText,
-                    headers: headersGetter(headersString),
-                    config: config
-                });
-                if (!$rootScope.$$phase) {
-                    $rootScope.$apply();
+                function resolvePromise() {
+                    var finishMethod = isSuccess(status) ? "resolve" : "reject";
+                    deferred[finishMethod]({
+                        status: status,
+                        data: response,
+                        statusText: statusText,
+                        headers: headersGetter(headersString),
+                        config: config
+                    });
+                }
+                if ((useApplyAsync)) {
+                    $rootScope.$applyAsync(resolvePromise);
+                } else {
+                    resolvePromise();
+                    if (!$rootScope.$$phase) {
+                        $rootScope.$apply();
+                    }
                 }
             }
             var url = buildUrl(config.url, config.paramSerializer(config.params));
@@ -260,7 +290,7 @@ export function $HttpProvider() {
                 reqData,
                 done,
                 config.headers,
-                undefined,
+                config.timeout,
                 config.withCredentials);
             return deferred.promise;
         }
@@ -315,10 +345,28 @@ export function $HttpProvider() {
             }
             config.headers = mergeHeaders(requestConfig);
 
-            var promise = $q.when(config);
-            return promise.then(serverRequest);
+            var promise: IPromise<any> = $q.when(config);
+            _.forEach(interceptors, function (interceptor) {
+                promise = promise.then(interceptor.request, interceptor.requestError);
+            });
+            promise = promise.then(serverRequest);
+            _.forEachRight(interceptors, function (interceptor) {
+                promise = promise.then(interceptor.response, interceptor.responseError);
+            });
+            (<IHttpPromise<any>>promise).success = function (fn) {
+                promise.then(function (response) {
+                    fn(response.data, response.status, response.headers, config);
+                });
+            };
+            (<IHttpPromise<any>>promise).error = function (fn) {
+                promise.catch(function (response) {
+                    fn(response.data, response.status, response.headers, config);
+                });
+            };
+            return promise;
         }
         (<IHttpService>$http).defaults = defaults;
+        (<IHttpService>$http).pendingRequests = [];
 
         _.forEach(["get", "head", "delete"], function (method: string) {
             $http[method] = function (url: string, config: IRequestConfig) {

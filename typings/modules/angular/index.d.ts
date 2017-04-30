@@ -1514,6 +1514,8 @@ namespace angular {
     }
 
     interface IHttpPromise<T> extends IPromise<IHttpPromiseCallbackArg<T>> {
+        success(fn: (data: any, status: number, headers: IHttpHeadersGetter, config: IRequestConfig) => any);
+        error(fn: (data: any, status: number, headers: IHttpHeadersGetter, config: IRequestConfig) => any);
     }
 
     // See the jsdoc for transformData() at https://github.com/angular/angular.js/blob/master/src/ng/http.js#L228
@@ -1631,7 +1633,7 @@ namespace angular {
     ///////////////////////////////////////////////////////////////////////////
     interface IHttpBackendService {
         // XXX Perhaps define callback signature in the future
-        (method: string, url: string, post?: any, callback?: Function, headers?: any, timeout?: number, withCredentials?: boolean): void;
+        (method: string, url: string, post?: any, callback?: Function, headers?: any, timeout?: IPromise<any>|number, withCredentials?: boolean): void;
     }
 
     ///////////////////////////////////////////////////////////////////////////
