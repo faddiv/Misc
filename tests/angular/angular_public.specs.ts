@@ -48,4 +48,9 @@ describe("angularPublic", () => {
         var $http = injector.get("$http");
         expect($http).toBeDefined();
     });
+
+    it("sets up $compile", () => {
+        var $compile = injector.get("$compile");
+        expect($compile).toBeDefined();
+    });
 });

@@ -228,5 +228,5 @@ interface IPromiseState {
     pending?: [IDeferred<any>, (value: any) => any, (value: any) => any, (value: any) => any][];
 }
 
-//672
-//Directives
+//680
+//$provide.factory misses the array processing.

@@ -34,6 +34,7 @@ export function setupModuleLoader(w: Window) {
             service: invokeLater("$provide", "service", "push", invokeQueue),
             decorator: invokeLater("$provide", "decorator", "push", invokeQueue),
             filter: invokeLater("$filterProvider", "register", "push", invokeQueue),
+            directive: invokeLater("$compileProvider", "directive", "push", invokeQueue),
             run(fn: Injectable<Function>) {
                 moduleInstance._runBlocks.push(fn);
                 return moduleInstance;
@@ -42,7 +43,6 @@ export function setupModuleLoader(w: Window) {
             _configBlocks: configBlocks,
             component: undefined,
             controller: undefined,
-            directive: undefined,
             _runBlocks: []
         };
         if (configFn) {
