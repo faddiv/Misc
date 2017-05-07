@@ -17,6 +17,7 @@ System.config({
   },
 
   map: {
+    "jquery": "npm:jquery@3.2.1",
     "lodash": "npm:lodash@4.17.4",
     "sinon": "npm:sinon@2.1.0",
     "typescript": "npm:typescript@2.2.1",

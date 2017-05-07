@@ -32,6 +32,27 @@ describe("$compile", () => {
         var result = injector.get<any[]>("testingDirective");
         expect(result.length).toBe(2);
         expect(result[0].d).toEqual("one");
-        expect(result[2].d).toEqual("two");
+        expect(result[1].d).toEqual("two");
+    });
+
+    it("does not allow a directive called has OwnProperty", () => {
+        myModule.directive("hasOwnProperty", _.constant(1));
+        expect(function(){
+            createInjector(["ng", "myModule"]);
+        }).toThrow();
+    });
+
+    it("allows creating directives with object notation", () => {
+        myModule.directive({
+            a: _.constant(1),
+            b: _.constant(2),
+            c: _.constant(3)
+        });
+
+        var injector = createInjector(["ng", "myModule"]);
+
+        expect(injector.has("aDirective")).toBe(true);
+        expect(injector.has("bDirective")).toBe(true);
+        expect(injector.has("cDirective")).toBe(true);
     });
 });

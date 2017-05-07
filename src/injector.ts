@@ -21,9 +21,9 @@ export function createInjector(modulesToLoad: Injectable<Function>, strictDi?: b
     const INSTANTIATING = {};
     strictDi = (strictDi === true);
 
-    function enforceReturnValue(factoryFn: Function) {
+    function enforceReturnValue(factoryFn: Function | any[]) {
         return function () {
-            var value = instanceInjector.invoke(factoryFn);
+            var value = instanceInjector.invoke(<any>factoryFn);
             if (_.isUndefined(value)) {
                 throw "factory must return a value";
             }
@@ -50,11 +50,9 @@ export function createInjector(modulesToLoad: Injectable<Function>, strictDi?: b
             return provider;
         },
         factory(key: string, factoryFn: Function | any[], enforce): IServiceProvider {
-            if (_.isFunction(factoryFn)) {
-                return this.provider(key, {
-                    $get: enforce === false ? factoryFn : enforceReturnValue(factoryFn)
-                });
-            }
+            return this.provider(key, {
+                $get: enforce === false ? factoryFn : enforceReturnValue(factoryFn)
+            });
         },
         decorator(serviceName: string, decoratorFn: Function): void {
             var provider = providerInjector.get<IServiceProvider>(serviceName + "Provider");
@@ -171,7 +169,7 @@ export function createInjector(modulesToLoad: Injectable<Function>, strictDi?: b
             service[method].apply(service, args);
         });
     }
-    var runBlocks:  Array<string> = [];
+    var runBlocks: Array<string> = [];
     _.forEach(modulesToLoad, function loadModule(moduleName: Injectable<Function>) {
         if (!loadedModules.get(moduleName)) {
             loadedModules.put(moduleName, true);
