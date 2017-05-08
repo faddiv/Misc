@@ -1,5 +1,6 @@
 import * as _ from "lodash";
 import { ICompileProvider, IDirectiveFactory, auto, Injectable, IDirective } from "angular";
+import { IDirectiveInternal } from "./angularInterfaces";
 
 "use strict";
 
@@ -26,9 +27,12 @@ export default function $CompileProvider($provide: auto.IProvideService) {
                 hasDirectives[name] = [];
                 $provide.factory(name + "Directive", ["$injector", function ($injector: auto.IInjectorService) {
                     var factories = hasDirectives[name];
-                    return _.map(factories, function (factory: any) {
-                        var directive = $injector.invoke(factory);
+                    return _.map(factories, function (factory: any, i: number) {
+                        var directive: IDirectiveInternal = $injector.invoke(factory);
                         directive.restrict = directive.restrict || "EA";
+                        directive.priority = directive.priority || 0;
+                        directive.name = directive.name || name;
+                        directive.index = i;
                         return directive;
                     });
                 }]);
@@ -49,8 +53,8 @@ export default function $CompileProvider($provide: auto.IProvideService) {
         function compileNodes($compileNodes: JQuery) {
             _.forEach($compileNodes, function (node: HTMLElement) {
                 var directives = collectDirectives(node);
-                applyDirectivesToNode(directives, node);
-                if (node.childNodes && node.childNodes.length) {
+                var terminal = applyDirectivesToNode(directives, node);
+                if (!terminal && node.childNodes && node.childNodes.length) {
                     compileNodes(<any>node.childNodes);
                 }
             });
@@ -62,13 +66,26 @@ export default function $CompileProvider($provide: auto.IProvideService) {
                 var normalizedNodeName = directiveNormalize(nodeName(node).toLocaleLowerCase());
                 addDirective(directives, normalizedNodeName, "E");
                 _.forEach(node.attributes, function (attr) {
+                    var attrStartName: string;
+                    var attrEndName: string;
+                    var name = attr.name;
                     var normalizedAttrName = directiveNormalize(attr.name.toLowerCase());
                     if (/^ngAttr[A-Z]/.test(normalizedAttrName)) {
-                        normalizedAttrName =
+                        name = _.kebabCase(
                             normalizedAttrName[6].toLocaleLowerCase() +
-                            normalizedAttrName.substring(7);
+                            normalizedAttrName.substring(7)
+                        );
                     }
-                    addDirective(directives, normalizedAttrName, "A");
+                    var directiveNName = normalizedAttrName.replace(/(Start|End)$/, "");
+                    if (directiveIsMultiElement(directiveNName)) {
+                        if (/Start$/.test(normalizedAttrName)) {
+                            attrStartName = name;
+                            attrEndName = name.substring(0, name.length - 5) + "end";
+                            name = name.substring(0, name.length - 6);
+                        }
+                    }
+                    normalizedAttrName = directiveNormalize(name.toLowerCase());
+                    addDirective(directives, normalizedAttrName, "A", attrStartName, attrEndName);
                 });
                 _.forEach(node.classList, function (cls) {
                     var normalizedClassName = directiveNormalize(cls);
@@ -80,26 +97,86 @@ export default function $CompileProvider($provide: auto.IProvideService) {
                     addDirective(directives, directiveNormalize(match[1]), "M");
                 }
             }
+            directives.sort(byPriority);
             return directives;
         }
+        function directiveIsMultiElement(name: string) {
+            if (hasDirectives.hasOwnProperty(name)) {
+                var directives = $injector.get(name + "Directive");
+                return _.some(directives, { multiElement: true });
+            }
+            return false;
+        }
+        function byPriority(a: IDirectiveInternal, b: IDirectiveInternal): number {
+            var diff = b.priority - a.priority;
+            if (diff !== 0) {
+                return diff;
+            }
+            if (a.name !== b.name) {
+                return (a.name < b.name ? -1 : 1);
+            }
+            return a.index - b.index;
+        }
 
-        function addDirective(directives: IDirective[], name: string, mode: string) {
+        function addDirective(directives: IDirective[], name: string, mode: string, attrStartName?: string, attrEndName?: string) {
             if (hasDirectives.hasOwnProperty(name)) {
                 var foundDirectives = $injector.get<IDirective[]>(name + "Directive");
                 var applicableDirectives = _.filter(foundDirectives, function (dir) {
                     return dir.restrict.indexOf(mode) !== -1;
                 });
-                directives.push.apply(directives, applicableDirectives);
+                _.forEach(applicableDirectives, function (directive) {
+                    if (attrStartName) {
+                        directive = _.create(directive, {
+                            $$start: attrStartName,
+                            $$end: attrEndName
+                        });
+                    }
+                    directives.push(directive);
+                });
             }
         }
 
-        function applyDirectivesToNode(directives: IDirective[], compileNode: HTMLElement) {
+        function applyDirectivesToNode(directives: IDirectiveInternal[], compileNode: HTMLElement) {
             var $compileNode = $(compileNode);
+            var terminalPriority = -Number.MAX_VALUE;
+            var terminal = false;
             _.forEach(directives, function (directive) {
+                if (directive.$$start) {
+                    $compileNode = groupScan(compileNode, directive.$$start, directive.$$end);
+                }
+                if (directive.priority < terminalPriority) {
+                    return false;
+                }
                 if (directive.compile) {
                     directive.compile($compileNode, undefined, undefined);
                 }
+                if (directive.terminal) {
+                    terminal = true;
+                    terminalPriority = directive.priority;
+                }
             });
+            return terminal;
+        }
+
+        function groupScan(node: HTMLElement, startAttr: string, endAttr: string) {
+            var nodes = [];
+            if (startAttr && node && node.hasAttribute(startAttr)) {
+                var depth = 0;
+                do {
+                    if (node.nodeType === Node.ELEMENT_NODE) {
+                        if (node.hasAttribute(startAttr)) {
+                            depth++;
+                        } else if (node.hasAttribute(endAttr)) {
+                            depth--;
+                        }
+                    }
+                    nodes.push(node);
+                    node = <HTMLElement>node.nextSibling;
+                } while (depth > 0);
+            } else {
+                nodes.push(node);
+            }
+            return $(nodes);
         }
 
         return compile;

@@ -371,4 +371,209 @@ describe("$compile", () => {
     });
 
     //Prioritizing Directives
+    it("applies in priority order", () => {
+        var compilations: string[] = [];
+        var injector = makeInjectorWithDirectives({
+            lowerDirective: function () {
+                return {
+                    priority: 1,
+                    compile(element: JQuery) {
+                        compilations.push("lower");
+                    }
+                };
+            },
+            higherDirective: function () {
+                return {
+                    priority: 2,
+                    compile(element: JQuery) {
+                        compilations.push("higher");
+                    }
+                };
+            }
+        });
+        injector.invoke(function ($compile: ICompileService) {
+            var el = $('<div lower-directive higher-directive></div>');
+            $compile(el);
+            expect(compilations).toEqual(["higher", "lower"]);
+        });
+    });
+
+    it("applies name order when priorities are the same", () => {
+        var compilations: string[] = [];
+        var injector = makeInjectorWithDirectives({
+            secondDirective: function () {
+                return {
+                    priority: 1,
+                    compile(element: JQuery) {
+                        compilations.push("second");
+                    }
+                };
+            },
+            firstDirective: function () {
+                return {
+                    priority: 1,
+                    compile(element: JQuery) {
+                        compilations.push("first");
+                    }
+                };
+            }
+        });
+        injector.invoke(function ($compile: ICompileService) {
+            var el = $('<div second-directive first-directive></div>');
+            $compile(el);
+            expect(compilations).toEqual(["first", "second"]);
+        });
+    });
+
+    it("applies in registration order when names are the same", () => {
+        var compilations: string[] = [];
+        myModule.directive("aDirective", function () {
+            return {
+                priority: 1,
+                compile(element: JQuery) {
+                    compilations.push("first");
+                }
+            };
+        });
+        myModule.directive("aDirective", function () {
+            return {
+                priority: 1,
+                compile(element: JQuery) {
+                    compilations.push("second");
+                }
+            };
+        });
+        var injector = createInjector(["ng", "myModule"]);
+        injector.invoke(function ($compile: ICompileService) {
+            var el = $('<div a-directive></div>');
+            $compile(el);
+            expect(compilations).toEqual(["first", "second"]);
+        });
+    });
+
+    it("uses default 0 priority when one not given", () => {
+        var compilations: string[] = [];
+        myModule.directive("firstDirective", function () {
+            return {
+                priority: 1,
+                compile(element: JQuery) {
+                    compilations.push("first");
+                }
+            };
+        });
+        myModule.directive("secondDirective", function () {
+            return {
+                compile(element: JQuery) {
+                    compilations.push("second");
+                }
+            };
+        });
+        var injector = createInjector(["ng", "myModule"]);
+        injector.invoke(function ($compile: ICompileService) {
+            var el = $('<div second-directive first-directive></div>');
+            $compile(el);
+            expect(compilations).toEqual(["first", "second"]);
+        });
+    });
+    //Terminating Compilation
+    it("stops compiling at a terminal directive", () => {
+        var compilations: string[] = [];
+        var injector = makeInjectorWithDirectives({
+            firstDirective: function () {
+                return {
+                    priority: 1,
+                    terminal: true,
+                    compile(element: JQuery) {
+                        compilations.push("first");
+                    }
+                };
+            },
+            secondDirective: function () {
+                return {
+                    priority: 0,
+                    compile(element: JQuery) {
+                        compilations.push("second");
+                    }
+                };
+            }
+        });
+        injector.invoke(function ($compile: ICompileService) {
+            var el = $('<div first-directive second-directive></div>');
+            $compile(el);
+            expect(compilations).toEqual(["first"]);
+        });
+    });
+
+    it("still compiles directives with same priority after terminal", () => {
+        var compilations: string[] = [];
+        var injector = makeInjectorWithDirectives({
+            firstDirective: function () {
+                return {
+                    priority: 1,
+                    terminal: true,
+                    compile(element: JQuery) {
+                        compilations.push("first");
+                    }
+                };
+            },
+            secondDirective: function () {
+                return {
+                    priority: 1,
+                    compile(element: JQuery) {
+                        compilations.push("second");
+                    }
+                };
+            }
+        });
+        injector.invoke(function ($compile: ICompileService) {
+            var el = $('<div first-directive second-directive></div>');
+            $compile(el);
+            expect(compilations).toEqual(["first", "second"]);
+        });
+    });
+
+    it("stops child compilation after a terminal directive", () => {
+        var compilations: string[] = [];
+        var injector = makeInjectorWithDirectives({
+            parentDirective: function () {
+                return {
+                    terminal: true,
+                    compile(element: JQuery) {
+                        compilations.push("parent");
+                    }
+                };
+            },
+            childDirective: function () {
+                return {
+                    compile(element: JQuery) {
+                        compilations.push("child");
+                    }
+                };
+            }
+        });
+        injector.invoke(function ($compile: ICompileService) {
+            var el = $('<div parent-directive><div child-directive></div></div>');
+            $compile(el);
+            expect(compilations).toEqual(["parent"]);
+        });
+    });
+    //Applying Directives Across Multiple Nodes
+    it("allows applying a directive to multiple elements", () => {
+        var compileEl: any = [];
+        var injector = makeInjectorWithDirectives({
+            myDir: function () {
+                return {
+                    multiElement: true,
+                    compile(element: JQuery) {
+                        compileEl = element;
+                    }
+                };
+            }
+        });
+        injector.invoke(function ($compile: ICompileService) {
+            var el = $('<div my-dir-start></div><span></span><div my-dir-end></div>');
+            $compile(el);
+            expect(compileEl.length).toBe(3);
+        });
+    });
 });

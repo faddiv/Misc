@@ -1,5 +1,5 @@
 // <reference path="../typings/modules/angular/index.d.ts" />
-import { IScope, IModule, IDeferred, IAngularStatic, ICompiledExpression, IFilterService, IParseService, auto, Injectable, IAngularEvent } from "angular";
+import { IScope, IModule, IDeferred, IAngularStatic, ICompiledExpression, IFilterService, IParseService, auto, Injectable, IAngularEvent, IDirective } from "angular";
 
 declare global {
     interface Window {
@@ -222,11 +222,18 @@ interface IFilterFactory {
     (): IFilter;
 }
 
+interface IDirectiveInternal extends IDirective {
+    index: number;
+    name: string;
+    $$start: string;
+    $$end: string;
+}
+
 interface IPromiseState {
     value?: any;
     status?: number;
     pending?: [IDeferred<any>, (value: any) => any, (value: any) => any, (value: any) => any][];
 }
 
-//705
-//Prioritizing Directives
+//721
+//Directive Attributes
