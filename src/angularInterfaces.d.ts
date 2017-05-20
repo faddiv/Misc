@@ -235,5 +235,5 @@ interface IPromiseState {
     pending?: [IDeferred<any>, (value: any) => any, (value: any) => any, (value: any) => any][];
 }
 
-//721
-//Directive Attributes
+//726
+//Handling Boolean Attributes

@@ -1,5 +1,5 @@
 import * as _ from "lodash";
-import { ICompileProvider, IDirectiveFactory, auto, Injectable, IDirective } from "angular";
+import { ICompileProvider, IDirectiveFactory, auto, Injectable, IDirective, IAttributes } from "angular";
 import { IDirectiveInternal } from "./angularInterfaces";
 
 "use strict";
@@ -52,16 +52,25 @@ export default function $CompileProvider($provide: auto.IProvideService) {
 
         function compileNodes($compileNodes: JQuery) {
             _.forEach($compileNodes, function (node: HTMLElement) {
-                var directives = collectDirectives(node);
-                var terminal = applyDirectivesToNode(directives, node);
+                var attrs: IAttributes = {
+                    $normalize(name: string): string { return undefined; },
+                    $addClass(classVal: string): void { return undefined; },
+                    $removeClass(classVal: string): void { return undefined; },
+                    $updateClass(newClasses: string, oldClasses: string): void { return undefined; },
+                    $set(key: string, value: any): void { return undefined; },
+                    $observe<T>(name: string, fn: (value?: T) => any): Function { return undefined; },
+                    $attr: undefined
+                };
+                var directives = collectDirectives(node, attrs);
+                var terminal = applyDirectivesToNode(directives, node, attrs);
                 if (!terminal && node.childNodes && node.childNodes.length) {
                     compileNodes(<any>node.childNodes);
                 }
             });
         }
 
-        function collectDirectives(node: HTMLElement): IDirective[] {
-            var directives: IDirective[] = [];
+        function collectDirectives(node: HTMLElement, attrs: IAttributes): IDirectiveInternal[] {
+            var directives: IDirectiveInternal[] = [];
             if (node.nodeType === Node.ELEMENT_NODE) {
                 var normalizedNodeName = directiveNormalize(nodeName(node).toLocaleLowerCase());
                 addDirective(directives, normalizedNodeName, "E");
@@ -86,6 +95,7 @@ export default function $CompileProvider($provide: auto.IProvideService) {
                     }
                     normalizedAttrName = directiveNormalize(name.toLowerCase());
                     addDirective(directives, normalizedAttrName, "A", attrStartName, attrEndName);
+                    attrs[normalizedAttrName] = attr.value.trim();
                 });
                 _.forEach(node.classList, function (cls) {
                     var normalizedClassName = directiveNormalize(cls);
@@ -136,7 +146,7 @@ export default function $CompileProvider($provide: auto.IProvideService) {
             }
         }
 
-        function applyDirectivesToNode(directives: IDirectiveInternal[], compileNode: HTMLElement) {
+        function applyDirectivesToNode(directives: IDirectiveInternal[], compileNode: HTMLElement, attrs: IAttributes) {
             var $compileNode = $(compileNode);
             var terminalPriority = -Number.MAX_VALUE;
             var terminal = false;
@@ -148,7 +158,7 @@ export default function $CompileProvider($provide: auto.IProvideService) {
                     return false;
                 }
                 if (directive.compile) {
-                    directive.compile($compileNode, undefined, undefined);
+                    directive.compile($compileNode, attrs, undefined);
                 }
                 if (directive.terminal) {
                     terminal = true;
