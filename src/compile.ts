@@ -5,6 +5,24 @@ import { IDirectiveInternal } from "./angularInterfaces";
 "use strict";
 
 const PREFIX_REGEXP = /(x[\:\-_]|data[\:\-_])/i;
+const BOOLEAN_ATTRS = {
+    multiple: true,
+    selected: true,
+    checked: true,
+    disabled: true,
+    readOnly: true,
+    required: true,
+    open: true
+};
+
+const BOOLEAN_ELEMENTS = {
+    INPUT: true,
+    SELECT: true,
+    OPTION: true,
+    TEXTAREA: true,
+    BUTTON: true,
+    DETAILS: true
+};
 
 function nodeName(element: HTMLElement | HTMLElement[]): string {
     return _.isArray(element) ? element[0].nodeName : element.nodeName;
@@ -12,6 +30,10 @@ function nodeName(element: HTMLElement | HTMLElement[]): string {
 
 function directiveNormalize(name: string) {
     return _.camelCase(name.replace(PREFIX_REGEXP, ""));
+}
+
+function isBooleanAttribute(node: Element, attrName: string) {
+    return BOOLEAN_ATTRS[attrName] && BOOLEAN_ELEMENTS[node.nodeName];
 }
 
 export default function $CompileProvider($provide: auto.IProvideService) {
@@ -46,21 +68,47 @@ export default function $CompileProvider($provide: auto.IProvideService) {
     };
 
     this.$get = ["$injector", function ($injector: auto.IInjectorService) {
+        class Attributes implements IAttributes {
+            $attr: Object
+            constructor(private $$element: JQuery) {
+                this.$attr = {};
+            }
+            $normalize(name: string): string { return undefined; }
+            $addClass(classVal: string): void { return undefined; }
+            $removeClass(classVal: string): void { return undefined; }
+            $updateClass(newClasses: string, oldClasses: string): void { return undefined; }
+            $set(key: string, value: any, writeAttr?: boolean, attrName?: string): void {
+                this[key] = value;
+                if (isBooleanAttribute(this.$$element[0], key)) {
+                    this.$$element.prop(key, value);
+                }
+
+                if (!attrName) {
+                    if (this.$attr[key]) {
+                        attrName = this.$attr[key];
+                    } else {
+                        attrName = this.$attr[key] = _.kebabCase(key);
+                    }
+                } else {
+                    this.$attr[key] = attrName;
+                }
+
+                if (writeAttr !== false) {
+                    this.$$element.attr(attrName, value);
+                }
+            }
+            $observe<T>(name: string, fn: (value?: T) => any): Function { return undefined; }
+        }
+        function Attributes2(element: Element) {
+            this.$$element = element;
+        }
         function compile($compileNodes: JQuery) {
             return compileNodes($compileNodes);
         }
 
         function compileNodes($compileNodes: JQuery) {
             _.forEach($compileNodes, function (node: HTMLElement) {
-                var attrs: IAttributes = {
-                    $normalize(name: string): string { return undefined; },
-                    $addClass(classVal: string): void { return undefined; },
-                    $removeClass(classVal: string): void { return undefined; },
-                    $updateClass(newClasses: string, oldClasses: string): void { return undefined; },
-                    $set(key: string, value: any): void { return undefined; },
-                    $observe<T>(name: string, fn: (value?: T) => any): Function { return undefined; },
-                    $attr: undefined
-                };
+                var attrs = new Attributes($(node));
                 var directives = collectDirectives(node, attrs);
                 var terminal = applyDirectivesToNode(directives, node, attrs);
                 if (!terminal && node.childNodes && node.childNodes.length) {
@@ -79,12 +127,15 @@ export default function $CompileProvider($provide: auto.IProvideService) {
                     var attrEndName: string;
                     var name = attr.name;
                     var normalizedAttrName = directiveNormalize(attr.name.toLowerCase());
-                    if (/^ngAttr[A-Z]/.test(normalizedAttrName)) {
+                    var isNgAttr = /^ngAttr[A-Z]/.test(normalizedAttrName);
+                    if (isNgAttr) {
                         name = _.kebabCase(
                             normalizedAttrName[6].toLocaleLowerCase() +
                             normalizedAttrName.substring(7)
                         );
+                        normalizedAttrName = directiveNormalize(name.toLowerCase());
                     }
+                    attrs.$attr[normalizedAttrName] = name;
                     var directiveNName = normalizedAttrName.replace(/(Start|End)$/, "");
                     if (directiveIsMultiElement(directiveNName)) {
                         if (/Start$/.test(normalizedAttrName)) {
@@ -95,7 +146,12 @@ export default function $CompileProvider($provide: auto.IProvideService) {
                     }
                     normalizedAttrName = directiveNormalize(name.toLowerCase());
                     addDirective(directives, normalizedAttrName, "A", attrStartName, attrEndName);
-                    attrs[normalizedAttrName] = attr.value.trim();
+                    if (isNgAttr || !attrs.hasOwnProperty(normalizedAttrName)) {
+                        attrs[normalizedAttrName] = attr.value.trim();
+                        if (isBooleanAttribute(node, normalizedAttrName)) {
+                            attrs[normalizedAttrName] = true;
+                        }
+                    }
                 });
                 _.forEach(node.classList, function (cls) {
                     var normalizedClassName = directiveNormalize(cls);

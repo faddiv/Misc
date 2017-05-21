@@ -60,10 +60,167 @@ describe("$compile", () => {
                 '<my-directive my-attr=" 1 "></my-directive>',
                 (el, givenAttrs) => {
                     expect(givenAttrs.myAttr).toEqual("1");
-                    expect(givenAttrs.myOtherAttr).toEqual("two");
                 }
             );
         });
+
         //Handling Boolean Attributes
+        it("sets the value of boolean attributes to true", () => {
+            registerAndCompile(
+                '<input my-directive disabled>',
+                (el, attrs) => {
+                    expect(attrs.disabled).toEqual(true);
+                }
+            );
+        });
+
+        it("does not set the value of custom boolean attributes to true", () => {
+            registerAndCompile(
+                '<input my-directive disabled>',
+                (el, attrs) => {
+                    expect(attrs.disabled).toEqual(true);
+                }
+            );
+        });
+
+        //Overriding attributes with ng-attr
+        it("overrides attributes with n-attr- versions", () => {
+            registerAndCompile(
+                '<my-directive ng-attr-whatever="42" whatever="41"></my-directive>',
+                (el, attrs) => {
+                    expect(attrs.whatever).toEqual("42");
+                }
+            )
+        });
+
+        //Setting Attributes
+        it("allows setting attributes", () => {
+            registerAndCompile(
+                '<my-directive attr="true"></my-directive>',
+                (el, attrs: IAttributes) => {
+                    attrs.$set("attr", "false")
+                    expect(attrs.attr).toEqual("false");
+                }
+            );
+        });
+
+        it("sets attributes to DOM", () => {
+            registerAndCompile(
+                '<my-directive attr="true"></my-directive>',
+                (el, attrs: IAttributes) => {
+                    attrs.$set("attr", "false")
+                    expect(el.attr("attr")).toEqual("false");
+                }
+            );
+        });
+
+        it("does not set attributes to DOM when flag is false", () => {
+            registerAndCompile(
+                '<my-directive attr="true"></my-directive>',
+                (el, attrs: IAttributes) => {
+                    attrs.$set("attr", "false", false);
+                    expect(el.attr("attr")).toEqual("true");
+                }
+            );
+        });
+
+        it("shares attributes between directives", () => {
+            var attrs1, attrs2;
+            var injector = makeInjectorWithDirectives({
+                myDir() {
+                    return {
+                        compile(element, attrs) {
+                            attrs1 = attrs;
+                        }
+                    }
+                },
+                myOtherDir() {
+                    return {
+                        compile(element, attrs) {
+                            attrs2 = attrs;
+                        }
+                    }
+                }
+            });
+            injector.invoke(function ($compile: ICompileService) {
+                var el = $('<div my-dir my-other-dir></div>');
+                $compile(el);
+                expect(attrs1).toBe(attrs2);
+            });
+        });
+        //Setting Boolean Properties
+        it("sets prop for boolean attributes", () => {
+             registerAndCompile(
+                '<input my-directive>',
+                (el, attrs: IAttributes) => {
+                    attrs.$set("disabled", true);
+                    expect(el.prop("disabled")).toBe(true);
+                }
+            );
+        });
+        it("sets prop for boolean attributes even when not flushing", () => {
+             registerAndCompile(
+                '<input my-directive>',
+                (el, attrs: IAttributes) => {
+                    attrs.$set("disabled", true, false);
+                    expect(el.prop("disabled")).toBe(true);
+                }
+            );
+        });
+        //Denormalizing Attribute Names for The DOM
+
+        it("denormailzes attribute name when explicitly given", () => {
+            registerAndCompile(
+                '<my-directive some-attribute="42">',
+                (el, attrs: IAttributes) => {
+                    attrs.$set("someAttribute", 43, true, "some-attribute");
+                    expect(el.attr("some-attribute")).toEqual("43");
+                }
+            );
+        });
+        
+        it("denormailzes attribute by snake-casing", () => {
+            registerAndCompile(
+                '<my-directive some-attribute="42">',
+                (el, attrs: IAttributes) => {
+                    attrs.$set("someAttribute", 43);
+                    expect(el.attr("some-attribute")).toEqual("43");
+                }
+            );
+        });
+
+        it("denormalizes attribute by using original attribute name", () => {
+            registerAndCompile(
+                '<my-directive x-some-attribute="42">',
+                (el, attrs: IAttributes) => {
+                    attrs.$set("someAttribute", 43);
+                    expect(el.attr("x-some-attribute")).toEqual("43");
+                }
+            );
+        });
+        
+        it("does not use ng-attr- perfix in denormalized names", () => {
+            registerAndCompile(
+                '<my-directive ng-attr-some-attribute="42">',
+                (el, attrs: IAttributes) => {
+                    attrs.$set("someAttribute", 43);
+                    expect(el.attr("some-attribute")).toEqual("43");
+                }
+            );
+        });
+        
+        it("uses new attribute name after once given", () => {
+            registerAndCompile(
+                '<my-directive x-some-attribute="42">',
+                (el, attrs: IAttributes) => {
+                    attrs.$set("someAttribute", 43, true, "some-attribute");
+                    attrs.$set("someAttribute", 44);
+
+                    expect(el.attr("some-attribute")).toEqual("44");
+                    expect(el.attr("x-some-attribute")).toEqual("42");
+                }
+            );
+        });
+        //Observing Attributes
     });
 });
