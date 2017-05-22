@@ -235,5 +235,5 @@ interface IPromiseState {
     pending?: [IDeferred<any>, (value: any) => any, (value: any) => any, (value: any) => any][];
 }
 
-//738
-//Observing Attributes
+//748
+//Adding Comment Directives As Attributes

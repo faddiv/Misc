@@ -1,5 +1,5 @@
 import * as _ from "lodash";
-import { ICompileProvider, IDirectiveFactory, auto, Injectable, IDirective, IAttributes } from "angular";
+import { ICompileProvider, IDirectiveFactory, auto, Injectable, IDirective, IAttributes, IScope } from "angular";
 import { IDirectiveInternal } from "./angularInterfaces";
 
 "use strict";
@@ -67,9 +67,12 @@ export default function $CompileProvider($provide: auto.IProvideService) {
         }
     };
 
-    this.$get = ["$injector", function ($injector: auto.IInjectorService) {
+    this.$get = ["$injector", "$rootScope", function ($injector: auto.IInjectorService, $rootScope: IScope) {
         class Attributes implements IAttributes {
             $attr: Object
+            private $$observers: {
+                [name: string]: ((value?: any) => any)[]
+            };
             constructor(private $$element: JQuery) {
                 this.$attr = {};
             }
@@ -96,8 +99,31 @@ export default function $CompileProvider($provide: auto.IProvideService) {
                 if (writeAttr !== false) {
                     this.$$element.attr(attrName, value);
                 }
+
+                if (this.$$observers) {
+                    _.forEach(this.$$observers[key], function (observer) {
+                        try {
+                            observer(value);
+                        } catch (e) {
+                            console.log(e);
+                        }
+                    });
+                }
             }
-            $observe<T>(name: string, fn: (value?: T) => any): Function { return undefined; }
+            $observe<T>(key: string, fn: (value?: T) => any): Function {
+                this.$$observers = this.$$observers || Object.create(null);
+                this.$$observers[key] = this.$$observers[key] || [];
+                this.$$observers[key].push(fn);
+                $rootScope.$evalAsync(() => {
+                    fn(this[key]);
+                })
+                return () => {
+                    var index = this.$$observers[key].indexOf(fn);
+                    if (index >= 0) {
+                        this.$$observers[key].splice(index, 1);
+                    }
+                };
+            }
         }
         function Attributes2(element: Element) {
             this.$$element = element;
@@ -118,6 +144,7 @@ export default function $CompileProvider($provide: auto.IProvideService) {
         }
 
         function collectDirectives(node: HTMLElement, attrs: IAttributes): IDirectiveInternal[] {
+            var match;
             var directives: IDirectiveInternal[] = [];
             if (node.nodeType === Node.ELEMENT_NODE) {
                 var normalizedNodeName = directiveNormalize(nodeName(node).toLocaleLowerCase());
@@ -153,12 +180,18 @@ export default function $CompileProvider($provide: auto.IProvideService) {
                         }
                     }
                 });
-                _.forEach(node.classList, function (cls) {
-                    var normalizedClassName = directiveNormalize(cls);
-                    addDirective(directives, normalizedClassName, "C");
-                });
+                var className = node.className;
+                if (_.isString(className) && !_.isEmpty(className)) {
+                    while ((match = /([\d\w\-_]+)(?:\:([^;]+))?;?/.exec(className))) {
+                        var normalizedClassName = directiveNormalize(match[1]);
+                        if (addDirective(directives, normalizedClassName, "C")) {
+                            attrs[normalizedClassName] = match[2] ? match[2].trim() : undefined;
+                        }
+                        className = className.substr(match.index + match[0].length);
+                    }
+                }
             } else if (node.nodeType === Node.COMMENT_NODE) {
-                var match = /^\s*directive\:\s*([\d\w\-_]+)/.exec(node.nodeValue);
+                match = /^\s*directive\:\s*([\d\w\-_]+)/.exec(node.nodeValue);
                 if (match) {
                     addDirective(directives, directiveNormalize(match[1]), "M");
                 }
@@ -184,7 +217,8 @@ export default function $CompileProvider($provide: auto.IProvideService) {
             return a.index - b.index;
         }
 
-        function addDirective(directives: IDirective[], name: string, mode: string, attrStartName?: string, attrEndName?: string) {
+        function addDirective(directives: IDirective[], name: string, mode: string, attrStartName?: string, attrEndName?: string): IDirective {
+            var match: IDirective;
             if (hasDirectives.hasOwnProperty(name)) {
                 var foundDirectives = $injector.get<IDirective[]>(name + "Directive");
                 var applicableDirectives = _.filter(foundDirectives, function (dir) {
@@ -198,8 +232,10 @@ export default function $CompileProvider($provide: auto.IProvideService) {
                         });
                     }
                     directives.push(directive);
+                    match = directive;
                 });
             }
+            return match
         }
 
         function applyDirectivesToNode(directives: IDirectiveInternal[], compileNode: HTMLElement, attrs: IAttributes) {

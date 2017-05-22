@@ -146,21 +146,23 @@ describe("$compile", () => {
                 });
             });
             //Applying Directives to Classes
-            it("compiles class directives with " + prefix + delim + " prefix", () => {
-                var injector = makeInjectorWithDirectives("myDirective", function () {
-                    return {
-                        restrict: 'EACM',
-                        compile(element: JQuery) {
-                            element.data("hasCompiled", true);
-                        }
-                    };
+            if (delim != ":") {
+                it("compiles class directives with " + prefix + delim + " prefix", () => {
+                    var injector = makeInjectorWithDirectives("myDirective", function () {
+                        return {
+                            restrict: 'EACM',
+                            compile(element: JQuery) {
+                                element.data("hasCompiled", true);
+                            }
+                        };
+                    });
+                    injector.invoke(function ($compile: ICompileService) {
+                        var el = $('<div class="' + prefix + delim + 'my-directive"></div>');
+                        $compile(el);
+                        expect(el.data("hasCompiled")).toBe(true);
+                    });
                 });
-                injector.invoke(function ($compile: ICompileService) {
-                    var el = $('<div class="' + prefix + delim + 'my-directive"></div>');
-                    $compile(el);
-                    expect(el.data("hasCompiled")).toBe(true);
-                });
-            });
+            }
         });
     });
     //Applying Directives to Attributes

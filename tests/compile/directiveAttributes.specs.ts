@@ -2,7 +2,7 @@
 import * as _ from "lodash";
 import { publishExternalAPI } from '../../src/angular_public';
 import { createInjector } from '../../src/injector';
-import { IAngularStatic, IDirectiveFactory, IModule, ICompileProvider, ICompileService, IAttributes } from "angular";
+import { IAngularStatic, IDirectiveFactory, IModule, ICompileProvider, ICompileService, IAttributes, IScope } from "angular";
 import $ from "jquery";
 
 describe("$compile", () => {
@@ -27,7 +27,7 @@ describe("$compile", () => {
 
     describe("attributes", () => {
 
-        function registerAndCompile(domString: string, callback: (el: JQuery, givenAttrs: IAttributes) => void, dirName = "myDirective") {
+        function registerAndCompile(domString: string, callback: (el: JQuery, givenAttrs: IAttributes, $rootScope: IScope) => void, dirName = "myDirective") {
             var givenAttrs: IAttributes;
             var injector = makeInjectorWithDirectives(dirName, function () {
                 return {
@@ -37,11 +37,11 @@ describe("$compile", () => {
                     }
                 }
             });
-            injector.invoke(function ($compile: ICompileService) {
+            injector.invoke(function ($compile: ICompileService, $rootScope: IScope) {
                 var el = $(domString);
                 $compile(el);
 
-                callback(el, givenAttrs)
+                callback(el, givenAttrs, $rootScope);
             });
         }
 
@@ -150,7 +150,7 @@ describe("$compile", () => {
         });
         //Setting Boolean Properties
         it("sets prop for boolean attributes", () => {
-             registerAndCompile(
+            registerAndCompile(
                 '<input my-directive>',
                 (el, attrs: IAttributes) => {
                     attrs.$set("disabled", true);
@@ -159,7 +159,7 @@ describe("$compile", () => {
             );
         });
         it("sets prop for boolean attributes even when not flushing", () => {
-             registerAndCompile(
+            registerAndCompile(
                 '<input my-directive>',
                 (el, attrs: IAttributes) => {
                     attrs.$set("disabled", true, false);
@@ -178,7 +178,7 @@ describe("$compile", () => {
                 }
             );
         });
-        
+
         it("denormailzes attribute by snake-casing", () => {
             registerAndCompile(
                 '<my-directive some-attribute="42">',
@@ -198,7 +198,7 @@ describe("$compile", () => {
                 }
             );
         });
-        
+
         it("does not use ng-attr- perfix in denormalized names", () => {
             registerAndCompile(
                 '<my-directive ng-attr-some-attribute="42">',
@@ -208,7 +208,7 @@ describe("$compile", () => {
                 }
             );
         });
-        
+
         it("uses new attribute name after once given", () => {
             registerAndCompile(
                 '<my-directive x-some-attribute="42">',
@@ -222,5 +222,93 @@ describe("$compile", () => {
             );
         });
         //Observing Attributes
+        it("calls observer immediately when attribute is $set", () => {
+            registerAndCompile(
+                '<my-directive some-attribute="42">',
+                (el, attrs: IAttributes) => {
+                    var gotValue;
+                    attrs.$observe("someAttribute", value => {
+                        gotValue = value;
+                    });
+
+                    attrs.$set("someAttribute", "43");
+
+                    expect(gotValue).toEqual("43");
+                }
+            );
+        });
+
+        it("calls observer on next $digest after registration", () => {
+            registerAndCompile(
+                '<my-directive some-attribute="42">',
+                (el, attrs: IAttributes, $rootScope: IScope) => {
+                    var gotValue;
+                    attrs.$observe("someAttribute", value => {
+                        gotValue = value;
+                    });
+
+                    $rootScope.$digest();
+
+                    expect(gotValue).toEqual("42");
+                }
+            );
+        });
+
+        it("lets observers be deregistered", () => {
+            registerAndCompile(
+                '<my-directive some-attribute="42">',
+                (el, attrs: IAttributes) => {
+                    var gotValue;
+                    var remove = attrs.$observe("someAttribute", value => {
+                        gotValue = value;
+                    });
+
+                    attrs.$set("someAttribute", "43");
+                    expect(gotValue).toEqual("43");
+
+                    remove();
+                    attrs.$set("someAttribute", "44");
+                    expect(gotValue).toEqual("43");
+                }
+            );
+        });
+
+        //Providing Class Directives As Attributes
+        it("adds an attribute from a class directive", () => {
+            registerAndCompile(
+                '<div class="my-directive">',
+                (el, attrs: IAttributes) => {
+                    expect(attrs.hasOwnProperty("myDirective")).toBe(true);
+                }
+            );
+        });
+        
+        it("does not add attribute from class without a directive", () => {
+            registerAndCompile(
+                '<my-directive class="some-class">',
+                (el, attrs: IAttributes) => {
+                    expect(attrs.hasOwnProperty("myDirective")).toBe(false);
+                    expect(attrs.hasOwnProperty("someClass")).toBe(false);
+                }
+            );
+        });
+
+        it("supports values for class directive attributes", () => {
+            registerAndCompile(
+                '<div class="my-directive: my attribute value">',
+                (el, attrs: IAttributes) => {
+                    expect(attrs.myDirective).toEqual("my attribute value");
+                }
+            );
+        });
+        
+        it("terminates class directive attribute value at semicolon", () => {
+            registerAndCompile(
+                '<div class="my-directive: my attribute value; some-other-class">',
+                (el, attrs: IAttributes) => {
+                    expect(attrs.myDirective).toEqual("my attribute value");
+                }
+            );
+        });
     });
 });
