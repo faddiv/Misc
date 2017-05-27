@@ -1,5 +1,5 @@
 import * as _ from "lodash";
-import { ICompileProvider, IDirectiveFactory, auto, Injectable, IDirective, IAttributes, IScope } from "angular";
+import { ICompileProvider, IDirectiveFactory, auto, Injectable, IDirective, IAttributes, IScope, ITemplateLinkingFunction } from "angular";
 import { IDirectiveInternal } from "./angularInterfaces";
 
 "use strict";
@@ -77,9 +77,24 @@ export default function $CompileProvider($provide: auto.IProvideService) {
                 this.$attr = {};
             }
             $normalize(name: string): string { return undefined; }
-            $addClass(classVal: string): void { return undefined; }
-            $removeClass(classVal: string): void { return undefined; }
-            $updateClass(newClasses: string, oldClasses: string): void { return undefined; }
+            $addClass(classVal: string): void {
+                this.$$element.addClass(classVal);
+            }
+            $removeClass(classVal: string): void {
+                this.$$element.removeClass(classVal);
+            }
+            $updateClass(newClassVal: string, oldClassVal: string): void {
+                var newClasses = newClassVal.split(/\s+/);
+                var oldClasses = oldClassVal.split(/\s+/);
+                var addedClasses = _.difference(newClasses, oldClasses);
+                var removedClasses = _.difference(oldClasses, newClasses);
+                if (addedClasses.length) {
+                    this.$addClass(addedClasses.join(" "));
+                }
+                if (removedClasses.length) {
+                    this.$removeClass(removedClasses.join(" "));
+                }
+            }
             $set(key: string, value: any, writeAttr?: boolean, attrName?: string): void {
                 this[key] = value;
                 if (isBooleanAttribute(this.$$element[0], key)) {
@@ -128,19 +143,41 @@ export default function $CompileProvider($provide: auto.IProvideService) {
         function Attributes2(element: Element) {
             this.$$element = element;
         }
-        function compile($compileNodes: JQuery) {
-            return compileNodes($compileNodes);
+        function compile($compileNodes: JQuery): ITemplateLinkingFunction {
+            var compositeLinkFn = compileNodes($compileNodes);
+
+            return <any>function publicLinkFn(scope: IScope) {
+                $compileNodes.data("$scope", scope);
+                compositeLinkFn(scope, $compileNodes);
+            };
         }
 
-        function compileNodes($compileNodes: JQuery) {
-            _.forEach($compileNodes, function (node: HTMLElement) {
+        function compileNodes($compileNodes: JQuery): ITemplateLinkingFunction {
+            var linkFns = [];
+            _.forEach($compileNodes, function (node: HTMLElement, i: number) {
                 var attrs = new Attributes($(node));
                 var directives = collectDirectives(node, attrs);
-                var terminal = applyDirectivesToNode(directives, node, attrs);
-                if (!terminal && node.childNodes && node.childNodes.length) {
+                var nodeLinkFn;
+                if (directives.length) {
+                    nodeLinkFn = applyDirectivesToNode(directives, node, attrs);
+                }
+                if (!nodeLinkFn || !nodeLinkFn.terminal
+                    && node.childNodes && node.childNodes.length) {
                     compileNodes(<any>node.childNodes);
                 }
+                if (nodeLinkFn) {
+                    linkFns.push({
+                        nodeLinkFn: nodeLinkFn,
+                        idx: i
+                    });
+                }
             });
+            function compositeLinkFn(scope: IScope, linkNodes: ITemplateLinkingFunction) {
+                _.forEach(linkFns, function (linkFn) {
+                    linkFn.nodeLinkFn(scope, linkNodes[linkFn.idx]);
+                })
+            };
+            return compositeLinkFn;
         }
 
         function collectDirectives(node: HTMLElement, attrs: IAttributes): IDirectiveInternal[] {
@@ -191,9 +228,12 @@ export default function $CompileProvider($provide: auto.IProvideService) {
                     }
                 }
             } else if (node.nodeType === Node.COMMENT_NODE) {
-                match = /^\s*directive\:\s*([\d\w\-_]+)/.exec(node.nodeValue);
+                match = /^\s*directive\:\s*([\d\w\-_]+)\s*(.*)$/.exec(node.nodeValue);
                 if (match) {
-                    addDirective(directives, directiveNormalize(match[1]), "M");
+                    var normalizedName = directiveNormalize(match[1]);
+                    if (addDirective(directives, normalizedName, "M")) {
+                        attrs[normalizedName] = match[2] ? match[2].trim() : undefined;
+                    }
                 }
             }
             directives.sort(byPriority);
@@ -242,6 +282,7 @@ export default function $CompileProvider($provide: auto.IProvideService) {
             var $compileNode = $(compileNode);
             var terminalPriority = -Number.MAX_VALUE;
             var terminal = false;
+            var linkFns = [];
             _.forEach(directives, function (directive) {
                 if (directive.$$start) {
                     $compileNode = groupScan(compileNode, directive.$$start, directive.$$end);
@@ -250,14 +291,25 @@ export default function $CompileProvider($provide: auto.IProvideService) {
                     return false;
                 }
                 if (directive.compile) {
-                    directive.compile($compileNode, attrs, undefined);
+                    var linkFn = directive.compile($compileNode, attrs, undefined);
+                    if (linkFn) {
+                        linkFns.push(linkFn);
+                    }
                 }
                 if (directive.terminal) {
                     terminal = true;
                     terminalPriority = directive.priority;
                 }
             });
-            return terminal;
+
+            function nodeLinkFn(scope: IScope, linkNode) {
+                _.forEach(linkFns, function (linkFn) {
+                    var $element = $(linkNode);
+                    linkFn(scope, $element, attrs);
+                });
+            }
+            nodeLinkFn.terminal = terminal;
+            return nodeLinkFn;
         }
 
         function groupScan(node: HTMLElement, startAttr: string, endAttr: string) {

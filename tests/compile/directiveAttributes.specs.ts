@@ -310,5 +310,48 @@ describe("$compile", () => {
                 }
             );
         });
+
+        it("adds an attribute with a value from a comment directive", () => {
+            registerAndCompile(
+                '<!-- directive: my-directive and the attribute value -->',
+                (el, attrs: IAttributes) => {
+                    expect(attrs.hasOwnProperty("myDirective")).toBe(true);
+                    expect(attrs.myDirective).toEqual("and the attribute value");
+                }
+            );
+        });
+
+        it("allows adding classes", () => {
+            registerAndCompile(
+                '<my-directive>',
+                (el, attrs: IAttributes) => {
+                    attrs.$addClass("some-class");
+                    expect(el.hasClass("some-class")).toBe(true);
+                }
+            );
+        });
+
+        it("allows removing classes", () => {
+            registerAndCompile(
+                '<my-directive class="some-class">',
+                (el, attrs: IAttributes) => {
+                    attrs.$removeClass("some-class");
+                    expect(el.hasClass("some-class")).toBe(false);
+                }
+            );
+        });
+        
+        it("allows updating classes", () => {
+            registerAndCompile(
+                '<my-directive class="one three four">',
+                (el, attrs: IAttributes) => {
+                    attrs.$updateClass("one two three", "one three four");
+                    expect(el.hasClass("one")).toBe(true);
+                    expect(el.hasClass("two")).toBe(true);
+                    expect(el.hasClass("three")).toBe(true);
+                    expect(el.hasClass("four")).toBe(false);
+                }
+            );
+        });
     });
 });
