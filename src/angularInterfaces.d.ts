@@ -235,5 +235,5 @@ interface IPromiseState {
     pending?: [IDeferred<any>, (value: any) => any, (value: any) => any, (value: any) => any][];
 }
 
-//762
-//Plain Directive Link Functions
+//780
+//Isolate Scopes

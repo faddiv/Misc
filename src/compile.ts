@@ -53,6 +53,9 @@ export default function $CompileProvider($provide: auto.IProvideService) {
                         var directive: IDirectiveInternal = $injector.invoke(factory);
                         directive.restrict = directive.restrict || "EA";
                         directive.priority = directive.priority || 0;
+                        if (directive.link && !directive.compile) {
+                            directive.compile = _.constant(directive.link);
+                        }
                         directive.name = directive.name || name;
                         directive.index = i;
                         return directive;
@@ -73,7 +76,7 @@ export default function $CompileProvider($provide: auto.IProvideService) {
             private $$observers: {
                 [name: string]: ((value?: any) => any)[]
             };
-            constructor(private $$element: JQuery) {
+            constructor(public $$element: JQuery) {
                 this.$attr = {};
             }
             $normalize(name: string): string { return undefined; }
@@ -161,21 +164,47 @@ export default function $CompileProvider($provide: auto.IProvideService) {
                 if (directives.length) {
                     nodeLinkFn = applyDirectivesToNode(directives, node, attrs);
                 }
+                var childLinkFn;
                 if (!nodeLinkFn || !nodeLinkFn.terminal
                     && node.childNodes && node.childNodes.length) {
-                    compileNodes(<any>node.childNodes);
+                    childLinkFn = compileNodes(<any>node.childNodes);
                 }
-                if (nodeLinkFn) {
+                if (nodeLinkFn && nodeLinkFn.scope) {
+                    attrs.$$element.addClass("ng-scope");
+                }
+                if (nodeLinkFn || childLinkFn) {
                     linkFns.push({
                         nodeLinkFn: nodeLinkFn,
+                        childLinkFn: childLinkFn,
                         idx: i
                     });
                 }
             });
             function compositeLinkFn(scope: IScope, linkNodes: ITemplateLinkingFunction) {
+                var stableNodeList = [];
                 _.forEach(linkFns, function (linkFn) {
-                    linkFn.nodeLinkFn(scope, linkNodes[linkFn.idx]);
+                    var nodeIdx = linkFn.idx;
+                    stableNodeList[nodeIdx] = linkNodes[nodeIdx];
                 })
+                _.forEach(linkFns, function (linkFn) {
+                    var node = stableNodeList[linkFn.idx];
+                    if (linkFn.nodeLinkFn) {
+                        if (linkFn.nodeLinkFn.scope) {
+                            scope = scope.$new();
+                            $(node).data("$scope", scope);
+                        }
+                        linkFn.nodeLinkFn(
+                            linkFn.childLinkFn,
+                            scope,
+                            node
+                        );
+                    } else {
+                        linkFn.childLinkFn(
+                            scope,
+                            node.childNodes
+                        );
+                    }
+                });
             };
             return compositeLinkFn;
         }
@@ -282,7 +311,24 @@ export default function $CompileProvider($provide: auto.IProvideService) {
             var $compileNode = $(compileNode);
             var terminalPriority = -Number.MAX_VALUE;
             var terminal = false;
-            var linkFns = [];
+            var preLinks = [];
+            var postLinks = [];
+            var newScopeDirective: IDirectiveInternal;
+
+            function addLinkFns(preLinkFn, postLinkFn, attrStart, attrEnd) {
+                if (preLinkFn) {
+                    if (attrStart) {
+                        preLinkFn = groupElementsLinkFnWrapper(preLinkFn, attrStart, attrEnd);
+                    }
+                    preLinks.push(preLinkFn);
+                }
+                if (postLinkFn) {
+                    if (attrStart) {
+                        postLinkFn = groupElementsLinkFnWrapper(postLinkFn, attrStart, attrEnd);
+                    }
+                    postLinks.push(postLinkFn);
+                }
+            }
             _.forEach(directives, function (directive) {
                 if (directive.$$start) {
                     $compileNode = groupScan(compileNode, directive.$$start, directive.$$end);
@@ -290,10 +336,17 @@ export default function $CompileProvider($provide: auto.IProvideService) {
                 if (directive.priority < terminalPriority) {
                     return false;
                 }
+                if (directive.scope) {
+                    newScopeDirective = newScopeDirective || directive;
+                }
                 if (directive.compile) {
                     var linkFn = directive.compile($compileNode, attrs, undefined);
-                    if (linkFn) {
-                        linkFns.push(linkFn);
+                    var attrStart = directive.$$start;
+                    var attrEnd = directive.$$end;
+                    if (_.isFunction(linkFn)) {
+                        addLinkFns(null, linkFn, attrStart, attrEnd);
+                    } else if (linkFn) {
+                        addLinkFns(linkFn.pre, linkFn.post, attrStart, attrEnd);
                     }
                 }
                 if (directive.terminal) {
@@ -302,13 +355,21 @@ export default function $CompileProvider($provide: auto.IProvideService) {
                 }
             });
 
-            function nodeLinkFn(scope: IScope, linkNode) {
-                _.forEach(linkFns, function (linkFn) {
-                    var $element = $(linkNode);
+            function nodeLinkFn(childLinkFn, scope: IScope, linkNode: Element) {
+                var $element = $(linkNode);
+                _.forEach(preLinks, function (linkFn) {
+                    linkFn(scope, $element, attrs);
+                });
+                if (childLinkFn) {
+                    childLinkFn(scope, linkNode.childNodes)
+                }
+                _.forEachRight(postLinks, function (linkFn) {
                     linkFn(scope, $element, attrs);
                 });
             }
             nodeLinkFn.terminal = terminal;
+            nodeLinkFn.scope = newScopeDirective && newScopeDirective.scope;
+
             return nodeLinkFn;
         }
 
@@ -331,6 +392,13 @@ export default function $CompileProvider($provide: auto.IProvideService) {
                 nodes.push(node);
             }
             return $(nodes);
+        }
+
+        function groupElementsLinkFnWrapper(linkFn, attrStart, attrEnd) {
+            return function (scope, element, attrs) {
+                var group = groupScan(element[0], attrStart, attrEnd);
+                return linkFn(scope, group, attrs);
+            }
         }
 
         return compile;
