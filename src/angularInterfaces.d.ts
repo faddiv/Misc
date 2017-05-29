@@ -235,5 +235,5 @@ interface IPromiseState {
     pending?: [IDeferred<any>, (value: any) => any, (value: any) => any, (value: any) => any][];
 }
 
-//780
-//Isolate Scopes
+//784
+//As we saw, the isolate scope is not shared with other directives on the same element or child
