@@ -1,5 +1,6 @@
 // <reference path="../typings/modules/angular/index.d.ts" />
-import { IScope, IModule, IDeferred, IAngularStatic, ICompiledExpression, IFilterService, IParseService, auto, Injectable, IAngularEvent, IDirective } from "angular";
+import { IScope, IModule, IDeferred, IAngularStatic, ICompiledExpression, IFilterService, IParseService, auto, Injectable, IAngularEvent, IDirective, IDirectiveFactory, ITemplateLinkingFunction } from "angular";
+import { List } from "lodash";
 
 declare global {
     interface Window {
@@ -235,5 +236,31 @@ interface IPromiseState {
     pending?: [IDeferred<any>, (value: any) => any, (value: any) => any, (value: any) => any][];
 }
 
+interface IDirectivesContainer {
+    hasOwnProperty(name: string): boolean;
+    [name: string]: IDirectiveFactory[];
+}
+interface ICompositeLinkFunction {
+    (scope: IScope, linkNodes: JQuery);
+}
+
+interface ILinkFunctionInfo {
+    nodeLinkFn: INodeLinkFunction;
+    childLinkFn: IChildLinkFunction;
+    idx: number;
+}
+
+interface INodeLinkFunction {
+    (Elements: IChildLinkFunction, scope: IScope, node: any ): void;
+    scope: IScope;
+    terminal?: boolean;
+}
+
+interface IChildLinkFunction {
+    (scope: IScope, node: any ): void;
+    scope: IScope;
+}
+interface INodeList extends List<HTMLElement> {
+}
 //787
 //Isolate Attribute Bindings

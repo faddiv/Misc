@@ -1,6 +1,6 @@
 import * as _ from "lodash";
-import { ICompileProvider, IDirectiveFactory, auto, Injectable, IDirective, IAttributes, IScope, ITemplateLinkingFunction } from "angular";
-import { IDirectiveInternal } from "./angularInterfaces";
+import { ICompileProvider, IDirectiveFactory, auto, Injectable, IDirective, IAttributes, IScope, ITemplateLinkingFunction, ITranscludeFunction } from "angular";
+import { IDirectiveInternal, IDirectivesContainer, ICompositeLinkFunction, ILinkFunctionInfo, INodeLinkFunction, INodeList } from "./angularInterfaces";
 
 "use strict";
 
@@ -38,7 +38,7 @@ function isBooleanAttribute(node: Element, attrName: string) {
 
 export default function $CompileProvider($provide: auto.IProvideService) {
 
-    var hasDirectives: any = {};
+    var hasDirectives: IDirectivesContainer = {};
 
     this.directive = function (name: string | { [directiveName: string]: Injectable<IDirectiveFactory> }, directiveFactory?: IDirectiveFactory) {
         if (_.isString(name)) {
@@ -49,7 +49,7 @@ export default function $CompileProvider($provide: auto.IProvideService) {
                 hasDirectives[name] = [];
                 $provide.factory(name + "Directive", ["$injector", function ($injector: auto.IInjectorService) {
                     var factories = hasDirectives[name];
-                    return _.map(factories, function (factory: any, i: number) {
+                    return _.map(factories, function (factory: IDirectiveFactory, i: number) {
                         var directive: IDirectiveInternal = $injector.invoke(factory);
                         directive.restrict = directive.restrict || "EA";
                         directive.priority = directive.priority || 0;
@@ -143,10 +143,8 @@ export default function $CompileProvider($provide: auto.IProvideService) {
                 };
             }
         }
-        function Attributes2(element: Element) {
-            this.$$element = element;
-        }
-        function compile($compileNodes: JQuery): ITemplateLinkingFunction {
+        
+        function compile($compileNodes: JQuery): ITranscludeFunction {
             var compositeLinkFn = compileNodes($compileNodes);
 
             return <any>function publicLinkFn(scope: IScope) {
@@ -155,12 +153,12 @@ export default function $CompileProvider($provide: auto.IProvideService) {
             };
         }
 
-        function compileNodes($compileNodes: JQuery): ITemplateLinkingFunction {
-            var linkFns = [];
+        function compileNodes($compileNodes: INodeList): ICompositeLinkFunction {
+            var linkFns: ILinkFunctionInfo[] = [];
             _.forEach($compileNodes, function (node: HTMLElement, i: number) {
                 var attrs = new Attributes($(node));
                 var directives = collectDirectives(node, attrs);
-                var nodeLinkFn;
+                var nodeLinkFn: INodeLinkFunction;
                 if (directives.length) {
                     nodeLinkFn = applyDirectivesToNode(directives, node, attrs);
                 }
@@ -270,7 +268,7 @@ export default function $CompileProvider($provide: auto.IProvideService) {
         }
         function directiveIsMultiElement(name: string) {
             if (hasDirectives.hasOwnProperty(name)) {
-                var directives = $injector.get(name + "Directive");
+                var directives = $injector.get<IDirective>(name + "Directive");
                 return _.some(directives, { multiElement: true });
             }
             return false;
@@ -307,7 +305,7 @@ export default function $CompileProvider($provide: auto.IProvideService) {
             return match
         }
 
-        function applyDirectivesToNode(directives: IDirectiveInternal[], compileNode: HTMLElement, attrs: IAttributes) {
+        function applyDirectivesToNode(directives: IDirectiveInternal[], compileNode: HTMLElement, attrs: IAttributes): INodeLinkFunction {
             var $compileNode = $(compileNode);
             var terminalPriority = -Number.MAX_VALUE;
             var terminal = false;
