@@ -332,6 +332,7 @@ export default function $CompileProvider($provide: auto.IProvideService) {
                     postLinks.push(postLinkFn);
                 }
             }
+
             _.forEach(directives, function (directive) {
                 if (directive.$$start) {
                     $compileNode = groupScan(compileNode, directive.$$start, directive.$$end);
@@ -341,8 +342,14 @@ export default function $CompileProvider($provide: auto.IProvideService) {
                 }
                 if (directive.scope) {
                     if (_.isObject(directive.scope)) {
+                        if (newIsolateScopeDirective || newScopeDirective) {
+                            throw "Multiple directives asking for new/inherited scope";
+                        }
                         newIsolateScopeDirective = directive;
                     } else {
+                        if (newIsolateScopeDirective) {
+                            throw "Multiple directives asking for new/inherited scope";
+                        }
                         newScopeDirective = newScopeDirective || directive;
                     }
                 }
@@ -369,6 +376,8 @@ export default function $CompileProvider($provide: auto.IProvideService) {
                 var isolateScope: IScope;
                 if (newIsolateScopeDirective) {
                     isolateScope = scope.$new(true);
+                    $element.addClass("ng-isolate-scope");
+                    $element.data("$isolateScope", isolateScope);
                 }
                 _.forEach(preLinks, function (linkFn) {
                     linkFn(linkFn.isolateScope ? isolateScope : scope, $element, attrs);

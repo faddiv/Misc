@@ -91,4 +91,70 @@ describe("$compile", () => {
             expect(givenScope).toBe($rootScope);
         });
     });
+
+    it("does not allow two isolate scope directives on an element", () => {
+        var givenScope: IScope;
+        var injector = makeInjectorWithDirectives({
+            firstDirective() {
+                return {
+                    scope: {}
+                };
+            },
+            secondDirective() {
+                return {
+                    scope: {}
+                };
+            }
+        });
+        injector.invoke(function ($compile: ICompileService, $rootScope: IScope) {
+            var el = $('<div first-directive second-directive></div>');
+            expect(() => {
+                $compile(el);
+            }).toThrow();
+        });
+    });
+
+    it("does not allow both isolate and inherited scopes on an element", () => {
+        var givenScope: IScope;
+        var injector = makeInjectorWithDirectives({
+            firstDirective() {
+                return {
+                    scope: {}
+                };
+            },
+            secondDirective() {
+                return {
+                    scope: true
+                };
+            }
+        });
+        injector.invoke(function ($compile: ICompileService, $rootScope: IScope) {
+            var el = $('<div first-directive second-directive></div>');
+            expect(() => {
+                $compile(el);
+            }).toThrow();
+        });
+    });
+
+    it("adds class and data for element with isolated scope", () => {
+        var givenScope: IScope;
+        var injector = makeInjectorWithDirectives("myDirective", function () {
+            return {
+                scope: {},
+                link(scope: IScope, element: JQuery[], attrs: IAttributes) {
+                    givenScope = scope;
+                }
+            };
+        });
+        injector.invoke(function ($compile: ICompileService, $rootScope: IScope) {
+            var el = $('<div my-directive></div>');
+            var linkFn = $compile(el);
+            linkFn($rootScope);
+            expect(el.hasClass("ng-isolate-scope")).toBe(true);
+            expect(el.hasClass("ng-scope")).toBe(false);
+            expect(el.data("$isolateScope")).toBe(givenScope);
+            expect(el.data("$scope")).toBeUndefined;
+        });
+    });
+
 });
