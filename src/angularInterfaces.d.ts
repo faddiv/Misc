@@ -228,6 +228,7 @@ interface IDirectiveInternal extends IDirective {
     name: string;
     $$start: string;
     $$end: string;
+    $$isolateBindings: IIsolateBindingContainer;
 }
 
 interface IPromiseState {
@@ -235,10 +236,20 @@ interface IPromiseState {
     status?: number;
     pending?: [IDeferred<any>, (value: any) => any, (value: any) => any, (value: any) => any][];
 }
+type BindingType = "@";
+interface IIsolateBinding {
+    mode: BindingType;
+    attrName: string;
+}
 
-interface IDirectivesContainer {
+type IIsolateBindingContainer   = ISimpleContainer<IIsolateBinding> & IHasOwnProperty;
+
+type IDirectivesContainer = ISimpleContainer<IDirectiveFactory[]> & IHasOwnProperty;
+interface ISimpleContainer<T> {
+    [name: string]: T;
+}
+interface IHasOwnProperty {
     hasOwnProperty(name: string): boolean;
-    [name: string]: IDirectiveFactory[];
 }
 interface ICompositeLinkFunction {
     (scope: IScope, linkNodes: JQuery);
@@ -252,7 +263,7 @@ interface ILinkFunctionInfo {
 
 interface INodeLinkFunction {
     (Elements: IChildLinkFunction, scope: IScope, node: any ): void;
-    scope: IScope;
+    scope?: any;
     terminal?: boolean;
 }
 
@@ -262,5 +273,5 @@ interface IChildLinkFunction {
 }
 interface INodeList extends List<HTMLElement> {
 }
-//787
-//Isolate Attribute Bindings
+//792
+//One-Way Data Binding

@@ -1,6 +1,6 @@
 import * as _ from "lodash";
 import { ICompileProvider, IDirectiveFactory, auto, Injectable, IDirective, IAttributes, IScope, ITemplateLinkingFunction, ITranscludeFunction } from "angular";
-import { IDirectiveInternal, IDirectivesContainer, ICompositeLinkFunction, ILinkFunctionInfo, INodeLinkFunction, INodeList } from "./angularInterfaces";
+import { IDirectiveInternal, IDirectivesContainer, ICompositeLinkFunction, ILinkFunctionInfo, INodeLinkFunction, INodeList, IIsolateBindingContainer } from "./angularInterfaces";
 
 "use strict";
 
@@ -35,6 +35,17 @@ function directiveNormalize(name: string) {
 function isBooleanAttribute(node: Element, attrName: string) {
     return BOOLEAN_ATTRS[attrName] && BOOLEAN_ELEMENTS[node.nodeName];
 }
+function parseIsolateBindings(scope: any): IIsolateBindingContainer {
+    var bindings: IIsolateBindingContainer = {};
+    _.forEach(scope, function (definition, scopeName) {
+        var match = definition.match(/\s*@\s*(\w*)\s*/);
+        bindings[scopeName] = {
+            mode: "@",
+            attrName: match[1] || scopeName
+        };
+    });
+    return bindings;
+}
 
 export default function $CompileProvider($provide: auto.IProvideService) {
 
@@ -55,6 +66,9 @@ export default function $CompileProvider($provide: auto.IProvideService) {
                         directive.priority = directive.priority || 0;
                         if (directive.link && !directive.compile) {
                             directive.compile = _.constant(directive.link);
+                        }
+                        if (_.isObject(directive.scope)) {
+                            directive.$$isolateBindings = parseIsolateBindings(directive.scope);
                         }
                         directive.name = directive.name || name;
                         directive.index = i;
@@ -143,7 +157,7 @@ export default function $CompileProvider($provide: auto.IProvideService) {
                 };
             }
         }
-        
+
         function compile($compileNodes: JQuery): ITranscludeFunction {
             var compositeLinkFn = compileNodes($compileNodes);
 
@@ -178,8 +192,8 @@ export default function $CompileProvider($provide: auto.IProvideService) {
                     });
                 }
             });
-            function compositeLinkFn(scope: IScope, linkNodes: ITemplateLinkingFunction) {
-                var stableNodeList = [];
+            function compositeLinkFn(scope: IScope, linkNodes: JQuery) {
+                var stableNodeList: HTMLElement[] = [];
                 _.forEach(linkFns, function (linkFn) {
                     var nodeIdx = linkFn.idx;
                     stableNodeList[nodeIdx] = linkNodes[nodeIdx];
@@ -203,7 +217,7 @@ export default function $CompileProvider($provide: auto.IProvideService) {
                         );
                     }
                 });
-            };
+            }
             return compositeLinkFn;
         }
 
@@ -368,7 +382,7 @@ export default function $CompileProvider($provide: auto.IProvideService) {
                 }
             });
 
-            function nodeLinkFn(childLinkFn, scope: IScope, linkNode: Element) {
+            let nodeLinkFn: INodeLinkFunction = (childLinkFn, scope: IScope, linkNode: Element) => {
                 var $element = $(linkNode);
 
                 var isolateScope: IScope;
@@ -376,6 +390,19 @@ export default function $CompileProvider($provide: auto.IProvideService) {
                     isolateScope = scope.$new(true);
                     $element.addClass("ng-isolate-scope");
                     $element.data("$isolateScope", isolateScope);
+                    _.forEach(newIsolateScopeDirective.$$isolateBindings, function (definition, scopeName) {
+                        var attrName = definition.attrName;
+                        switch (definition.mode) {
+                            case "@":
+                                attrs.$observe(attrName, function (newAttrValue) {
+                                    isolateScope[scopeName] = newAttrValue;
+                                });
+                                if (attrs[attrName]) {
+                                    isolateScope[scopeName] = attrs[attrName];
+                                }
+                                break;
+                        }
+                    })
                 }
                 _.forEach(preLinks, function (linkFn) {
                     linkFn(linkFn.isolateScope ? isolateScope : scope, $element, attrs);
