@@ -1,6 +1,6 @@
 import * as _ from "lodash";
 import { ICompileProvider, IDirectiveFactory, auto, Injectable, IDirective, IAttributes, IScope, ITemplateLinkingFunction, ITranscludeFunction } from "angular";
-import { IDirectiveInternal, IDirectivesContainer, ICompositeLinkFunction, ILinkFunctionInfo, INodeLinkFunction, INodeList, IIsolateBindingContainer } from "./angularInterfaces";
+import { IDirectiveInternal, IDirectivesContainer, ICompositeLinkFunction, ILinkFunctionInfo, INodeLinkFunction, INodeList, IIsolateBindingContainer, IParseService } from "./angularInterfaces";
 
 "use strict";
 
@@ -38,10 +38,11 @@ function isBooleanAttribute(node: Element, attrName: string) {
 function parseIsolateBindings(scope: any): IIsolateBindingContainer {
     var bindings: IIsolateBindingContainer = {};
     _.forEach(scope, function (definition, scopeName) {
-        var match = definition.match(/\s*@\s*(\w*)\s*/);
+        var match = definition.match(/\s*([@<])(\??)\s*(\w*)\s*/);
         bindings[scopeName] = {
-            mode: "@",
-            attrName: match[1] || scopeName
+            mode: match[1],
+            optional: match[2],
+            attrName: match[3] || scopeName
         };
     });
     return bindings;
@@ -84,7 +85,7 @@ export default function $CompileProvider($provide: auto.IProvideService) {
         }
     };
 
-    this.$get = ["$injector", "$rootScope", function ($injector: auto.IInjectorService, $rootScope: IScope) {
+    this.$get = ["$injector", "$parse", "$rootScope", function ($injector: auto.IInjectorService, $parse: IParseService, $rootScope: IScope) {
         class Attributes implements IAttributes {
             $attr: Object
             private $$observers: {
@@ -400,6 +401,16 @@ export default function $CompileProvider($provide: auto.IProvideService) {
                                 if (attrs[attrName]) {
                                     isolateScope[scopeName] = attrs[attrName];
                                 }
+                                break;
+                            case "<":
+                                if (definition.optional && !attrs[attrName])
+                                    break;
+                                var parentGet = $parse(attrs[attrName]);
+                                isolateScope[scopeName] = parentGet(scope);
+                                var unwatch = scope.$watch(parentGet, function (newValue) {
+                                    isolateScope[scopeName] = newValue;
+                                });
+                                isolateScope.$on("$destroy", unwatch);
                                 break;
                         }
                     })

@@ -1,4 +1,4 @@
-/// <reference path="../src/angular.ts" />
+import { IScopeInternal } from "../src/angularInterfaces";
 
 interface IScopeEx extends IScopeInternal {
 

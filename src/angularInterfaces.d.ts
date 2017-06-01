@@ -236,9 +236,10 @@ interface IPromiseState {
     status?: number;
     pending?: [IDeferred<any>, (value: any) => any, (value: any) => any, (value: any) => any][];
 }
-type BindingType = "@";
+type BindingType = "@" | "<";
 interface IIsolateBinding {
     mode: BindingType;
+    optional: boolean;
     attrName: string;
 }
 
@@ -273,5 +274,5 @@ interface IChildLinkFunction {
 }
 interface INodeList extends List<HTMLElement> {
 }
-//792
-//One-Way Data Binding
+//798
+//Two-Way Data Binding
