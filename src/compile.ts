@@ -1,6 +1,6 @@
 import * as _ from "lodash";
 import { ICompileProvider, IDirectiveFactory, auto, Injectable, IDirective, IAttributes, IScope, ITemplateLinkingFunction, ITranscludeFunction } from "angular";
-import { IDirectiveInternal, IDirectivesContainer, ICompositeLinkFunction, ILinkFunctionInfo, INodeLinkFunction, INodeList, IIsolateBindingContainer, IParseService } from "./angularInterfaces";
+import { IDirectiveInternal, IDirectivesContainer, ICompositeLinkFunction, ILinkFunctionInfo, INodeLinkFunction, INodeList, IIsolateBindingContainer, IParseService, ICompiledExpressionInternal } from "./angularInterfaces";
 
 "use strict";
 
@@ -38,11 +38,12 @@ function isBooleanAttribute(node: Element, attrName: string) {
 function parseIsolateBindings(scope: any): IIsolateBindingContainer {
     var bindings: IIsolateBindingContainer = {};
     _.forEach(scope, function (definition, scopeName) {
-        var match = definition.match(/\s*([@<])(\??)\s*(\w*)\s*/);
+        var match = definition.match(/\s*([@<&]|=(\*?))(\??)\s*(\w*)\s*/);
         bindings[scopeName] = {
-            mode: match[1],
-            optional: match[2],
-            attrName: match[3] || scopeName
+            mode: match[1][0],
+            collection: match[2] === "*",
+            optional: match[3],
+            attrName: match[4] || scopeName
         };
     });
     return bindings;
@@ -393,6 +394,8 @@ export default function $CompileProvider($provide: auto.IProvideService) {
                     $element.data("$isolateScope", isolateScope);
                     _.forEach(newIsolateScopeDirective.$$isolateBindings, function (definition, scopeName) {
                         var attrName = definition.attrName;
+                        var unwatch: () => void;
+                        var parentGet: ICompiledExpressionInternal;
                         switch (definition.mode) {
                             case "@":
                                 attrs.$observe(attrName, function (newAttrValue) {
@@ -405,12 +408,46 @@ export default function $CompileProvider($provide: auto.IProvideService) {
                             case "<":
                                 if (definition.optional && !attrs[attrName])
                                     break;
-                                var parentGet = $parse(attrs[attrName]);
+                                parentGet = $parse(attrs[attrName]);
                                 isolateScope[scopeName] = parentGet(scope);
-                                var unwatch = scope.$watch(parentGet, function (newValue) {
+                                unwatch = scope.$watch(parentGet, function (newValue) {
                                     isolateScope[scopeName] = newValue;
                                 });
                                 isolateScope.$on("$destroy", unwatch);
+                                break;
+                            case "=":
+                                if (definition.optional && !attrs[attrName])
+                                    break;
+                                parentGet = $parse(attrs[attrName]);
+                                var lastValue = isolateScope[scopeName] = parentGet(scope);
+                                var parentValueWatch = function () {
+                                    var parentValue = parentGet(scope);
+                                    if (isolateScope[scopeName] !== parentValue) {
+                                        if (parentValue !== lastValue) {
+                                            isolateScope[scopeName] = parentValue;
+                                        } else {
+                                            parentValue = isolateScope[scopeName];
+                                            parentGet.assign(scope, parentValue);
+                                        }
+                                    }
+                                    lastValue = parentValue;
+                                    return parentValue;
+                                };
+                                if (definition.collection) {
+                                    unwatch = scope.$watchCollection(attrs[attrName], parentValueWatch);
+                                } else {
+                                    unwatch = scope.$watch(parentValueWatch);
+                                }
+                                isolateScope.$on("$destroy", unwatch);
+                                break;
+                            case "&":
+                                var parentExpr = $parse(attrs[attrName]);
+                                if (parentExpr === _.noop && definition.optional) {
+                                    break;
+                                }
+                                isolateScope[scopeName] = function (locals) {
+                                    return parentExpr(scope, locals);
+                                }
                                 break;
                         }
                     })

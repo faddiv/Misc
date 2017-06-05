@@ -236,14 +236,15 @@ interface IPromiseState {
     status?: number;
     pending?: [IDeferred<any>, (value: any) => any, (value: any) => any, (value: any) => any][];
 }
-type BindingType = "@" | "<";
+type BindingType = "@" | "<" | "=" | "&";
 interface IIsolateBinding {
     mode: BindingType;
+    collection: boolean;
     optional: boolean;
     attrName: string;
 }
 
-type IIsolateBindingContainer   = ISimpleContainer<IIsolateBinding> & IHasOwnProperty;
+type IIsolateBindingContainer = ISimpleContainer<IIsolateBinding> & IHasOwnProperty;
 
 type IDirectivesContainer = ISimpleContainer<IDirectiveFactory[]> & IHasOwnProperty;
 interface ISimpleContainer<T> {
@@ -263,16 +264,16 @@ interface ILinkFunctionInfo {
 }
 
 interface INodeLinkFunction {
-    (Elements: IChildLinkFunction, scope: IScope, node: any ): void;
+    (Elements: IChildLinkFunction, scope: IScope, node: any): void;
     scope?: any;
     terminal?: boolean;
 }
 
 interface IChildLinkFunction {
-    (scope: IScope, node: any ): void;
+    (scope: IScope, node: any): void;
     scope: IScope;
 }
 interface INodeList extends List<HTMLElement> {
 }
-//798
-//Two-Way Data Binding
+//814
+//Controllers
