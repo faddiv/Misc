@@ -1344,8 +1344,7 @@ namespace angular {
         // Although the documentation doesn't state this, locals are optional
         <T>(controllerConstructor: new (...args: any[]) => T, locals?: any, later?: boolean, ident?: string): T;
         <T>(controllerConstructor: Function, locals?: IControllerLocals, later?: boolean, ident?: string): T;
-        <T>(controllerConstructor: Function, locals?: any, later?: boolean, ident?: string): T;
-        <T>(controllerName: string, locals?: any, later?: boolean, ident?: string): T;
+        <T>(controllerName: string | Injectable<IControllerConstructor>, locals?: any, later?: boolean, ident?: string): T;
     }
 
     interface IControllerProvider extends IServiceProvider {

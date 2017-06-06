@@ -141,5 +141,4 @@ describe("$controller", () => {
         expect(controller instanceof window["MyController"]).toBeDefined();
         delete window["MyController"];
     });
-    //Directive Controllers
 })

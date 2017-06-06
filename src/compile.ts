@@ -1,6 +1,6 @@
 import * as _ from "lodash";
-import { ICompileProvider, IDirectiveFactory, auto, Injectable, IDirective, IAttributes, IScope, ITemplateLinkingFunction, ITranscludeFunction } from "angular";
-import { IDirectiveInternal, IDirectivesContainer, ICompositeLinkFunction, ILinkFunctionInfo, INodeLinkFunction, INodeList, IIsolateBindingContainer, IParseService, ICompiledExpressionInternal } from "./angularInterfaces";
+import { ICompileProvider, IDirectiveFactory, auto, Injectable, IDirective, IAttributes, IScope, ITemplateLinkingFunction, ITranscludeFunction, IControllerService } from "angular";
+import { IDirectiveInternal, IDirectivesContainer, ICompositeLinkFunction, ILinkFunctionInfo, INodeLinkFunction, INodeList, IIsolateBindingContainer, IParseService, ICompiledExpressionInternal, IDirectiveInternalContainer } from "./angularInterfaces";
 
 "use strict";
 
@@ -86,7 +86,7 @@ export default function $CompileProvider($provide: auto.IProvideService) {
         }
     };
 
-    this.$get = ["$injector", "$parse", "$rootScope", function ($injector: auto.IInjectorService, $parse: IParseService, $rootScope: IScope) {
+    this.$get = ["$injector", "$parse", "$controller", "$rootScope", function ($injector: auto.IInjectorService, $parse: IParseService, $controller: IControllerService, $rootScope: IScope) {
         class Attributes implements IAttributes {
             $attr: Object
             private $$observers: {
@@ -329,6 +329,7 @@ export default function $CompileProvider($provide: auto.IProvideService) {
             var postLinks = [];
             var newScopeDirective: IDirectiveInternal;
             var newIsolateScopeDirective: IDirectiveInternal;
+            var controllerDirectives: IDirectiveInternalContainer;
 
             function addLinkFns(preLinkFn, postLinkFn, attrStart, attrEnd, isolateScope: boolean) {
                 if (preLinkFn) {
@@ -382,12 +383,22 @@ export default function $CompileProvider($provide: auto.IProvideService) {
                     terminal = true;
                     terminalPriority = directive.priority;
                 }
+                if (directive.controller) {
+                    controllerDirectives = controllerDirectives || {};
+                    controllerDirectives[directive.name] = directive;
+                }
             });
 
             let nodeLinkFn: INodeLinkFunction = (childLinkFn, scope: IScope, linkNode: Element) => {
                 var $element = $(linkNode);
-
                 var isolateScope: IScope;
+
+                if(controllerDirectives) {
+                    _.forEach(controllerDirectives, function(directive) { 
+                        $controller(directive.controller);
+                     })
+                }
+
                 if (newIsolateScopeDirective) {
                     isolateScope = scope.$new(true);
                     $element.addClass("ng-isolate-scope");

@@ -244,6 +244,8 @@ interface IIsolateBinding {
     attrName: string;
 }
 
+type IDirectiveInternalContainer = ISimpleContainer<IDirectiveInternal> & IHasOwnProperty;
+
 type IControllerContainer = ISimpleContainer<Function> & IHasOwnProperty;
 
 type IIsolateBindingContainer = ISimpleContainer<IIsolateBinding> & IHasOwnProperty;
@@ -277,5 +279,5 @@ interface IChildLinkFunction {
 }
 interface INodeList extends List<HTMLElement> {
 }
-//823
-//Directive Controllers
+//827
+//An interesting additional feature of directive-controller integration is that when you have 
