@@ -28,13 +28,14 @@ export function setupModuleLoader(w: Window) {
             requires: requires,
             constant: invokeLater("$provide", "constant", "unshift", invokeQueue),
             provider: invokeLater("$provide", "provider", "push", invokeQueue),
-            config: invokeLater("$injector", "invoke", "push", configBlocks),
             factory: invokeLater("$provide", "factory", "push", invokeQueue),
             value: invokeLater("$provide", "value", "push", invokeQueue),
             service: invokeLater("$provide", "service", "push", invokeQueue),
             decorator: invokeLater("$provide", "decorator", "push", invokeQueue),
             filter: invokeLater("$filterProvider", "register", "push", invokeQueue),
             directive: invokeLater("$compileProvider", "directive", "push", invokeQueue),
+            controller: invokeLater("$controllerProvider", "register", "push", invokeQueue),
+            config: invokeLater("$injector", "invoke", "push", configBlocks),
             run(fn: Injectable<Function>) {
                 moduleInstance._runBlocks.push(fn);
                 return moduleInstance;
@@ -42,7 +43,6 @@ export function setupModuleLoader(w: Window) {
             _invokeQueue: invokeQueue,
             _configBlocks: configBlocks,
             component: undefined,
-            controller: undefined,
             _runBlocks: []
         };
         if (configFn) {

@@ -244,6 +244,8 @@ interface IIsolateBinding {
     attrName: string;
 }
 
+type IControllerContainer = ISimpleContainer<Function> & IHasOwnProperty;
+
 type IIsolateBindingContainer = ISimpleContainer<IIsolateBinding> & IHasOwnProperty;
 
 type IDirectivesContainer = ISimpleContainer<IDirectiveFactory[]> & IHasOwnProperty;
@@ -275,5 +277,5 @@ interface IChildLinkFunction {
 }
 interface INodeList extends List<HTMLElement> {
 }
-//814
-//Controllers
+//823
+//Directive Controllers

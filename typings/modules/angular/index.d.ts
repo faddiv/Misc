@@ -1351,7 +1351,12 @@ namespace angular {
     interface IControllerProvider extends IServiceProvider {
         register(name: string, controllerConstructor: Function): void;
         register(name: string, dependencyAnnotatedConstructor: any[]): void;
+        register(controllers: IControllerRegistrations): void;
         allowGlobals(): void;
+    }
+
+    interface IControllerRegistrations {
+        [name: string]: Function | any[]
     }
 
     /**

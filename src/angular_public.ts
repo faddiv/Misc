@@ -3,6 +3,7 @@ import { default as filter } from './filter';
 import { default as parse } from './parse';
 import { default as Scope } from './Scope';
 import { default as compile } from './compile';
+import { default as controller} from './controller';
 import { $QProvider, $$QProvider } from './q';
 import { $HttpBackendProvider } from './http_backend';
 import { $HttpProvider, $HttpParamSerializerProvider, $HttpParamSerializerJQLikeProvider } from './http';
@@ -22,4 +23,5 @@ export function publishExternalAPI() {
     ngModule.provider("$httpParamSerializer",<any>$HttpParamSerializerProvider);
     ngModule.provider("$httpParamSerializerJQLike",<any>$HttpParamSerializerJQLikeProvider);
     ngModule.provider("$compile", <any>compile);
+    ngModule.provider("$controller", <any>controller);
 }
