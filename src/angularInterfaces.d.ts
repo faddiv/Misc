@@ -228,7 +228,12 @@ interface IDirectiveInternal extends IDirective {
     name: string;
     $$start: string;
     $$end: string;
-    $$isolateBindings: IIsolateBindingContainer;
+    $$bindings: IDirectiveBinding;
+}
+
+interface IDirectiveBinding {
+    bindToController?: IIsolateBindingContainer;
+    isolateScope?: IIsolateBindingContainer;
 }
 
 interface IPromiseState {
@@ -246,7 +251,7 @@ interface IIsolateBinding {
 
 type IDirectiveInternalContainer = ISimpleContainer<IDirectiveInternal> & IHasOwnProperty;
 
-type IControllerContainer = ISimpleContainer<Function> & IHasOwnProperty;
+type IControllerContainer = ISimpleContainer<ILateBoundController<any>> & IHasOwnProperty;
 
 type IIsolateBindingContainer = ISimpleContainer<IIsolateBinding> & IHasOwnProperty;
 
@@ -279,5 +284,10 @@ interface IChildLinkFunction {
 }
 interface INodeList extends List<HTMLElement> {
 }
-//827
-//An interesting additional feature of directive-controller integration is that when you have 
+
+interface ILateBoundController<T> {
+    (): T;
+    instance: T;
+}
+//847
+//Requiring Controllers

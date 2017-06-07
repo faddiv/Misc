@@ -4,6 +4,7 @@ import { publishExternalAPI } from '../../src/angular_public';
 import { createInjector } from '../../src/injector';
 import { IControllerService, auto, IControllerProvider } from "angular";
 import $ from "jquery";
+import { ILateBoundController } from "../../src/angularInterfaces";
 
 describe("$controller", () => {
     var injector: auto.IInjectorService;
@@ -140,5 +141,67 @@ describe("$controller", () => {
         expect(controller).toBeDefined();
         expect(controller instanceof window["MyController"]).toBeDefined();
         delete window["MyController"];
+    });
+
+    it("can return a semi-constructed controller", () => {
+        var injector = createInjector(["ng"]);
+        var $controller = injector.get("$controller");
+
+        class MyController {
+            myAttrWhenConstructed: any;
+            myAttr: any;
+            constructed: boolean;
+            constructor() {
+                this.constructed = true;
+                this.myAttrWhenConstructed = this.myAttr;
+            }
+        }
+
+        var controller = $controller<ILateBoundController<MyController> & MyController>(MyController, null, true);
+
+        expect(controller.constructed).toBeUndefined();
+        expect(controller.instance).toBeDefined();
+
+        controller.instance.myAttr = 42;
+        var actualController = controller();
+
+        expect(actualController.constructed).toBe(true);
+        expect(actualController.myAttrWhenConstructed).toBe(42);
+        expect(actualController instanceof MyController);
+    });
+
+    it("can return a semi-constructed controller when using array injection", () => {
+        var injector = createInjector(["ng", function ($provide) {
+            $provide.constant("aDep", 42);
+        }]);
+        var $controller = injector.get("$controller");
+
+        class MyController {
+            constructed: boolean;
+            constructor(public aDep) {
+                this.constructed = true;
+            }
+        }
+
+        var controller = $controller<ILateBoundController<MyController> & MyController>(["aDep", MyController], null, true);
+
+        expect(controller.constructed).toBeUndefined();
+        expect(controller.instance).toBeDefined();
+
+        var actualController = controller();
+
+        expect(actualController.constructed).toBe(true);
+        expect(actualController.aDep).toBe(42);
+        expect(actualController instanceof MyController);
+    });
+
+    it("can bind semi-constructed controller to scope", () => {
+        var injector = createInjector(["ng"]);
+        var $controller = injector.get("$controller");
+
+        function MyController() { }
+        var scope = { ctrl: undefined };
+        var controller = $controller<any>(MyController, { $scope: scope }, true, "ctrl");
+        expect(scope.ctrl).toBe(controller.instance);
     });
 })

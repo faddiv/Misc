@@ -67,7 +67,7 @@ describe("$compile", () => {
                 expect(controllerInvoked).toBe(true);
             });
         });
-        
+
         it("can be applied in the same element independent of each other", () => {
             var controllerInvoked;
             var otherControllerInvoked;
@@ -125,6 +125,203 @@ describe("$compile", () => {
                 var linkFn = $compile(el);
                 linkFn($rootScope);
                 expect(invocations).toBe(2);
+            });
+        });
+
+        it("can be aliased with @ when given in directive attribute", () => {
+            var controllerInvoked;
+            function MyController() {
+                controllerInvoked = true;
+            }
+            var injector = createInjector(["ng",
+                function ($controllerProvider: IControllerProvider, $compileProvider: ICompileProvider) {
+                    $controllerProvider.register("MyController", MyController);
+                    $compileProvider.directive("myDirective", function () {
+                        return {
+                            controller: "@"
+                        };
+                    });
+                }]);
+            injector.invoke(function ($compile: ICompileService, $rootScope: IScope) {
+                var el = $("<div my-directive='MyController'>");
+                var linkFn = $compile(el);
+                linkFn($rootScope);
+                expect(controllerInvoked).toBe(true);
+            });
+        });
+        //Locals in Directive Controllers
+        it("gets scope, element, and attrs through DI", () => {
+            var gotScope: IScope, gotElement: JQuery, gotAttrs: IAttributes;
+            function MyController($element: JQuery, $scope: IScope, $attrs: IAttributes) {
+                gotElement = $element;
+                gotScope = $scope;
+                gotAttrs = $attrs;
+            }
+            var injector = createInjector(["ng",
+                function ($controllerProvider: IControllerProvider, $compileProvider: ICompileProvider) {
+                    $controllerProvider.register("MyController", MyController);
+                    $compileProvider.directive("myDirective", function () {
+                        return {
+                            controller: "MyController"
+                        };
+                    });
+                }]);
+            injector.invoke(function ($compile: ICompileService, $rootScope: IScope) {
+                var el = $("<div my-directive an-attr='abc'>");
+                var linkFn = $compile(el);
+                linkFn($rootScope);
+                expect(gotElement[0]).toBe(el[0]);
+                expect(gotScope).toBe($rootScope);
+                expect(gotAttrs).toBeDefined();
+                expect(gotAttrs.anAttr).toEqual("abc");
+            });
+        });
+        //Attaching Directive Controllers on The Scope
+        it("can be attached on the scope", () => {
+            function MyController() { }
+            var injector = createInjector(["ng",
+                function ($controllerProvider: IControllerProvider, $compileProvider: ICompileProvider) {
+                    $controllerProvider.register("MyController", MyController);
+                    $compileProvider.directive("myDirective", function () {
+                        return {
+                            controller: "MyController",
+                            controllerAs: "ctrl"
+                        };
+                    });
+                }]);
+            injector.invoke(function ($compile: ICompileService, $rootScope: IScope) {
+                var el = $("<div my-directive>");
+                var linkFn = $compile(el);
+                linkFn($rootScope);
+                expect($rootScope.ctrl).toBeDefined();
+                expect($rootScope.ctrl instanceof MyController).toBe(true);
+            });
+        });
+        //Controllers on Isolate Scope Directives
+        it("gets isolated scope as injected $scope", () => {
+            var gotScope: IScope;
+            function MyController($scope: IScope) {
+                gotScope = $scope;
+            }
+            var injector = createInjector(["ng",
+                function ($controllerProvider: IControllerProvider, $compileProvider: ICompileProvider) {
+                    $controllerProvider.register("MyController", MyController);
+                    $compileProvider.directive("myDirective", function () {
+                        return {
+                            scope: {},
+                            controller: "MyController"
+                        };
+                    });
+                }]);
+            injector.invoke(function ($compile: ICompileService, $rootScope: IScope) {
+                var el = $("<div my-directive>");
+                var linkFn = $compile(el);
+                linkFn($rootScope);
+                expect(gotScope).not.toBe($rootScope);
+                expect(gotScope.$parent).toBe($rootScope);
+            });
+        });
+
+        it("has isolate scope bindings available during construction", () => {
+            var gotMyAttr;
+            function MyController($scope: IScope) {
+                gotMyAttr = $scope.myAttr;
+            }
+            var injector = createInjector(["ng",
+                function ($controllerProvider: IControllerProvider, $compileProvider: ICompileProvider) {
+                    $controllerProvider.register("MyController", MyController);
+                    $compileProvider.directive("myDirective", function () {
+                        return {
+                            scope: {
+                                myAttr: "@myDirective"
+                            },
+                            controller: "MyController"
+                        };
+                    });
+                }]);
+            injector.invoke(function ($compile: ICompileService, $rootScope: IScope) {
+                var el = $("<div my-directive='abc'>");
+                var linkFn = $compile(el);
+                linkFn($rootScope);
+                expect(gotMyAttr).toEqual("abc");
+            });
+        });
+
+        it("can bind isolate scope bindings directly to self", () => {
+            var gotMyAttr;
+            function MyController($scope: IScope) {
+                gotMyAttr = this.myAttr;
+            }
+            var injector = createInjector(["ng",
+                function ($controllerProvider: IControllerProvider, $compileProvider: ICompileProvider) {
+                    $controllerProvider.register("MyController", MyController);
+                    $compileProvider.directive("myDirective", function () {
+                        return {
+                            scope: {
+                                myAttr: "@myDirective"
+                            },
+                            controller: "MyController",
+                            bindToController: true
+                        };
+                    });
+                }]);
+            injector.invoke(function ($compile: ICompileService, $rootScope: IScope) {
+                var el = $("<div my-directive='abc'>");
+                var linkFn = $compile(el);
+                linkFn($rootScope);
+                expect(gotMyAttr).toEqual("abc");
+            });
+        });
+        
+        it("can bind isolate scope bindings through bindToController", () => {
+            var gotMyAttr;
+            function MyController() {
+                gotMyAttr = this.myAttr;
+            }
+            var injector = createInjector(["ng",
+                function ($controllerProvider: IControllerProvider, $compileProvider: ICompileProvider) {
+                    $controllerProvider.register("MyController", MyController);
+                    $compileProvider.directive("myDirective", function () {
+                        return {
+                            scope: {},
+                            controller: "MyController",
+                            bindToController: {
+                                myAttr: "@myDirective"
+                            }
+                        };
+                    });
+                }]);
+            injector.invoke(function ($compile: ICompileService, $rootScope: IScope) {
+                var el = $("<div my-directive='abc'>");
+                var linkFn = $compile(el);
+                linkFn($rootScope);
+                expect(gotMyAttr).toEqual("abc");
+            });
+        });
+        
+        it("can bind through bindToController without isolate scope", () => {
+            var gotMyAttr;
+            function MyController() {
+                gotMyAttr = this.myAttr;
+            }
+            var injector = createInjector(["ng",
+                function ($controllerProvider: IControllerProvider, $compileProvider: ICompileProvider) {
+                    $controllerProvider.register("MyController", MyController);
+                    $compileProvider.directive("myDirective", function () {
+                        return {
+                            scope: true,
+                            controller: "MyController",
+                            bindToController: {
+                                myAttr: "@myDirective"
+                            }
+                        };
+                    });
+                }]);
+            injector.invoke(function ($compile: ICompileService, $rootScope: IScope) {
+                var el = $("<div my-directive='abc'>");
+                var linkFn = $compile(el);
+                linkFn($rootScope);
+                expect(gotMyAttr).toEqual("abc");
             });
         });
     });

@@ -1,6 +1,6 @@
 import * as _ from "lodash";
 import { ICompileProvider, IDirectiveFactory, auto, Injectable, IDirective, IAttributes, IScope, ITemplateLinkingFunction, ITranscludeFunction, IControllerService } from "angular";
-import { IDirectiveInternal, IDirectivesContainer, ICompositeLinkFunction, ILinkFunctionInfo, INodeLinkFunction, INodeList, IIsolateBindingContainer, IParseService, ICompiledExpressionInternal, IDirectiveInternalContainer } from "./angularInterfaces";
+import { IDirectiveInternal, IDirectivesContainer, ICompositeLinkFunction, ILinkFunctionInfo, INodeLinkFunction, INodeList, IIsolateBindingContainer, IParseService, ICompiledExpressionInternal, IDirectiveInternalContainer, IControllerContainer, IDirectiveBinding, ILateBoundController } from "./angularInterfaces";
 
 "use strict";
 
@@ -49,6 +49,21 @@ function parseIsolateBindings(scope: any): IIsolateBindingContainer {
     return bindings;
 }
 
+function parseDirectiveBindings(directive: IDirectiveInternal): IDirectiveBinding {
+    var bindigs: IDirectiveBinding = {};
+    if (_.isObject(directive.scope)) {
+        if (directive.bindToController) {
+            bindigs.bindToController = parseIsolateBindings(directive.scope);
+        } else {
+            bindigs.isolateScope = parseIsolateBindings(directive.scope);
+        }
+    }
+    if(_.isObject(directive.bindToController)) {
+        bindigs.bindToController = parseIsolateBindings(directive.bindToController)
+    }
+    return bindigs;
+}
+
 export default function $CompileProvider($provide: auto.IProvideService) {
 
     var hasDirectives: IDirectivesContainer = {};
@@ -69,9 +84,7 @@ export default function $CompileProvider($provide: auto.IProvideService) {
                         if (directive.link && !directive.compile) {
                             directive.compile = _.constant(directive.link);
                         }
-                        if (_.isObject(directive.scope)) {
-                            directive.$$isolateBindings = parseIsolateBindings(directive.scope);
-                        }
+                        directive.$$bindings = parseDirectiveBindings(directive);
                         directive.name = directive.name || name;
                         directive.index = i;
                         return directive;
@@ -327,6 +340,7 @@ export default function $CompileProvider($provide: auto.IProvideService) {
             var terminal = false;
             var preLinks = [];
             var postLinks = [];
+            var controllers: IControllerContainer = {};
             var newScopeDirective: IDirectiveInternal;
             var newIsolateScopeDirective: IDirectiveInternal;
             var controllerDirectives: IDirectiveInternalContainer;
@@ -346,6 +360,68 @@ export default function $CompileProvider($provide: auto.IProvideService) {
                     postLinkFn.isolateScope = isolateScope;
                     postLinks.push(postLinkFn);
                 }
+            }
+
+            function initializeDirectiveBindings(scope: IScope, attrs: IAttributes, destination, bindings: IIsolateBindingContainer, newScope: IScope) {
+                _.forEach(bindings, function (definition, scopeName) {
+                    var attrName = definition.attrName;
+                    var unwatch: () => void;
+                    var parentGet: ICompiledExpressionInternal;
+                    switch (definition.mode) {
+                        case "@":
+                            attrs.$observe(attrName, function (newAttrValue) {
+                                destination[scopeName] = newAttrValue;
+                            });
+                            if (attrs[attrName]) {
+                                destination[scopeName] = attrs[attrName];
+                            }
+                            break;
+                        case "<":
+                            if (definition.optional && !attrs[attrName])
+                                break;
+                            parentGet = $parse(attrs[attrName]);
+                            destination[scopeName] = parentGet(scope);
+                            unwatch = scope.$watch(parentGet, function (newValue) {
+                                destination[scopeName] = newValue;
+                            });
+                            newScope.$on("$destroy", unwatch);
+                            break;
+                        case "=":
+                            if (definition.optional && !attrs[attrName])
+                                break;
+                            parentGet = $parse(attrs[attrName]);
+                            var lastValue = destination[scopeName] = parentGet(scope);
+                            var parentValueWatch = function () {
+                                var parentValue = parentGet(scope);
+                                if (destination[scopeName] !== parentValue) {
+                                    if (parentValue !== lastValue) {
+                                        destination[scopeName] = parentValue;
+                                    } else {
+                                        parentValue = destination[scopeName];
+                                        parentGet.assign(scope, parentValue);
+                                    }
+                                }
+                                lastValue = parentValue;
+                                return parentValue;
+                            };
+                            if (definition.collection) {
+                                unwatch = scope.$watchCollection(attrs[attrName], parentValueWatch);
+                            } else {
+                                unwatch = scope.$watch(parentValueWatch);
+                            }
+                            newScope.$on("$destroy", unwatch);
+                            break;
+                        case "&":
+                            var parentExpr = $parse(attrs[attrName]);
+                            if (parentExpr === _.noop && definition.optional) {
+                                break;
+                            }
+                            destination[scopeName] = function (locals) {
+                                return parentExpr(scope, locals);
+                            }
+                            break;
+                    }
+                });
             }
 
             _.forEach(directives, function (directive) {
@@ -393,76 +469,51 @@ export default function $CompileProvider($provide: auto.IProvideService) {
                 var $element = $(linkNode);
                 var isolateScope: IScope;
 
-                if(controllerDirectives) {
-                    _.forEach(controllerDirectives, function(directive) { 
-                        $controller(directive.controller);
-                     })
-                }
-
                 if (newIsolateScopeDirective) {
                     isolateScope = scope.$new(true);
                     $element.addClass("ng-isolate-scope");
                     $element.data("$isolateScope", isolateScope);
-                    _.forEach(newIsolateScopeDirective.$$isolateBindings, function (definition, scopeName) {
-                        var attrName = definition.attrName;
-                        var unwatch: () => void;
-                        var parentGet: ICompiledExpressionInternal;
-                        switch (definition.mode) {
-                            case "@":
-                                attrs.$observe(attrName, function (newAttrValue) {
-                                    isolateScope[scopeName] = newAttrValue;
-                                });
-                                if (attrs[attrName]) {
-                                    isolateScope[scopeName] = attrs[attrName];
-                                }
-                                break;
-                            case "<":
-                                if (definition.optional && !attrs[attrName])
-                                    break;
-                                parentGet = $parse(attrs[attrName]);
-                                isolateScope[scopeName] = parentGet(scope);
-                                unwatch = scope.$watch(parentGet, function (newValue) {
-                                    isolateScope[scopeName] = newValue;
-                                });
-                                isolateScope.$on("$destroy", unwatch);
-                                break;
-                            case "=":
-                                if (definition.optional && !attrs[attrName])
-                                    break;
-                                parentGet = $parse(attrs[attrName]);
-                                var lastValue = isolateScope[scopeName] = parentGet(scope);
-                                var parentValueWatch = function () {
-                                    var parentValue = parentGet(scope);
-                                    if (isolateScope[scopeName] !== parentValue) {
-                                        if (parentValue !== lastValue) {
-                                            isolateScope[scopeName] = parentValue;
-                                        } else {
-                                            parentValue = isolateScope[scopeName];
-                                            parentGet.assign(scope, parentValue);
-                                        }
-                                    }
-                                    lastValue = parentValue;
-                                    return parentValue;
-                                };
-                                if (definition.collection) {
-                                    unwatch = scope.$watchCollection(attrs[attrName], parentValueWatch);
-                                } else {
-                                    unwatch = scope.$watch(parentValueWatch);
-                                }
-                                isolateScope.$on("$destroy", unwatch);
-                                break;
-                            case "&":
-                                var parentExpr = $parse(attrs[attrName]);
-                                if (parentExpr === _.noop && definition.optional) {
-                                    break;
-                                }
-                                isolateScope[scopeName] = function (locals) {
-                                    return parentExpr(scope, locals);
-                                }
-                                break;
-                        }
-                    })
                 }
+                if (controllerDirectives) {
+                    _.forEach(controllerDirectives, function (directive) {
+                        var locals = {
+                            $scope: directive === newIsolateScopeDirective ? isolateScope : scope,
+                            $element: $element,
+                            $attrs: attrs
+                        }
+                        var controllerName = directive.controller;
+                        if (controllerName === "@") {
+                            controllerName = attrs[directive.name]
+                        }
+                        controllers[directive.name] =
+                            $controller<ILateBoundController<any>>(
+                                controllerName, locals, true, directive.controllerAs);
+                    });
+                }
+
+
+                if (newIsolateScopeDirective) {
+                    initializeDirectiveBindings(
+                        scope,
+                        attrs,
+                        isolateScope,
+                        newIsolateScopeDirective.$$bindings.isolateScope,
+                        isolateScope);
+                }
+                var scopeDirective = newIsolateScopeDirective || newScopeDirective;
+                if (scopeDirective && controllers[scopeDirective.name]) {
+                    initializeDirectiveBindings(
+                        scope,
+                        attrs,
+                        controllers[scopeDirective.name].instance,
+                        scopeDirective.$$bindings.bindToController,
+                        isolateScope);
+                }
+
+                _.forEach(controllers, function (controller) {
+                    controller();
+                })
+
                 _.forEach(preLinks, function (linkFn) {
                     linkFn(linkFn.isolateScope ? isolateScope : scope, $element, attrs);
                 });
