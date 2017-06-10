@@ -1,6 +1,6 @@
 import * as _ from "lodash";
-import { ICompileProvider, IDirectiveFactory, auto, Injectable, IDirective, IAttributes, IScope, ITemplateLinkingFunction, ITranscludeFunction, IControllerService } from "angular";
-import { IDirectiveInternal, IDirectivesContainer, ICompositeLinkFunction, ILinkFunctionInfo, INodeLinkFunction, INodeList, IIsolateBindingContainer, IParseService, ICompiledExpressionInternal, IDirectiveInternalContainer, IControllerContainer, IDirectiveBinding, ILateBoundController } from "./angularInterfaces";
+import { ICompileProvider, IDirectiveFactory, auto, Injectable, IDirective, IAttributes, IScope, ITemplateLinkingFunction, ITranscludeFunction, IControllerService, IController } from "angular";
+import { IDirectiveInternal, IDirectivesContainer, ICompositeLinkFunction, ILinkFunctionInfo, INodeLinkFunction, INodeList, IIsolateBindingContainer, IParseService, ICompiledExpressionInternal, IDirectiveInternalContainer, IControllerContainer, IDirectiveBinding, ILateBoundController, IDirectiveLinkFnInternal } from "./angularInterfaces";
 
 "use strict";
 
@@ -58,10 +58,22 @@ function parseDirectiveBindings(directive: IDirectiveInternal): IDirectiveBindin
             bindigs.isolateScope = parseIsolateBindings(directive.scope);
         }
     }
-    if(_.isObject(directive.bindToController)) {
+    if (_.isObject(directive.bindToController)) {
         bindigs.bindToController = parseIsolateBindings(directive.bindToController)
     }
     return bindigs;
+}
+
+function getDirectiveRequire(directive: IDirectiveInternal): string | string[] | {[controller: string]: string} {
+    var require = directive.require;
+    if (!_.isArray(require) && _.isObject(require)) {
+        _.forEach(require, function (value, key) {
+            if (!value.length) {
+                require[key] = key;
+            }
+        })
+    }
+    return require
 }
 
 export default function $CompileProvider($provide: auto.IProvideService) {
@@ -338,19 +350,36 @@ export default function $CompileProvider($provide: auto.IProvideService) {
             var $compileNode = $(compileNode);
             var terminalPriority = -Number.MAX_VALUE;
             var terminal = false;
-            var preLinks = [];
-            var postLinks = [];
+            var preLinks: IDirectiveLinkFnInternal[] = [];
+            var postLinks: IDirectiveLinkFnInternal[] = [];
             var controllers: IControllerContainer = {};
             var newScopeDirective: IDirectiveInternal;
             var newIsolateScopeDirective: IDirectiveInternal;
             var controllerDirectives: IDirectiveInternalContainer;
 
-            function addLinkFns(preLinkFn, postLinkFn, attrStart, attrEnd, isolateScope: boolean) {
+            function getControllers(require: string | string[] | { [controller: string]: string }): IController | IController[] | { [key: string]: IController } {
+                var value: IController | IController[] | { [key: string]: IController };
+                if (_.isArray(require)) {
+                    return _.map(require, getControllers);
+                } else if (_.isObject(require)) {
+                    return _.mapValues(require, getControllers);
+                } else if (_.isString(require)) {
+                    if (controllers[require]) {
+                        value = controllers[require].instance;
+                    }
+                }
+                if (!value) {
+                    throw "Controller " + require + " required by directive, cannot be found!";
+                }
+                return value;
+            }
+            function addLinkFns(preLinkFn: IDirectiveLinkFnInternal, postLinkFn: IDirectiveLinkFnInternal, attrStart, attrEnd, isolateScope: boolean, require: string | string[] | { [controller: string]: string }) {
                 if (preLinkFn) {
                     if (attrStart) {
                         preLinkFn = groupElementsLinkFnWrapper(preLinkFn, attrStart, attrEnd);
                     }
                     preLinkFn.isolateScope = isolateScope;
+                    preLinkFn.require = require;
                     preLinks.push(preLinkFn);
                 }
                 if (postLinkFn) {
@@ -358,6 +387,7 @@ export default function $CompileProvider($provide: auto.IProvideService) {
                         postLinkFn = groupElementsLinkFnWrapper(postLinkFn, attrStart, attrEnd);
                     }
                     postLinkFn.isolateScope = isolateScope;
+                    postLinkFn.require = require;
                     postLinks.push(postLinkFn);
                 }
             }
@@ -449,10 +479,11 @@ export default function $CompileProvider($provide: auto.IProvideService) {
                     var isolateScope = (directive === newIsolateScopeDirective);
                     var attrStart = directive.$$start;
                     var attrEnd = directive.$$end;
+                    var require = getDirectiveRequire(directive);
                     if (_.isFunction(linkFn)) {
-                        addLinkFns(null, linkFn, attrStart, attrEnd, isolateScope);
+                        addLinkFns(null, linkFn, attrStart, attrEnd, isolateScope, require);
                     } else if (linkFn) {
-                        addLinkFns(linkFn.pre, linkFn.post, attrStart, attrEnd, isolateScope);
+                        addLinkFns(linkFn.pre, linkFn.post, attrStart, attrEnd, isolateScope, require);
                     }
                 }
                 if (directive.terminal) {
@@ -515,13 +546,21 @@ export default function $CompileProvider($provide: auto.IProvideService) {
                 })
 
                 _.forEach(preLinks, function (linkFn) {
-                    linkFn(linkFn.isolateScope ? isolateScope : scope, $element, attrs);
+                    linkFn(
+                        linkFn.isolateScope ? isolateScope : scope,
+                        $element,
+                        attrs,
+                        linkFn.require && getControllers(linkFn.require));
                 });
                 if (childLinkFn) {
                     childLinkFn(scope, linkNode.childNodes)
                 }
                 _.forEachRight(postLinks, function (linkFn) {
-                    linkFn(linkFn.isolateScope ? isolateScope : scope, $element, attrs);
+                    linkFn(
+                        linkFn.isolateScope ? isolateScope : scope,
+                        $element,
+                        attrs,
+                        linkFn.require && getControllers(linkFn.require));
                 });
             }
             nodeLinkFn.terminal = terminal;

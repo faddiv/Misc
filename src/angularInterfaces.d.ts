@@ -1,5 +1,5 @@
 // <reference path="../typings/modules/angular/index.d.ts" />
-import { IScope, IModule, IDeferred, IAngularStatic, ICompiledExpression, IFilterService, IParseService, auto, Injectable, IAngularEvent, IDirective, IDirectiveFactory, ITemplateLinkingFunction } from "angular";
+import { IScope, IModule, IDeferred, IAngularStatic, ICompiledExpression, IFilterService, IParseService, auto, Injectable, IAngularEvent, IDirective, IDirectiveFactory, ITemplateLinkingFunction, IDirectiveLinkFn } from "angular";
 import { List } from "lodash";
 
 declare global {
@@ -289,5 +289,10 @@ interface ILateBoundController<T> {
     (): T;
     instance: T;
 }
-//847
-//Requiring Controllers
+
+interface IDirectiveLinkFnInternal extends IDirectiveLinkFn {
+    isolateScope?: boolean;
+    require?: string | string[] | { [controller: string]: string };
+}
+//855
+//Self-Requiring Directives
