@@ -294,5 +294,5 @@ interface IDirectiveLinkFnInternal extends IDirectiveLinkFn {
     isolateScope?: boolean;
     require?: string | string[] | { [controller: string]: string };
 }
-//877
-//Directive Templates
+//885
+//Asynchronous Templates: templateUrl
