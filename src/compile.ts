@@ -24,6 +24,8 @@ const BOOLEAN_ELEMENTS = {
     DETAILS: true
 };
 
+const REQUIRE_PREFIX_REGEXP = /^(\^\^?)?(\?)?(\^\^?)?/;
+
 function nodeName(element: HTMLElement | HTMLElement[]): string {
     return _.isArray(element) ? element[0].nodeName : element.nodeName;
 }
@@ -64,12 +66,14 @@ function parseDirectiveBindings(directive: IDirectiveInternal): IDirectiveBindin
     return bindigs;
 }
 
-function getDirectiveRequire(directive: IDirectiveInternal): string | string[] | {[controller: string]: string} {
-    var require = directive.require;
+function getDirectiveRequire(directive: IDirectiveInternal, name: string): string | string[] | { [controller: string]: string } {
+    var require = directive.require || (directive.controller && name);
     if (!_.isArray(require) && _.isObject(require)) {
         _.forEach(require, function (value, key) {
-            if (!value.length) {
-                require[key] = key;
+            var prefix = value.match(REQUIRE_PREFIX_REGEXP);
+            var name = value.substring(prefix[0].length);
+            if (!name) {
+                require[key] = prefix[0] + key;
             }
         })
     }
@@ -98,6 +102,7 @@ export default function $CompileProvider($provide: auto.IProvideService) {
                         }
                         directive.$$bindings = parseDirectiveBindings(directive);
                         directive.name = directive.name || name;
+                        directive.require = getDirectiveRequire(directive, directive.name);
                         directive.index = i;
                         return directive;
                     });
@@ -357,21 +362,45 @@ export default function $CompileProvider($provide: auto.IProvideService) {
             var newIsolateScopeDirective: IDirectiveInternal;
             var controllerDirectives: IDirectiveInternalContainer;
 
-            function getControllers(require: string | string[] | { [controller: string]: string }): IController | IController[] | { [key: string]: IController } {
+            function getControllers(require: string | string[] | { [controller: string]: string }, $element: JQuery): IController | IController[] | { [key: string]: IController } {
                 var value: IController | IController[] | { [key: string]: IController };
                 if (_.isArray(require)) {
-                    return _.map(require, getControllers);
+                    return _.map(require, function (r) {
+                        return getControllers(r, $element);
+                    });
                 } else if (_.isObject(require)) {
-                    return _.mapValues(require, getControllers);
+                    return _.mapValues(require, function (r) {
+                        return getControllers(r, $element);
+                    });
                 } else if (_.isString(require)) {
-                    if (controllers[require]) {
-                        value = controllers[require].instance;
+                    var match = require.match(REQUIRE_PREFIX_REGEXP);
+                    var optional = match[2];
+                    require = require.substring(match[0].length);
+                    if (match[1] || match[3]) {
+                        if (match[3] && !match[1]) {
+                            match[1] = match[3];
+                        }
+                        if (match[1] === "^^") {
+                            $element = $element.parent();
+                        }
+                        while ($element.length) {
+                            value = $element.data("$" + require + "Controller");
+                            if (value) {
+                                break;
+                            } else {
+                                $element = $element.parent();
+                            }
+                        }
+                    } else {
+                        if (controllers[require]) {
+                            value = controllers[require].instance;
+                        }
                     }
                 }
-                if (!value) {
+                if (!value && !optional) {
                     throw "Controller " + require + " required by directive, cannot be found!";
                 }
-                return value;
+                return value || null;
             }
             function addLinkFns(preLinkFn: IDirectiveLinkFnInternal, postLinkFn: IDirectiveLinkFnInternal, attrStart, attrEnd, isolateScope: boolean, require: string | string[] | { [controller: string]: string }) {
                 if (preLinkFn) {
@@ -479,7 +508,7 @@ export default function $CompileProvider($provide: auto.IProvideService) {
                     var isolateScope = (directive === newIsolateScopeDirective);
                     var attrStart = directive.$$start;
                     var attrEnd = directive.$$end;
-                    var require = getDirectiveRequire(directive);
+                    var require = directive.require;
                     if (_.isFunction(linkFn)) {
                         addLinkFns(null, linkFn, attrStart, attrEnd, isolateScope, require);
                     } else if (linkFn) {
@@ -516,9 +545,11 @@ export default function $CompileProvider($provide: auto.IProvideService) {
                         if (controllerName === "@") {
                             controllerName = attrs[directive.name]
                         }
-                        controllers[directive.name] =
+                        var controller =
                             $controller<ILateBoundController<any>>(
                                 controllerName, locals, true, directive.controllerAs);
+                        controllers[directive.name] = controller;
+                        $element.data("$" + directive.name + "Controller", controller.instance);
                     });
                 }
 
@@ -545,12 +576,20 @@ export default function $CompileProvider($provide: auto.IProvideService) {
                     controller();
                 })
 
+                _.forEach(controllerDirectives, function (controllerDirective, name) {
+                    var require = controllerDirective.require;
+                    if (_.isObject(require) && !_.isArray(require) && controllerDirective.bindToController) {
+                        var controller = controllers[controllerDirective.name].instance;
+                        var requiredControllers = getControllers(require, $element);
+                        _.assign(controller, requiredControllers);
+                    }
+                });
                 _.forEach(preLinks, function (linkFn) {
                     linkFn(
                         linkFn.isolateScope ? isolateScope : scope,
                         $element,
                         attrs,
-                        linkFn.require && getControllers(linkFn.require));
+                        linkFn.require && getControllers(linkFn.require, $element));
                 });
                 if (childLinkFn) {
                     childLinkFn(scope, linkNode.childNodes)
@@ -560,7 +599,7 @@ export default function $CompileProvider($provide: auto.IProvideService) {
                         linkFn.isolateScope ? isolateScope : scope,
                         $element,
                         attrs,
-                        linkFn.require && getControllers(linkFn.require));
+                        linkFn.require && getControllers(linkFn.require, $element));
                 });
             }
             nodeLinkFn.terminal = terminal;
@@ -591,9 +630,9 @@ export default function $CompileProvider($provide: auto.IProvideService) {
         }
 
         function groupElementsLinkFnWrapper(linkFn, attrStart, attrEnd) {
-            return function (scope, element, attrs) {
+            return function (scope, element, attrs, ctrl) {
                 var group = groupScan(element[0], attrStart, attrEnd);
-                return linkFn(scope, group, attrs);
+                return linkFn(scope, group, attrs, ctrl);
             }
         }
 

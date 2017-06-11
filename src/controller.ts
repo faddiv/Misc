@@ -29,29 +29,35 @@ export default function $ControllerProvider() {
     };
 
     this.$get = ["$injector", function ($injector: auto.IInjectorService) {
-        return function (ctrl: Function | string, locals: any, later: boolean, identifier: string) {
+        return function (ctrl: Function | string | Function[], locals: any, later: boolean, identifier: string) {
             if (_.isString(ctrl)) {
+                var match = ctrl.match(/^(\S+)(\s+as\s+(\w+))?/);
+                ctrl = match[1];
+                identifier = identifier || match[3];
                 if (controllers.hasOwnProperty(ctrl)) {
                     ctrl = controllers[ctrl];
-                } else if (globals) {
-                    ctrl = <Function>window[ctrl];
                 } else {
-                    throw ctrl + " controller not found.";
+                    var ctrl2: Function = (locals && locals.$scope && locals.$scope[ctrl]) ||
+                        (globals && <Function>window[ctrl]);
+                    if (!ctrl) {
+                        throw ctrl + " controller not found.";
+                    }
+                    ctrl = ctrl2;
                 }
             }
             var instance: any;
             if (later) {
                 var ctrlConstructor = _.isArray<Function>(ctrl) ? _.last<Function>(ctrl) : ctrl;
                 instance = Object.create(ctrlConstructor.prototype);
-                if(identifier) {
+                if (identifier) {
                     addToScope(locals, identifier, instance);
                 }
-                return _.extend(function() { 
+                return _.extend(function () {
                     $injector.invoke(<Function>ctrl, instance, locals);
                     return instance;
-                 }, {
-                     instance: instance
-                 });
+                }, {
+                        instance: instance
+                    });
             } else {
                 instance = $injector.instantiate<any>(ctrl, locals);
                 if (identifier) {
