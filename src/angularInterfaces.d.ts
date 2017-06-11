@@ -294,5 +294,5 @@ interface IDirectiveLinkFnInternal extends IDirectiveLinkFn {
     isolateScope?: boolean;
     require?: string | string[] | { [controller: string]: string };
 }
-//873
-//Attaching Controllers on The Scope
+//877
+//Directive Templates
