@@ -1,6 +1,6 @@
 import * as _ from "lodash";
 import { ICompileProvider, IDirectiveFactory, auto, Injectable, IDirective, IAttributes, IScope, ITemplateLinkingFunction, ITranscludeFunction, IControllerService, IController, IHttpService } from "angular";
-import { IDirectiveInternal, IDirectivesContainer, ICompositeLinkFunction, ILinkFunctionInfo, INodeLinkFunction, INodeList, IIsolateBindingContainer, IParseService, ICompiledExpressionInternal, IDirectiveInternalContainer, IControllerContainer, IDirectiveBinding, ILateBoundController, IDirectiveLinkFnInternal } from "./angularInterfaces";
+import { IDirectiveInternal, IDirectivesContainer, ICompositeLinkFunction, ILinkFunctionInfo, INodeLinkFunction, INodeList, IIsolateBindingContainer, IParseService, ICompiledExpressionInternal, IDirectiveInternalContainer, IControllerContainer, IDirectiveBinding, ILateBoundController, IDirectiveLinkFnInternal, IPreviousCompileContext } from "./angularInterfaces";
 
 "use strict";
 
@@ -351,24 +351,26 @@ export default function $CompileProvider($provide: auto.IProvideService) {
             return match;
         }
 
-        function compileTemplateUrl(directives: IDirectiveInternal[], $compileNode: JQuery, attrs: IAttributes) {
+        function compileTemplateUrl(directives: IDirectiveInternal[], $compileNode: JQuery, attrs: IAttributes, previousCompileContext: IPreviousCompileContext) {
             var origAsyncDirective = directives.shift();
             var derivedSyncDirective = _.extend(
                 {},
                 origAsyncDirective,
                 { templateUrl: null }
             );
+            var templateUrl = _.isFunction(origAsyncDirective.templateUrl) ? origAsyncDirective.templateUrl($compileNode, attrs) : origAsyncDirective.templateUrl;
             $compileNode.empty();
-            $http.get(<string>origAsyncDirective.templateUrl)
+            $http.get(templateUrl)
                 .success(function (template: string) {
                     directives.unshift(derivedSyncDirective);
                     $compileNode.html(template);
-                    applyDirectivesToNode(directives, $compileNode, attrs);
+                    applyDirectivesToNode(directives, $compileNode, attrs, previousCompileContext);
                     compileNodes(<any>$compileNode[0].childNodes);
                 });
         }
 
-        function applyDirectivesToNode(directives: IDirectiveInternal[], compileNode: HTMLElement | JQuery, attrs: IAttributes): INodeLinkFunction {
+        function applyDirectivesToNode(directives: IDirectiveInternal[], compileNode: HTMLElement | JQuery, attrs: IAttributes, previousCompileContext: IPreviousCompileContext): INodeLinkFunction {
+            previousCompileContext = previousCompileContext || {};
             var $compileNode = $(compileNode);
             var terminalPriority = -Number.MAX_VALUE;
             var terminal = false;
@@ -377,7 +379,7 @@ export default function $CompileProvider($provide: auto.IProvideService) {
             var controllers: IControllerContainer = {};
             var newScopeDirective: IDirectiveInternal;
             var newIsolateScopeDirective: IDirectiveInternal;
-            var templateDirective: IDirectiveInternal;
+            var templateDirective: IDirectiveInternal = previousCompileContext.templateDirective;
             var controllerDirectives: IDirectiveInternalContainer;
 
             function getControllers(require: string | string[] | { [controller: string]: string }, $element: JQuery): IController | IController[] | { [key: string]: IController } {
@@ -536,7 +538,15 @@ export default function $CompileProvider($provide: auto.IProvideService) {
                         : directive.template);
                 }
                 if (directive.templateUrl) {
-                    compileTemplateUrl(_.drop(directives, i), $compileNode, attrs);
+                    if (templateDirective) {
+                        throw "Multiple directives asking form template";
+                    }
+                    templateDirective = directive;
+                    compileTemplateUrl(
+                        _.drop(directives, i),
+                        $compileNode,
+                        attrs,
+                        { templateDirective: templateDirective });
                     return false;
                 } else if (directive.compile) {
                     var linkFn = directive.compile($compileNode, attrs, undefined);

@@ -210,5 +210,75 @@ describe("$compile", () => {
                 expect(otherCompileSpy).toHaveBeenCalled();
             });
         });
+
+        //Template URL Functions
+        it("supports functions as values", () => {
+            var templateUrlSpy = jasmine.createSpy("templateUrlSpy").and.returnValue(templateUrl);
+            var injector = makeInjectorWithDirectives({
+                myDirective() {
+                    return {
+                        templateUrl: templateUrlSpy
+                    };
+                }
+            });
+            injector.invoke(function ($compile: ICompileService, $rootScope: IScope) {
+                var el = $("<div my-directive></div>");
+
+                $compile(el);
+                $rootScope.$apply();
+
+                expect(requests[0].url).toBe(templateUrl);
+                var call = templateUrlSpy.calls.first();
+                expect(call.args[0][0]).toBe(el[0]);
+                expect(call.args[1].myDirective).toBeDefined();
+            });
+        });
+        
+        //Disallowing More Than One Template URL Directive Per Element
+        it("does not allow templateUrl directive after template directive", () => {
+            var injector = makeInjectorWithDirectives({
+                myDirective() {
+                    return {
+                        template: "<div></div>"
+                    };
+                },
+                myOtherDirective() {
+                    return {
+                        templateUrl: templateUrl
+                    };
+                }
+            });
+            injector.invoke(function ($compile: ICompileService, $rootScope: IScope) {
+                var el = $("<div my-directive my-other-directive></div>");
+
+                expect(function () {
+                    $compile(el);
+                }).toThrow();
+            });
+        });
+
+        it("does not allow template directive after templateUrl directive", () => {
+            var injector = makeInjectorWithDirectives({
+                myDirective() {
+                    return {
+                        templateUrl: templateUrl
+                    };
+                },
+                myOtherDirective() {
+                    return {
+                        template: "<div></div>"
+                    };
+                }
+            });
+            injector.invoke(function ($compile: ICompileService, $rootScope: IScope) {
+                var el = $("<div my-directive my-other-directive></div>");
+
+                $compile(el);
+                $rootScope.$apply();
+                requests[0].respond(200, {}, "<div class='replacement'></div>")
+                expect(el.find("> .replacement").length).toBe(1);
+            });
+        });
+
     });
 });

@@ -294,5 +294,8 @@ interface IDirectiveLinkFnInternal extends IDirectiveLinkFn {
     isolateScope?: boolean;
     require?: string | string[] | { [controller: string]: string };
 }
-//894
-//Template URL Functions
+interface IPreviousCompileContext {
+    templateDirective?: IDirectiveInternal
+}
+//898
+//Linking Asynchronous Directives
