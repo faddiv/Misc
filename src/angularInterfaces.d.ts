@@ -1,5 +1,5 @@
 // <reference path="../typings/modules/angular/index.d.ts" />
-import { IScope, IModule, IDeferred, IAngularStatic, ICompiledExpression, IFilterService, IParseService, auto, Injectable, IAngularEvent, IDirective, IDirectiveFactory, ITemplateLinkingFunction, IDirectiveLinkFn } from "angular";
+import { IScope, IModule, IDeferred, IAngularStatic, ICompiledExpression, IFilterService, IParseService, auto, Injectable, IAngularEvent, IDirective, IDirectiveFactory, ITemplateLinkingFunction, IDirectiveLinkFn, ITranscludeFunction } from "angular";
 import { List } from "lodash";
 
 declare global {
@@ -270,9 +270,11 @@ interface ILinkFunctionInfo {
 }
 
 interface INodeLinkFunction {
-    (Elements: IChildLinkFunction, scope: IScope, node: any): void;
+    (Elements: IChildLinkFunction, scope: IScope, node: any, transclude: ITranscludeFunctionInternal): void;
     scope?: any;
     terminal?: boolean;
+    transcludeOnThisElement?: boolean;
+    transclude?: ITranscludeFunction;
 }
 
 interface IChildLinkFunction {
@@ -298,5 +300,14 @@ interface IPreviousCompileContext {
     newIsolateScopeDirective?: IDirectiveInternal;
     controllerDirectives?: IDirectiveInternalContainer
 }
-//913
-//Directive Transclusion
+interface ITranscludeFunctionInternal {
+        // If the scope is provided, then the cloneAttachFn must be as well.
+        (transcludedScope: IScope, containingScope: IScope): JQuery;//, cloneAttachFn: ICloneAttachFunction, futureParentElement?: JQuery, slotName?: string
+        
+        /**
+         * Returns true if the specified slot contains content (i.e. one or more DOM nodes)
+         */
+        isSlotFilled?(slotName: string): boolean;
+    }
+//930
+//Transclusion from Descendant Nodes
