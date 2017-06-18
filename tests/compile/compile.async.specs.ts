@@ -233,7 +233,7 @@ describe("$compile", () => {
                 expect(call.args[1].myDirective).toBeDefined();
             });
         });
-        
+
         //Disallowing More Than One Template URL Directive Per Element
         it("does not allow templateUrl directive after template directive", () => {
             var injector = makeInjectorWithDirectives({
@@ -257,7 +257,35 @@ describe("$compile", () => {
             });
         });
 
-        it("does not allow template directive after templateUrl directive", () => {
+        //Linking Asynchronous Directives
+        it("links the directive when public link function is invoked", () => {
+            var linkSpy = jasmine.createSpy("linkSpy");
+            var injector = makeInjectorWithDirectives({
+                myDirective() {
+                    return {
+                        templateUrl: templateUrl,
+                        link: linkSpy
+                    };
+                }
+            });
+            injector.invoke(function ($compile: ICompileService, $rootScope: IScope) {
+                var el = $("<div my-directive></div>");
+
+                var linkFunction = $compile(el);
+                $rootScope.$apply();
+                requests[0].respond(200, {}, "<div></div>")
+                linkFunction($rootScope);
+                expect(linkSpy).toHaveBeenCalled();
+                var call = linkSpy.calls.first();
+                expect(call.args[0]).toBe($rootScope);
+                expect(call.args[1][0]).toBe(el[0]);
+                expect(call.args[2].myDirective).toBeDefined();
+            });
+        });
+
+
+        it("links child elements when public link function is invoked", () => {
+            var linkSpy = jasmine.createSpy("linkSpy");
             var injector = makeInjectorWithDirectives({
                 myDirective() {
                     return {
@@ -266,19 +294,206 @@ describe("$compile", () => {
                 },
                 myOtherDirective() {
                     return {
-                        template: "<div></div>"
+                        link: linkSpy
+                    };
+                }
+            });
+            injector.invoke(function ($compile: ICompileService, $rootScope: IScope) {
+                var el = $("<div my-directive></div>");
+
+                var linkFunction = $compile(el);
+                $rootScope.$apply();
+                requests[0].respond(200, {}, "<div my-other-directive></div>")
+
+                linkFunction($rootScope);
+                expect(linkSpy).toHaveBeenCalled();
+                var call = linkSpy.calls.first();
+                expect(call.args[0]).toBe($rootScope);
+                expect(call.args[1][0]).toBe(el[0].firstChild);
+                expect(call.args[2].myOtherDirective).toBeDefined();
+            });
+        });
+
+        it("links when template arrives if node link fn was called", () => {
+            var linkSpy = jasmine.createSpy("linkSpy");
+            var injector = makeInjectorWithDirectives({
+                myDirective() {
+                    return {
+                        link: linkSpy
+                    };
+                },
+                myOtherDirective() {
+                    return {
+                        templateUrl: templateUrl,
                     };
                 }
             });
             injector.invoke(function ($compile: ICompileService, $rootScope: IScope) {
                 var el = $("<div my-directive my-other-directive></div>");
 
-                $compile(el);
+                var linkFunction = $compile(el);
                 $rootScope.$apply();
-                requests[0].respond(200, {}, "<div class='replacement'></div>")
-                expect(el.find("> .replacement").length).toBe(1);
+                linkFunction($rootScope);
+                requests[0].respond(200, {}, "<div></div>");
+
+                expect(linkSpy).toHaveBeenCalled();
+                var call = linkSpy.calls.first();
+                expect(call.args[0]).toBe($rootScope);
+                expect(call.args[1][0]).toBe(el[0]);
+                expect(call.args[2].myDirective).toBeDefined();
+            });
+        });
+        //Linking Directives that Were Compiled Earlier
+        it("link directives that were compiled earlier", () => {
+            var linkSpy = jasmine.createSpy("linkSpy");
+            var injector = makeInjectorWithDirectives({
+                myDirective() {
+                    return {
+                        templateUrl: templateUrl,
+                        link: linkSpy
+                    };
+                }
+            });
+            injector.invoke(function ($compile: ICompileService, $rootScope: IScope) {
+                var el = $("<div my-directive></div>");
+
+                var linkFunction = $compile(el);
+                linkFunction($rootScope);
+                $rootScope.$apply();
+                requests[0].respond(200, {}, "<div></div>");
+
+                expect(linkSpy).toHaveBeenCalled();
+                var call = linkSpy.calls.first();
+                expect(call.args[0]).toBe($rootScope);
+                expect(call.args[1][0]).toBe(el[0]);
+                expect(call.args[2].myDirective).toBeDefined();
+            });
+        });
+        //Preserving The Isolate Scope Directive
+        it("retains isolate scope directives from earlier", () => {
+            var linkSpy = jasmine.createSpy("linkSpy");
+            var injector = makeInjectorWithDirectives({
+                myDirective() {
+                    return {
+                        scope: {
+                            val: "=myDirective"
+                        },
+                        link: linkSpy
+                    };
+                },
+                myOtherDirective() {
+                    return {
+                        templateUrl: templateUrl,
+                    };
+                }
+            });
+            injector.invoke(function ($compile: ICompileService, $rootScope: IScope) {
+                var el = $("<div my-directive='42' my-other-directive></div>");
+
+                var linkFunction = $compile(el);
+                $rootScope.$apply();
+                linkFunction($rootScope);
+                requests[0].respond(200, {}, "<div></div>");
+
+                expect(linkSpy).toHaveBeenCalled();
+                var call = linkSpy.calls.first();
+                expect(call.args[0]).toBeDefined();
+                expect(call.args[0]).not.toBe($rootScope);
+                expect(call.args[0].val).toBe(42);
             });
         });
 
+        it("supports isolate scope directives with templateUrls", () => {
+            var linkSpy = jasmine.createSpy("linkSpy");
+            var injector = makeInjectorWithDirectives({
+                myDirective() {
+                    return {
+                        scope: {
+                            val: "=myDirective"
+                        },
+                        link: linkSpy,
+                        templateUrl: templateUrl
+                    };
+                }
+            });
+            injector.invoke(function ($compile: ICompileService, $rootScope: IScope) {
+                var el = $("<div my-directive='42' my-other-directive></div>");
+
+                var linkFunction = $compile(el);
+                $rootScope.$apply();
+                linkFunction($rootScope);
+                requests[0].respond(200, {}, "<div></div>");
+
+                expect(linkSpy).toHaveBeenCalled();
+                var call = linkSpy.calls.first();
+                expect(call.args[0]).not.toBe($rootScope);
+                expect(call.args[0].val).toBe(42);
+            });
+        });
+
+        it("links children of isolate scope directives with templateUrls", () => {
+            var linkSpy = jasmine.createSpy("linkSpy");
+            var injector = makeInjectorWithDirectives({
+                myDirective() {
+                    return {
+                        scope: {
+                            val: "=myDirective"
+                        },
+                        templateUrl: templateUrl
+                    };
+                },
+                myChildDirective() {
+                    return {
+                        link: linkSpy
+                    };
+                }
+            });
+            injector.invoke(function ($compile: ICompileService, $rootScope: IScope) {
+                var el = $("<div my-directive='42'></div>");
+
+                var linkFunction = $compile(el);
+                linkFunction($rootScope);
+                $rootScope.$apply();
+                requests[0].respond(200, {}, "<div my-child-directive></div>");
+
+                expect(linkSpy).toHaveBeenCalled();
+                var call = linkSpy.calls.first();
+                expect(call.args[0]).not.toBe($rootScope);
+                expect(call.args[0].val).toBe(42);
+            });
+        });
+        //Preserving Controller Directives
+        it("sets up controllers for all controller directives", () => {
+            var myDirectiveControllerInstantiated: boolean;
+            var myOtherDirectiveControllerInstantiated: boolean;
+            var injector = makeInjectorWithDirectives({
+                myDirective() {
+                    return {
+                        controller: function MyDirectiveController() {
+                            myDirectiveControllerInstantiated = true;
+                        }
+                    };
+                },
+                myOtherDirective() {
+                    return {
+                        templateUrl: templateUrl,
+                        controller: function myOtherDirectiveController() {
+                            myOtherDirectiveControllerInstantiated = true;
+                        }
+                    };
+                }
+            });
+            injector.invoke(function ($compile: ICompileService, $rootScope: IScope) {
+                var el = $("<div my-directive my-other-directive></div>");
+
+                var linkFunction = $compile(el);
+                linkFunction($rootScope);
+                $rootScope.$apply();
+                requests[0].respond(200, {}, "<div></div>");
+
+                expect(myDirectiveControllerInstantiated).toBe(true);
+                expect(myOtherDirectiveControllerInstantiated).toBe(true);
+            });
+        });
     });
 });

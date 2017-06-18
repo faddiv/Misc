@@ -262,9 +262,6 @@ interface ISimpleContainer<T> {
 interface IHasOwnProperty {
     hasOwnProperty(name: string): boolean;
 }
-interface ICompositeLinkFunction {
-    (scope: IScope, linkNodes: JQuery);
-}
 
 interface ILinkFunctionInfo {
     nodeLinkFn: INodeLinkFunction;
@@ -280,7 +277,7 @@ interface INodeLinkFunction {
 
 interface IChildLinkFunction {
     (scope: IScope, node: any): void;
-    scope: IScope;
+    scope?: IScope;
 }
 interface INodeList extends List<HTMLElement> {
 }
@@ -295,7 +292,11 @@ interface IDirectiveLinkFnInternal extends IDirectiveLinkFn {
     require?: string | string[] | { [controller: string]: string };
 }
 interface IPreviousCompileContext {
-    templateDirective?: IDirectiveInternal
+    templateDirective?: IDirectiveInternal;
+    preLinkFns?: IDirectiveLinkFnInternal[];
+    postLinkFns?: IDirectiveLinkFnInternal[];
+    newIsolateScopeDirective?: IDirectiveInternal;
+    controllerDirectives?: IDirectiveInternalContainer
 }
-//898
-//Linking Asynchronous Directives
+//913
+//Directive Transclusion

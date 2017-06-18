@@ -1,6 +1,6 @@
 import * as _ from "lodash";
 import { ICompileProvider, IDirectiveFactory, auto, Injectable, IDirective, IAttributes, IScope, ITemplateLinkingFunction, ITranscludeFunction, IControllerService, IController, IHttpService } from "angular";
-import { IDirectiveInternal, IDirectivesContainer, ICompositeLinkFunction, ILinkFunctionInfo, INodeLinkFunction, INodeList, IIsolateBindingContainer, IParseService, ICompiledExpressionInternal, IDirectiveInternalContainer, IControllerContainer, IDirectiveBinding, ILateBoundController, IDirectiveLinkFnInternal, IPreviousCompileContext } from "./angularInterfaces";
+import { IDirectiveInternal, IDirectivesContainer, ILinkFunctionInfo, INodeLinkFunction, INodeList, IIsolateBindingContainer, IParseService, ICompiledExpressionInternal, IDirectiveInternalContainer, IControllerContainer, IDirectiveBinding, ILateBoundController, IDirectiveLinkFnInternal, IPreviousCompileContext, IChildLinkFunction } from "./angularInterfaces";
 
 "use strict";
 
@@ -199,7 +199,7 @@ export default function $CompileProvider($provide: auto.IProvideService) {
             };
         }
 
-        function compileNodes($compileNodes: INodeList): ICompositeLinkFunction {
+        function compileNodes($compileNodes: INodeList): IChildLinkFunction {
             var linkFns: ILinkFunctionInfo[] = [];
             _.forEach($compileNodes, function (node: HTMLElement, i: number) {
                 var attrs = new Attributes($(node));
@@ -351,7 +351,7 @@ export default function $CompileProvider($provide: auto.IProvideService) {
             return match;
         }
 
-        function compileTemplateUrl(directives: IDirectiveInternal[], $compileNode: JQuery, attrs: IAttributes, previousCompileContext: IPreviousCompileContext) {
+        function compileTemplateUrl(directives: IDirectiveInternal[], $compileNode: JQuery, attrs: IAttributes, previousCompileContext: IPreviousCompileContext): INodeLinkFunction {
             var origAsyncDirective = directives.shift();
             var derivedSyncDirective = _.extend(
                 {},
@@ -359,28 +359,42 @@ export default function $CompileProvider($provide: auto.IProvideService) {
                 { templateUrl: null }
             );
             var templateUrl = _.isFunction(origAsyncDirective.templateUrl) ? origAsyncDirective.templateUrl($compileNode, attrs) : origAsyncDirective.templateUrl;
+            var afterTemplateNodeLinkFn: INodeLinkFunction;
+            var afterTemplateChildLinkFn: IChildLinkFunction;
+            var linkQueue: { scope: IScope, linkNode: any }[] = [];
             $compileNode.empty();
-            $http.get(templateUrl)
-                .success(function (template: string) {
-                    directives.unshift(derivedSyncDirective);
-                    $compileNode.html(template);
-                    applyDirectivesToNode(directives, $compileNode, attrs, previousCompileContext);
-                    compileNodes(<any>$compileNode[0].childNodes);
+            $http.get(templateUrl).success(function (template: string) {
+                directives.unshift(derivedSyncDirective);
+                $compileNode.html(template);
+                afterTemplateNodeLinkFn = applyDirectivesToNode(
+                    directives, $compileNode, attrs, previousCompileContext);
+                afterTemplateChildLinkFn = compileNodes(<any>$compileNode[0].childNodes);
+                _.forEach(linkQueue, function (linkCall) {
+                    afterTemplateNodeLinkFn(afterTemplateChildLinkFn, linkCall.scope, linkCall.linkNode);
                 });
+                linkQueue = null;
+            });
+            return function delayedLinkFn(Elements: IChildLinkFunction, scope: IScope, linkNode: any): void {
+                if (linkQueue) {
+                    linkQueue.push({ scope: scope, linkNode: linkNode })
+                } else {
+                    afterTemplateNodeLinkFn(afterTemplateChildLinkFn, scope, linkNode);
+                }
+            };
         }
 
-        function applyDirectivesToNode(directives: IDirectiveInternal[], compileNode: HTMLElement | JQuery, attrs: IAttributes, previousCompileContext: IPreviousCompileContext): INodeLinkFunction {
+        function applyDirectivesToNode(directives: IDirectiveInternal[], compileNode: HTMLElement | JQuery, attrs: IAttributes, previousCompileContext?: IPreviousCompileContext): INodeLinkFunction {
             previousCompileContext = previousCompileContext || {};
             var $compileNode = $(compileNode);
             var terminalPriority = -Number.MAX_VALUE;
             var terminal = false;
-            var preLinkFns: IDirectiveLinkFnInternal[] = [];
-            var postLinkFns: IDirectiveLinkFnInternal[] = [];
+            var preLinkFns: IDirectiveLinkFnInternal[] = previousCompileContext.preLinkFns || [];
+            var postLinkFns: IDirectiveLinkFnInternal[] = previousCompileContext.postLinkFns || [];
             var controllers: IControllerContainer = {};
             var newScopeDirective: IDirectiveInternal;
-            var newIsolateScopeDirective: IDirectiveInternal;
+            var newIsolateScopeDirective: IDirectiveInternal = previousCompileContext.newIsolateScopeDirective;
             var templateDirective: IDirectiveInternal = previousCompileContext.templateDirective;
-            var controllerDirectives: IDirectiveInternalContainer;
+            var controllerDirectives: IDirectiveInternalContainer = previousCompileContext.controllerDirectives;
 
             function getControllers(require: string | string[] | { [controller: string]: string }, $element: JQuery): IController | IController[] | { [key: string]: IController } {
                 var value: IController | IController[] | { [key: string]: IController };
@@ -511,7 +525,7 @@ export default function $CompileProvider($provide: auto.IProvideService) {
                 if (directive.priority < terminalPriority) {
                     return false;
                 }
-                if (directive.scope) {
+                if (directive.scope && !directive.templateUrl) {
                     if (_.isObject(directive.scope)) {
                         if (newIsolateScopeDirective || newScopeDirective) {
                             throw "Multiple directives asking for new/inherited scope";
@@ -542,11 +556,17 @@ export default function $CompileProvider($provide: auto.IProvideService) {
                         throw "Multiple directives asking form template";
                     }
                     templateDirective = directive;
-                    compileTemplateUrl(
+                    nodeLinkFn = compileTemplateUrl(
                         _.drop(directives, i),
                         $compileNode,
                         attrs,
-                        { templateDirective: templateDirective });
+                        {
+                            templateDirective: templateDirective,
+                            newIsolateScopeDirective: newIsolateScopeDirective,
+                            controllerDirectives: controllerDirectives,
+                            preLinkFns: preLinkFns,
+                            postLinkFns: postLinkFns
+                        });
                     return false;
                 } else if (directive.compile) {
                     var linkFn = directive.compile($compileNode, attrs, undefined);
@@ -566,7 +586,7 @@ export default function $CompileProvider($provide: auto.IProvideService) {
                 }
             });
 
-            let nodeLinkFn: INodeLinkFunction = (childLinkFn, scope: IScope, linkNode: Element) => {
+            function nodeLinkFn(childLinkFn, scope: IScope, linkNode: Element) {
                 var $element = $(linkNode);
                 var isolateScope: IScope;
 
@@ -634,7 +654,8 @@ export default function $CompileProvider($provide: auto.IProvideService) {
                 });
                 if (childLinkFn) {
                     var scopeToChild = scope;
-                    if (newIsolateScopeDirective && newIsolateScopeDirective.template) {
+                    if (newIsolateScopeDirective &&
+                        (newIsolateScopeDirective.template || newIsolateScopeDirective.templateUrl === null)) {
                         scopeToChild = isolateScope;
                     }
                     childLinkFn(scopeToChild, linkNode.childNodes)
