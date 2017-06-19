@@ -1,5 +1,5 @@
 // <reference path="../typings/modules/angular/index.d.ts" />
-import { IScope, IModule, IDeferred, IAngularStatic, ICompiledExpression, IFilterService, IParseService, auto, Injectable, IAngularEvent, IDirective, IDirectiveFactory, ITemplateLinkingFunction, IDirectiveLinkFn, ITranscludeFunction } from "angular";
+import { IScope, IModule, IDeferred, IAngularStatic, ICompiledExpression, IFilterService, IParseService, auto, Injectable, IAngularEvent, IDirective, IDirectiveFactory, ITemplateLinkingFunction, IDirectiveLinkFn, ITranscludeFunction, IController, IAttributes } from "angular";
 import { List } from "lodash";
 
 declare global {
@@ -9,6 +9,11 @@ declare global {
 
     interface Function {
         $inject?: ReadonlyArray<string>;
+        $$boundTransclude?: ITranscludeFunctionInternal;
+        /*terminal?: boolean;
+        scope?: boolean;
+        transcludeOnThisElement?: boolean;
+        transclude?: ITranscludeFunction;*/
     }
 
 }
@@ -270,7 +275,7 @@ interface ILinkFunctionInfo {
 }
 
 interface INodeLinkFunction {
-    (Elements: IChildLinkFunction, scope: IScope, node: any, transclude: ITranscludeFunctionInternal): void;
+    (Elements: IChildLinkFunction, scope: IScope, node: any, transclude?: ITranscludeFunctionInternal): void;
     scope?: any;
     terminal?: boolean;
     transcludeOnThisElement?: boolean;
@@ -278,7 +283,7 @@ interface INodeLinkFunction {
 }
 
 interface IChildLinkFunction {
-    (scope: IScope, node: any): void;
+    (scope: IScope, node: any, transclude?: ITranscludeFunctionInternal): void;
     scope?: IScope;
 }
 interface INodeList extends List<HTMLElement> {
@@ -289,7 +294,14 @@ interface ILateBoundController<T> {
     instance: T;
 }
 
-interface IDirectiveLinkFnInternal extends IDirectiveLinkFn {
+interface IDirectiveLinkFnInternal {
+    (
+        scope: IScope,
+        instanceElement: JQuery,
+        instanceAttributes: IAttributes,
+        controller?: IController | IController[] | { [key: string]: IController },
+        transclude?: ITranscludeFunctionInternal
+    ): void;
     isolateScope?: boolean;
     require?: string | string[] | { [controller: string]: string };
 }
@@ -301,13 +313,21 @@ interface IPreviousCompileContext {
     controllerDirectives?: IDirectiveInternalContainer
 }
 interface ITranscludeFunctionInternal {
-        // If the scope is provided, then the cloneAttachFn must be as well.
-        (transcludedScope: IScope, containingScope: IScope): JQuery;//, cloneAttachFn: ICloneAttachFunction, futureParentElement?: JQuery, slotName?: string
-        
-        /**
-         * Returns true if the specified slot contains content (i.e. one or more DOM nodes)
-         */
-        isSlotFilled?(slotName: string): boolean;
-    }
-//930
-//Transclusion from Descendant Nodes
+    // If the scope is provided, then the cloneAttachFn must be as well.
+    (transcludedScope: IScope, containingScope: IScope): JQuery;//, cloneAttachFn: ICloneAttachFunction, futureParentElement?: JQuery, slotName?: string
+
+    /**
+     * Returns true if the specified slot contains content (i.e. one or more DOM nodes)
+     */
+    isSlotFilled?(slotName: string): boolean;
+}
+
+interface ITemplateLinkingFunctionOptionsInternal {
+    parentBoundTranscludeFn?: ITranscludeFunctionInternal;
+    transcludeControllers?: {
+        [controller: string]: { instance: IController }
+    };
+    futureParentElement?: JQuery;
+}
+//936
+//Transclusion in Controllers
