@@ -329,5 +329,5 @@ interface ITemplateLinkingFunctionOptionsInternal {
     };
     futureParentElement?: JQuery;
 }
-//936
-//Transclusion in Controllers
+//939
+//a clone of the original:

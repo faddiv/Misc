@@ -3,7 +3,7 @@ import * as _ from "lodash";
 import * as sinon from 'sinon';
 import { publishExternalAPI } from '../../src/angular_public';
 import { createInjector } from '../../src/injector';
-import { IAngularStatic, IDirectiveFactory, IModule, ICompileProvider, ICompileService, IScope, IAttributes } from "angular";
+import { IAngularStatic, IDirectiveFactory, IModule, ICompileProvider, ICompileService, IScope, IAttributes, ITranscludeFunction } from "angular";
 import { IScopeEx } from "../../typings/testInterfaces";
 
 describe("$compile", () => {
@@ -376,5 +376,27 @@ describe("$compile", () => {
         });
 
         //Transclusion in Controllers
+        it("makes contents available to controller", () => {
+            var injector = makeInjectorWithDirectives({
+                myTranscluder() {
+                    return {
+                        transclude: true,
+                        template: "<div in-template></div>",
+                        controller($element: JQuery, $transclude: ITranscludeFunction) {
+                            $element.find("[in-template]").append($transclude());
+                        }
+                    };
+                }
+            });
+            injector.invoke(function ($compile: ICompileService, $rootScope: IScope) {
+                var el = $("<div my-transcluder><div in-transclude></div></div>");
+
+                $compile(el)($rootScope);
+
+                expect(el.find("> [in-template] > [in-transclude]").length).toBe(1);
+            });
+        });
+        
+        //The Clone Attach Function
     });
 });

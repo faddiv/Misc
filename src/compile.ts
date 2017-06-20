@@ -200,6 +200,9 @@ export default function $CompileProvider($provide: auto.IProvideService) {
                     parentBoundTranscludeFn = parentBoundTranscludeFn.$$boundTransclude;
                 }
                 $compileNodes.data("$scope", scope);
+                if (cloneAttachFn) {
+                    cloneAttachFn($compileNodes, scope);
+                }
                 compositeLinkFn(scope, $compileNodes, parentBoundTranscludeFn);
                 return $compileNodes;
             };
@@ -557,6 +560,7 @@ export default function $CompileProvider($provide: auto.IProvideService) {
                         var locals = {
                             $scope: directive === newIsolateScopeDirective ? isolateScope : scope,
                             $element: $element,
+                            $transclude: scopeBoundTranscludeFn,
                             $attrs: attrs
                         }
                         var controllerName = directive.controller;
