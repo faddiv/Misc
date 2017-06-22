@@ -9,6 +9,7 @@ import { $QProvider, $$QProvider } from './q';
 import { $HttpBackendProvider } from './http_backend';
 import { $HttpProvider, $HttpParamSerializerProvider, $HttpParamSerializerJQLikeProvider } from './http';
 import { default as NgControllerDirective } from './directives/ng_controller';
+import { default as NgTranscludeDirective } from './directives/ng_transclude';
 
 export function publishExternalAPI() {
     setupModuleLoader(window);
@@ -26,4 +27,5 @@ export function publishExternalAPI() {
     ngModule.provider("$compile", <any>compile);
     ngModule.provider("$controller", <any>controller);
     ngModule.directive("ngController", NgControllerDirective);
+    ngModule.directive("ngTransclude", NgTranscludeDirective);
 }

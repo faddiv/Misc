@@ -397,6 +397,29 @@ describe("$compile", () => {
             });
         });
         
-        //The Clone Attach Function
+        //Transclusion with Multi-Element Directives
+        it("can be used with multi-element directives", () => {
+             var injector = makeInjectorWithDirectives({
+                myTranscluder($compile: ICompileService) {
+                    return {
+                        transclude: true,
+                        multiElement: true,
+                        template: "<div in-template></div>",
+                        link(scope: IScope, element: JQuery, attrs: IAttributes, ctrl: any, transclude: ITranscludeFunction) {
+                            element.find("[in-template]").append(transclude());
+                        }
+                    };
+                }
+            });
+            injector.invoke(function ($compile: ICompileService, $rootScope: IScope) {
+                var el = $(
+                    "<div><div my-transcluder-start><div in-transclude></div></div>"+
+                    "<div my-transcluder-end></div></div>");
+
+                $compile(el)($rootScope);
+
+                expect(el.find("[my-transcluder-start] [in-template] [in-transclude]").length).toBe(1);
+            });
+        });
     });
 });

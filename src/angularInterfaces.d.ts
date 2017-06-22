@@ -310,7 +310,8 @@ interface IPreviousCompileContext {
     preLinkFns?: IDirectiveLinkFnInternal[];
     postLinkFns?: IDirectiveLinkFnInternal[];
     newIsolateScopeDirective?: IDirectiveInternal;
-    controllerDirectives?: IDirectiveInternalContainer
+    controllerDirectives?: IDirectiveInternalContainer;
+    hasTranscludeDirective?: boolean;
 }
 interface ITranscludeFunctionInternal {
     // If the scope is provided, then the cloneAttachFn must be as well.
@@ -329,5 +330,5 @@ interface ITemplateLinkingFunctionOptionsInternal {
     };
     futureParentElement?: JQuery;
 }
-//944
-//Transclusion with Template URLs
+//971
+//Interpolation
