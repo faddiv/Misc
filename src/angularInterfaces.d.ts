@@ -1,5 +1,5 @@
 // <reference path="../typings/modules/angular/index.d.ts" />
-import { IScope, IModule, IDeferred, IAngularStatic, ICompiledExpression, IFilterService, IParseService, auto, Injectable, IAngularEvent, IDirective, IDirectiveFactory, ITemplateLinkingFunction, IDirectiveLinkFn, ITranscludeFunction, IController, IAttributes } from "angular";
+import { IScope, IModule, IDeferred, IAngularStatic, ICompiledExpression, IFilterService, IParseService, auto, Injectable, IAngularEvent, IDirective, IDirectiveFactory, ITemplateLinkingFunction, IDirectiveLinkFn, ITranscludeFunction, IController, IAttributes, ICloneAttachFunction } from "angular";
 import { List } from "lodash";
 
 declare global {
@@ -314,7 +314,7 @@ interface IPreviousCompileContext {
 }
 interface ITranscludeFunctionInternal {
     // If the scope is provided, then the cloneAttachFn must be as well.
-    (transcludedScope: IScope, containingScope: IScope): JQuery;//, cloneAttachFn: ICloneAttachFunction, futureParentElement?: JQuery, slotName?: string
+    (transcludedScope: IScope, cloneAttachFn: ICloneAttachFunction, containingScope: IScope): JQuery;//, cloneAttachFn: ICloneAttachFunction, futureParentElement?: JQuery, slotName?: string
 
     /**
      * Returns true if the specified slot contains content (i.e. one or more DOM nodes)
@@ -329,5 +329,5 @@ interface ITemplateLinkingFunctionOptionsInternal {
     };
     futureParentElement?: JQuery;
 }
-//939
-//a clone of the original:
+//944
+//Transclusion with Template URLs

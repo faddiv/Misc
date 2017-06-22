@@ -26,6 +26,10 @@ const BOOLEAN_ELEMENTS = {
 
 const REQUIRE_PREFIX_REGEXP = /^(\^\^?)?(\?)?(\^\^?)?/;
 
+function isCloneAttach(transcludedScope: any): transcludedScope is ICloneAttachFunction {
+    return !(transcludedScope && transcludedScope.$watch && transcludedScope.$evalAsync);
+}
+
 function nodeName(element: HTMLElement | HTMLElement[]): string {
     return _.isArray(element) ? element[0].nodeName : element.nodeName;
 }
@@ -200,11 +204,15 @@ export default function $CompileProvider($provide: auto.IProvideService) {
                     parentBoundTranscludeFn = parentBoundTranscludeFn.$$boundTransclude;
                 }
                 $compileNodes.data("$scope", scope);
+                var $linkNodes: JQuery;
                 if (cloneAttachFn) {
-                    cloneAttachFn($compileNodes, scope);
+                    $linkNodes = $compileNodes.clone();
+                    cloneAttachFn($linkNodes, scope);
+                } else {
+                    $linkNodes = $compileNodes;
                 }
-                compositeLinkFn(scope, $compileNodes, parentBoundTranscludeFn);
-                return $compileNodes;
+                compositeLinkFn(scope, $linkNodes, parentBoundTranscludeFn);
+                return $linkNodes;
             };
         }
 
@@ -252,11 +260,11 @@ export default function $CompileProvider($provide: auto.IProvideService) {
 
                         var boundTranscludeFn: ITranscludeFunctionInternal;
                         if (linkFn.nodeLinkFn.transcludeOnThisElement) {
-                            boundTranscludeFn = function (transcludedScope: IScope, containingScope: IScope) {
+                            boundTranscludeFn = function (transcludedScope: IScope, cloneAttachFn: ICloneAttachFunction, containingScope: IScope) {
                                 if (!transcludedScope) {
                                     transcludedScope = scope.$new(false, containingScope);
                                 }
-                                return linkFn.nodeLinkFn.transclude(transcludedScope, undefined);
+                                return linkFn.nodeLinkFn.transclude(transcludedScope, cloneAttachFn);
                             }
                         } else if (parentBoundTranscludeFn) {
                             boundTranscludeFn = parentBoundTranscludeFn;
@@ -605,8 +613,12 @@ export default function $CompileProvider($provide: auto.IProvideService) {
                         _.assign(controller, requiredControllers);
                     }
                 });
-                function scopeBoundTranscludeFn(transcludedScope: IScope) {
-                    return boundTranscludeFn(transcludedScope, scope);
+                function scopeBoundTranscludeFn(transcludedScope: IScope | ICloneAttachFunction, cloneAttachFn?: ICloneAttachFunction) {
+                    if (isCloneAttach(transcludedScope)) {
+                        cloneAttachFn = transcludedScope;
+                        transcludedScope = <IScope>undefined;
+                    }
+                    return boundTranscludeFn(transcludedScope, cloneAttachFn, scope);
                 }
                 scopeBoundTranscludeFn.$$boundTransclude = boundTranscludeFn;
                 _.forEach(preLinkFns, function (linkFn) {
