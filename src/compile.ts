@@ -1,5 +1,5 @@
 import * as _ from "lodash";
-import { ICompileProvider, IDirectiveFactory, auto, Injectable, IDirective, IAttributes, IScope, ITemplateLinkingFunction, ITranscludeFunction, IControllerService, IController, IHttpService, ICloneAttachFunction, ITemplateLinkingFunctionOptions } from "angular";
+import { ICompileProvider, IDirectiveFactory, auto, Injectable, IDirective, IAttributes, IScope, ITemplateLinkingFunction, ITranscludeFunction, IControllerService, IController, IHttpService, ICloneAttachFunction, ITemplateLinkingFunctionOptions, IInterpolateService } from "angular";
 import { IDirectiveInternal, IDirectivesContainer, ILinkFunctionInfo, INodeLinkFunction, INodeList, IIsolateBindingContainer, IParseService, ICompiledExpressionInternal, IDirectiveInternalContainer, IControllerContainer, IDirectiveBinding, ILateBoundController, IDirectiveLinkFnInternal, IPreviousCompileContext, IChildLinkFunction, ITranscludeFunctionInternal, ITemplateLinkingFunctionOptionsInternal } from "./angularInterfaces";
 
 "use strict";
@@ -120,7 +120,7 @@ export default function $CompileProvider($provide: auto.IProvideService) {
         }
     };
 
-    this.$get = ["$injector", "$parse", "$controller", "$rootScope", "$http", function ($injector: auto.IInjectorService, $parse: IParseService, $controller: IControllerService, $rootScope: IScope, $http: IHttpService) {
+    this.$get = ["$injector", "$parse", "$controller", "$rootScope", "$http", "$interpolate", function ($injector: auto.IInjectorService, $parse: IParseService, $controller: IControllerService, $rootScope: IScope, $http: IHttpService, $interpolate: IInterpolateService) {
         class Attributes implements IAttributes {
             $attr: Object
             private $$observers: {
@@ -295,6 +295,26 @@ export default function $CompileProvider($provide: auto.IProvideService) {
             return compositeLinkFn;
         }
 
+        function addTextInterpolateDirective(directives: IDirectiveInternal[], text: string) {
+            var interpolateFn = $interpolate(text, true);
+            if (interpolateFn) {
+                directives.push({
+                    priority: 0,
+                    compile() {
+                        return function link(scope: IScope, element: JQuery) {
+                            var bindings: string[] = element.parent().data("$binding") || [];
+                            bindings = bindings.concat(interpolateFn.expressions);
+                            element.parent().data("$binding", bindings);
+                            element.parent().addClass("ng-binding");
+                            scope.$watch(interpolateFn, function (newValue) {
+                                element[0].nodeValue = newValue;
+                            });
+                        }
+                    }
+                });
+            }
+        }
+
         function collectDirectives(node: HTMLElement, attrs: IAttributes, maxPriority?: number): IDirectiveInternal[] {
             var match;
             var directives: IDirectiveInternal[] = [];
@@ -350,6 +370,8 @@ export default function $CompileProvider($provide: auto.IProvideService) {
                         attrs[normalizedName] = match[2] ? match[2].trim() : undefined;
                     }
                 }
+            } else if (node.nodeType === Node.TEXT_NODE) {
+                addTextInterpolateDirective(directives, node.nodeValue);
             }
             directives.sort(byPriority);
             return directives;

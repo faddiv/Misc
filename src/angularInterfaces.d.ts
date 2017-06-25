@@ -229,11 +229,11 @@ interface IFilterFactory {
 }
 
 interface IDirectiveInternal extends IDirective {
-    index: number;
-    name: string;
-    $$start: string;
-    $$end: string;
-    $$bindings: IDirectiveBinding;
+    index?: number;
+    name?: string;
+    $$start?: string;
+    $$end?: string;
+    $$bindings?: IDirectiveBinding;
 }
 
 interface IDirectiveBinding {
@@ -330,5 +330,5 @@ interface ITemplateLinkingFunctionOptionsInternal {
     };
     futureParentElement?: JQuery;
 }
-//971
-//Interpolation
+//991
+//Attribute Interpolation

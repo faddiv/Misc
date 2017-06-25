@@ -1653,6 +1653,7 @@ namespace angular {
 
     interface IInterpolationFunction {
         (context: any): string;
+        expressions?: string[];
     }
 
     interface IInterpolateProvider extends IServiceProvider {

@@ -10,6 +10,7 @@ import { $HttpBackendProvider } from './http_backend';
 import { $HttpProvider, $HttpParamSerializerProvider, $HttpParamSerializerJQLikeProvider } from './http';
 import { default as NgControllerDirective } from './directives/ng_controller';
 import { default as NgTranscludeDirective } from './directives/ng_transclude';
+import { default as $InterpolateProvider } from "./interpolate";
 
 export function publishExternalAPI() {
     setupModuleLoader(window);
@@ -26,6 +27,8 @@ export function publishExternalAPI() {
     ngModule.provider("$httpParamSerializerJQLike", <any>$HttpParamSerializerJQLikeProvider);
     ngModule.provider("$compile", <any>compile);
     ngModule.provider("$controller", <any>controller);
+    ngModule.provider("$interpolate", <any>$InterpolateProvider);
+
     ngModule.directive("ngController", NgControllerDirective);
     ngModule.directive("ngTransclude", NgTranscludeDirective);
 }
