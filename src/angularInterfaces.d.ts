@@ -330,5 +330,13 @@ interface ITemplateLinkingFunctionOptionsInternal {
     };
     futureParentElement?: JQuery;
 }
-//991
-//Attribute Interpolation
+
+interface IAttributeObserver extends Array<IAttributeObserverItem> {
+    $$inter?: boolean;
+}
+
+interface IAttributeObserverItem {
+    (value?: any): any;
+}
+//1001
+//Optimizing Interpolation Watches With A Watch Delegate

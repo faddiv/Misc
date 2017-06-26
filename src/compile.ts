@@ -1,6 +1,6 @@
 import * as _ from "lodash";
 import { ICompileProvider, IDirectiveFactory, auto, Injectable, IDirective, IAttributes, IScope, ITemplateLinkingFunction, ITranscludeFunction, IControllerService, IController, IHttpService, ICloneAttachFunction, ITemplateLinkingFunctionOptions, IInterpolateService } from "angular";
-import { IDirectiveInternal, IDirectivesContainer, ILinkFunctionInfo, INodeLinkFunction, INodeList, IIsolateBindingContainer, IParseService, ICompiledExpressionInternal, IDirectiveInternalContainer, IControllerContainer, IDirectiveBinding, ILateBoundController, IDirectiveLinkFnInternal, IPreviousCompileContext, IChildLinkFunction, ITranscludeFunctionInternal, ITemplateLinkingFunctionOptionsInternal } from "./angularInterfaces";
+import { IDirectiveInternal, IDirectivesContainer, ILinkFunctionInfo, INodeLinkFunction, INodeList, IIsolateBindingContainer, IParseService, ICompiledExpressionInternal, IDirectiveInternalContainer, IControllerContainer, IDirectiveBinding, ILateBoundController, IDirectiveLinkFnInternal, IPreviousCompileContext, IChildLinkFunction, ITranscludeFunctionInternal, ITemplateLinkingFunctionOptionsInternal, IAttributeObserver } from "./angularInterfaces";
 
 "use strict";
 
@@ -123,8 +123,8 @@ export default function $CompileProvider($provide: auto.IProvideService) {
     this.$get = ["$injector", "$parse", "$controller", "$rootScope", "$http", "$interpolate", function ($injector: auto.IInjectorService, $parse: IParseService, $controller: IControllerService, $rootScope: IScope, $http: IHttpService, $interpolate: IInterpolateService) {
         class Attributes implements IAttributes {
             $attr: Object
-            private $$observers: {
-                [name: string]: ((value?: any) => any)[]
+            public $$observers: {
+                [name: string]: IAttributeObserver
             };
             constructor(public $$element: JQuery) {
                 this.$attr = {};
@@ -183,7 +183,9 @@ export default function $CompileProvider($provide: auto.IProvideService) {
                 this.$$observers[key] = this.$$observers[key] || [];
                 this.$$observers[key].push(fn);
                 $rootScope.$evalAsync(() => {
-                    fn(this[key]);
+                    if (!this.$$observers[key].$$inter) {
+                        fn(this[key]);
+                    }
                 })
                 return () => {
                     var index = this.$$observers[key].indexOf(fn);
@@ -315,6 +317,38 @@ export default function $CompileProvider($provide: auto.IProvideService) {
             }
         }
 
+        function addAttrInterpolateDirective(directives: IDirectiveInternal[], value: string, name: string) {
+            var interpolateFn = $interpolate(value, true);
+            if (interpolateFn) {
+                directives.push({
+                    priority: 100,
+                    compile() {
+                        return {
+                            pre: function link(scope: IScope, element: JQuery, attrs: Attributes) {
+                                if(/^(on[a-z]+|formaction)$/.test(name)) {
+                                    throw "Interpolations for HTML DOM event attributes not allowed";
+                                }
+                                var newValue = attrs[name];
+                                if(newValue !== value) {
+                                    interpolateFn = newValue && $interpolate(newValue, true);
+                                }
+                                if(!interpolateFn) {
+                                    return;
+                                }
+                                attrs.$$observers = attrs.$$observers || {};
+                                attrs.$$observers[name] = attrs.$$observers[name] || [];
+                                attrs.$$observers[name].$$inter = true;
+                                attrs[name] = interpolateFn(scope);
+                                scope.$watch(interpolateFn, function (newValue) {
+                                    attrs.$set(name, newValue);
+                                });
+                            }
+                        }
+                    }
+                })
+            }
+        }
+
         function collectDirectives(node: HTMLElement, attrs: IAttributes, maxPriority?: number): IDirectiveInternal[] {
             var match;
             var directives: IDirectiveInternal[] = [];
@@ -344,6 +378,7 @@ export default function $CompileProvider($provide: auto.IProvideService) {
                         }
                     }
                     normalizedAttrName = directiveNormalize(name.toLowerCase());
+                    addAttrInterpolateDirective(directives, attr.value, normalizedAttrName);
                     addDirective(directives, normalizedAttrName, "A", maxPriority, attrStartName, attrEndName);
                     if (isNgAttr || !attrs.hasOwnProperty(normalizedAttrName)) {
                         attrs[normalizedAttrName] = attr.value.trim();
@@ -543,7 +578,7 @@ export default function $CompileProvider($provide: auto.IProvideService) {
                                 destination[scopeName] = newAttrValue;
                             });
                             if (attrs[attrName]) {
-                                destination[scopeName] = attrs[attrName];
+                                destination[scopeName] = $interpolate(attrs[attrName])(scope);
                             }
                             break;
                         case "<":
