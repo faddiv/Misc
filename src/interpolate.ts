@@ -1,6 +1,7 @@
 "use strict";
-import { IParseService, ICompiledExpression, IInterpolationFunction } from "angular";
+import { IParseService, ICompiledExpression, IInterpolationFunction, IScope } from "angular";
 import * as _ from "lodash";
+import { IInterpolationFunctionInternal } from "./angularInterfaces";
 
 
 function stringify(value: string | Object) {
@@ -24,6 +25,8 @@ export default function $InterpolateProvider() {
             var index = 0;
             var parts: (string | ICompiledExpression)[] = [];
             var expressions: string[] = [];
+            var expressionFns: ICompiledExpression[] = [];
+            var expressionPositions: number[] = [];
             var startIndex: number;
             var endIndex: number;
             var exp: string;
@@ -39,25 +42,40 @@ export default function $InterpolateProvider() {
                     }
                     exp = text.substring(startIndex + 2, endIndex);
                     expFn = $parse(exp);
-                    parts.push(expFn);
                     expressions.push(exp);
+                    expressionFns.push(expFn);
+                    expressionPositions.push(parts.length);
+                    parts.push(expFn);
                     index = endIndex + 2;
                 } else {
                     parts.push(unescapeText(text.substring(index)));
                     break;
                 }
             }
+            function compute(values: any[]) {
+                _.forEach(values, function (value, i) {
+                    parts[expressionPositions[i]] = stringify(value);
+                })
+                return parts.join("");
+            }
             if (expressions.length || !mustHaveExpressions) {
                 return _.extend(function interpolationFn(context: any) {
-                    return _.reduce<string | ICompiledExpression, string>(parts, function (result, part) {
-                        if (_.isFunction(part)) {
-                            return result + stringify(part(context));
-                        } else {
-                            return result + part;
-                        }
-                    }, "");
-                }, {
-                    expressions: expressions
+                    var values = _.map(expressionFns, function (expressionFn) {
+                        return expressionFn(context);
+                    });
+                    return compute(values);
+                }, <IInterpolationFunctionInternal>{
+                    expressions: expressions,
+                    $$watchDelegate(scope: IScope, listener) {
+                        var lastValue;
+                        return scope.$watchGroup(expressionFns, function (newValues: any[], oldValues: any[]) {
+                            var newValue = compute(newValues);
+                            listener(newValue,
+                                (newValues === oldValues ? newValue : lastValue),
+                                scope);
+                            lastValue = newValue;
+                        });
+                    }
                 });
             }
         }

@@ -1,5 +1,5 @@
 // <reference path="../typings/modules/angular/index.d.ts" />
-import { IScope, IModule, IDeferred, IAngularStatic, ICompiledExpression, IFilterService, IParseService, auto, Injectable, IAngularEvent, IDirective, IDirectiveFactory, ITemplateLinkingFunction, IDirectiveLinkFn, ITranscludeFunction, IController, IAttributes, ICloneAttachFunction } from "angular";
+import { IScope, IModule, IDeferred, IAngularStatic, ICompiledExpression, IFilterService, IParseService, auto, Injectable, IAngularEvent, IDirective, IDirectiveFactory, ITemplateLinkingFunction, IDirectiveLinkFn, ITranscludeFunction, IController, IAttributes, ICloneAttachFunction, IInterpolationFunction } from "angular";
 import { List } from "lodash";
 
 declare global {
@@ -338,5 +338,11 @@ interface IAttributeObserver extends Array<IAttributeObserverItem> {
 interface IAttributeObserverItem {
     (value?: any): any;
 }
-//1001
-//Optimizing Interpolation Watches With A Watch Delegate
+interface IInterpolationFunctionInternal extends IInterpolationFunction {
+    $$watchDelegate(scope: IScope,
+        listenerFn?: (oldValue: any, newValue: any, scope: IScope) => void,
+        valueEq?: boolean,
+        expr?: ICompiledExpression): () => void;
+}
+//1007
+//Making Interpolation Symbols Configurable
