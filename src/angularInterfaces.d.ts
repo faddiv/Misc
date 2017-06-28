@@ -344,5 +344,5 @@ interface IInterpolationFunctionInternal extends IInterpolationFunction {
         valueEq?: boolean,
         expr?: ICompiledExpression): () => void;
 }
-//1007
-//Making Interpolation Symbols Configurable
+//1015
+//Components

@@ -1,5 +1,5 @@
 "use strict";
-import { IParseService, ICompiledExpression, IInterpolationFunction, IScope } from "angular";
+import { IParseService, ICompiledExpression, IInterpolationFunction, IScope, IInterpolateService } from "angular";
 import * as _ from "lodash";
 import { IInterpolationFunctionInternal } from "./angularInterfaces";
 
@@ -14,14 +14,40 @@ function stringify(value: string | Object) {
     }
 }
 
-function unescapeText(text: string) {
-    return text.replace(/\\{\\{/g, "{{")
-        .replace(/\\}\\}/g, "}}");
-}
-
 export default function $InterpolateProvider() {
+    var startSymbol = "{{";
+    var endSymbol = "}}";
+    function escapeChar(char: string) {
+        return "\\\\\\" + char;
+    }
+    this.startSymbol = function (value: string) {
+        if (value) {
+            startSymbol = value;
+            return this;
+        } else {
+            return startSymbol;
+        }
+    };
+    this.endSymbol = function (value: string) {
+        if (value) {
+            endSymbol = value;
+            return this;
+        } else {
+            return endSymbol;
+        }
+    };
     this.$get = ["$parse", function ($parse: IParseService) {
-        function $interpolate(text: string, mustHaveExpressions?: boolean): IInterpolationFunction {
+        var escapedStartMatcher =
+            new RegExp(startSymbol.replace(/./g, escapeChar), "g");
+        var escapedEndMatcher =
+            new RegExp(endSymbol.replace(/./g, escapeChar), "g");
+
+        function unescapeText(text: string) {
+            return text.replace(escapedStartMatcher, startSymbol)
+                .replace(escapedEndMatcher, endSymbol);
+        }
+
+        let $interpolate: IInterpolateService = function (text: string, mustHaveExpressions?: boolean): IInterpolationFunction {
             var index = 0;
             var parts: (string | ICompiledExpression)[] = [];
             var expressions: string[] = [];
@@ -32,21 +58,21 @@ export default function $InterpolateProvider() {
             var exp: string;
             var expFn: ICompiledExpression;
             while (index < text.length) {
-                startIndex = text.indexOf("{{", index);
+                startIndex = text.indexOf(startSymbol, index);
                 if (startIndex !== -1) {
-                    endIndex = text.indexOf("}}", startIndex + 2);
+                    endIndex = text.indexOf(endSymbol, startIndex + startSymbol.length);
                 }
                 if (startIndex !== -1 && endIndex !== -1) {
                     if (startIndex !== index) {
                         parts.push(unescapeText(text.substring(index, startIndex)));
                     }
-                    exp = text.substring(startIndex + 2, endIndex);
+                    exp = text.substring(startIndex + startSymbol.length, endIndex);
                     expFn = $parse(exp);
                     expressions.push(exp);
                     expressionFns.push(expFn);
                     expressionPositions.push(parts.length);
                     parts.push(expFn);
-                    index = endIndex + 2;
+                    index = endIndex + endSymbol.length;
                 } else {
                     parts.push(unescapeText(text.substring(index)));
                     break;
@@ -79,7 +105,8 @@ export default function $InterpolateProvider() {
                 });
             }
         }
-
+        $interpolate.startSymbol = _.constant(startSymbol);
+        $interpolate.endSymbol = _.constant(endSymbol);
         return $interpolate;
     }];
 }

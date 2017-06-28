@@ -195,7 +195,14 @@ export default function $CompileProvider($provide: auto.IProvideService) {
                 };
             }
         }
-
+        var startSymbol = $interpolate.startSymbol();
+        var endSymbol = $interpolate.endSymbol();
+        var denormalizeTemplate = (startSymbol === "{{" && endSymbol === "}}") ?
+            _.identity :
+            function (template: string) {
+                return template.replace(/\{\{/g, startSymbol)
+                    .replace(/\}\}/g, endSymbol);
+            };
         function compile($compileNodes: JQuery, maxPriority?: number): ITranscludeFunction {
             var compositeLinkFn = compileNodes($compileNodes, maxPriority);
 
@@ -325,14 +332,14 @@ export default function $CompileProvider($provide: auto.IProvideService) {
                     compile() {
                         return {
                             pre: function link(scope: IScope, element: JQuery, attrs: Attributes) {
-                                if(/^(on[a-z]+|formaction)$/.test(name)) {
+                                if (/^(on[a-z]+|formaction)$/.test(name)) {
                                     throw "Interpolations for HTML DOM event attributes not allowed";
                                 }
                                 var newValue = attrs[name];
-                                if(newValue !== value) {
+                                if (newValue !== value) {
                                     interpolateFn = newValue && $interpolate(newValue, true);
                                 }
-                                if(!interpolateFn) {
+                                if (!interpolateFn) {
                                     return;
                                 }
                                 attrs.$$observers = attrs.$$observers || {};
@@ -467,6 +474,7 @@ export default function $CompileProvider($provide: auto.IProvideService) {
             var linkQueue: { scope: IScope, linkNode: any, boundTranscludeFn: ITranscludeFunctionInternal }[] = [];
             $compileNode.empty();
             $http.get(templateUrl).success(function (template: string) {
+                template = denormalizeTemplate(template);
                 directives.unshift(derivedSyncDirective);
                 $compileNode.html(template);
                 afterTemplateNodeLinkFn = applyDirectivesToNode(
@@ -773,9 +781,11 @@ export default function $CompileProvider($provide: auto.IProvideService) {
                         throw "Multiple directives asking form template";
                     }
                     templateDirective = directive;
-                    $compileNode.html(_.isFunction(directive.template)
+                    var template = _.isFunction(directive.template)
                         ? directive.template($compileNode, attrs)
-                        : directive.template);
+                        : directive.template;
+                    template = denormalizeTemplate(template);
+                    $compileNode.html(template);
                 }
                 if (directive.templateUrl) {
                     if (templateDirective) {

@@ -1647,8 +1647,8 @@ namespace angular {
     ///////////////////////////////////////////////////////////////////////////
     interface IInterpolateService {
         (text: string, mustHaveExpression?: boolean, trustedContext?: string, allOrNothing?: boolean): IInterpolationFunction;
-        endSymbol(): string;
-        startSymbol(): string;
+        endSymbol?(): string;
+        startSymbol?(): string;
     }
 
     interface IInterpolationFunction {
