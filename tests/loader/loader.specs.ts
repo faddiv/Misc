@@ -1,4 +1,5 @@
 import { setupModuleLoader } from '../../src/loader';
+import { IAngularStatic } from "angular";
 
 describe("setupModuleLoader", () => {
 

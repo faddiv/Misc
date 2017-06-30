@@ -1,10 +1,12 @@
 import * as _ from "lodash";
-import { ICompileProvider, IDirectiveFactory, auto, Injectable, IDirective, IAttributes, IScope, ITemplateLinkingFunction, ITranscludeFunction, IControllerService, IController, IHttpService, ICloneAttachFunction, ITemplateLinkingFunctionOptions, IInterpolateService } from "angular";
+import { identifierForController } from "./controller";
+import { ICompileProvider, IDirectiveFactory, auto, Injectable, IDirective, IAttributes, IScope, ITemplateLinkingFunction, ITranscludeFunction, IControllerService, IController, IHttpService, ICloneAttachFunction, ITemplateLinkingFunctionOptions, IInterpolateService, IComponentOptions } from "angular";
 import { IDirectiveInternal, IDirectivesContainer, ILinkFunctionInfo, INodeLinkFunction, INodeList, IIsolateBindingContainer, IParseService, ICompiledExpressionInternal, IDirectiveInternalContainer, IControllerContainer, IDirectiveBinding, ILateBoundController, IDirectiveLinkFnInternal, IPreviousCompileContext, IChildLinkFunction, ITranscludeFunctionInternal, ITemplateLinkingFunctionOptionsInternal, IAttributeObserver } from "./angularInterfaces";
 
 "use strict";
 
 const PREFIX_REGEXP = /(x[\:\-_]|data[\:\-_])/i;
+
 const BOOLEAN_ATTRS = {
     multiple: true,
     selected: true,
@@ -119,6 +121,22 @@ export default function $CompileProvider($provide: auto.IProvideService) {
             });
         }
     };
+
+    this.component = function (name: string, options: IComponentOptions) {
+        function factory() {
+            return <IDirective>{
+                restrict: "E",
+                controller: options.controller,
+                controllerAs: options.controllerAs ||
+                identifierForController(options.controller) ||
+                "$ctrl",
+                scope: {},
+                bindToController: options.bindings || {}
+            };
+        }
+
+        return this.directive(name, factory);
+    }
 
     this.$get = ["$injector", "$parse", "$controller", "$rootScope", "$http", "$interpolate", function ($injector: auto.IInjectorService, $parse: IParseService, $controller: IControllerService, $rootScope: IScope, $http: IHttpService, $interpolate: IInterpolateService) {
         class Attributes implements IAttributes {

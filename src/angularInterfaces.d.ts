@@ -344,5 +344,5 @@ interface IInterpolationFunctionInternal extends IInterpolationFunction {
         valueEq?: boolean,
         expr?: ICompiledExpression): () => void;
 }
-//1015
-//Components
+//1025
+//Component Templates

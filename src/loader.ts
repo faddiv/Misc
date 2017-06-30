@@ -35,6 +35,7 @@ export function setupModuleLoader(w: Window) {
             filter: invokeLater("$filterProvider", "register", "push", invokeQueue),
             directive: invokeLater("$compileProvider", "directive", "push", invokeQueue),
             controller: invokeLater("$controllerProvider", "register", "push", invokeQueue),
+            component: invokeLater("$compileProvider", "component", "push", invokeQueue),
             config: invokeLater("$injector", "invoke", "push", configBlocks),
             run(fn: Injectable<Function>) {
                 moduleInstance._runBlocks.push(fn);
@@ -42,7 +43,6 @@ export function setupModuleLoader(w: Window) {
             },
             _invokeQueue: invokeQueue,
             _configBlocks: configBlocks,
-            component: undefined,
             _runBlocks: []
         };
         if (configFn) {
