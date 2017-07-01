@@ -1,7 +1,7 @@
 import * as _ from "lodash";
 import { identifierForController } from "./controller";
 import { ICompileProvider, IDirectiveFactory, auto, Injectable, IDirective, IAttributes, IScope, ITemplateLinkingFunction, ITranscludeFunction, IControllerService, IController, IHttpService, ICloneAttachFunction, ITemplateLinkingFunctionOptions, IInterpolateService, IComponentOptions } from "angular";
-import { IDirectiveInternal, IDirectivesContainer, ILinkFunctionInfo, INodeLinkFunction, INodeList, IIsolateBindingContainer, IParseService, ICompiledExpressionInternal, IDirectiveInternalContainer, IControllerContainer, IDirectiveBinding, ILateBoundController, IDirectiveLinkFnInternal, IPreviousCompileContext, IChildLinkFunction, ITranscludeFunctionInternal, ITemplateLinkingFunctionOptionsInternal, IAttributeObserver } from "./angularInterfaces";
+import { IDirectiveInternal, IDirectivesContainer, ILinkFunctionInfo, INodeLinkFunction, INodeList, IIsolateBindingContainer, IParseService, ICompiledExpressionInternal, IDirectiveInternalContainer, IControllerContainer, IDirectiveBinding, ILateBoundController, IDirectiveLinkFnInternal, IPreviousCompileContext, IChildLinkFunction, ITranscludeFunctionInternal, ITemplateLinkingFunctionOptionsInternal, IAttributeObserver, IChangesCollection, IChangesProperty, IScopeInternal } from "./angularInterfaces";
 
 "use strict";
 
@@ -28,6 +28,8 @@ const BOOLEAN_ELEMENTS = {
 
 const REQUIRE_PREFIX_REGEXP = /^(\^\^?)?(\?)?(\^\^?)?/;
 
+const _UNINITIALIZED_VALUE = new function UNINITIALIZED_VALUE() { };
+
 function isCloneAttach(transcludedScope: any): transcludedScope is ICloneAttachFunction {
     return !(transcludedScope && transcludedScope.$watch && transcludedScope.$evalAsync);
 }
@@ -43,6 +45,7 @@ function directiveNormalize(name: string) {
 function isBooleanAttribute(node: Element, attrName: string) {
     return BOOLEAN_ATTRS[attrName] && BOOLEAN_ELEMENTS[node.nodeName];
 }
+
 function parseIsolateBindings(scope: any): IIsolateBindingContainer {
     var bindings: IIsolateBindingContainer = {};
     _.forEach(scope, function (definition, scopeName) {
@@ -86,9 +89,39 @@ function getDirectiveRequire(directive: IDirectiveInternal, name: string): strin
     return require
 }
 
+function makeInjectable(template: string | Injectable<(...args: any[]) => string>, $injector: auto.IInjectorService) {
+    if (_.isFunction(template) || _.isArray(template)) {
+        return function ($element, $attrs) {
+            return $injector.invoke(<Function>template, this, {
+                $element: $element,
+                $attrs: $attrs
+            });
+        }
+    } else {
+        return template;
+    }
+}
+
+class SimpleChange implements IChangesProperty {
+    isFirstChange(): boolean {
+        return this.previousValue === _UNINITIALIZED_VALUE;
+    }
+    constructor(public previousValue: any, public currentValue: any) {
+    }
+}
+
 export default function $CompileProvider($provide: auto.IProvideService) {
 
     var hasDirectives: IDirectivesContainer = {};
+    var TTL = 10;
+
+    this.onChangesTtl = function (value) {
+        if (arguments.length) {
+            TTL = value;
+            return this;
+        }
+        return TTL;
+    }
 
     this.directive = function (name: string | { [directiveName: string]: Injectable<IDirectiveFactory> }, directiveFactory?: IDirectiveFactory) {
         if (_.isString(name)) {
@@ -122,8 +155,9 @@ export default function $CompileProvider($provide: auto.IProvideService) {
         }
     };
 
-    this.component = function (name: string, options: IComponentOptions) {
-        function factory() {
+    this.component = function (name: string, options: IComponentOptions): string {
+
+        function factory($injector: auto.IInjectorService) {
             return <IDirective>{
                 restrict: "E",
                 controller: options.controller,
@@ -131,14 +165,19 @@ export default function $CompileProvider($provide: auto.IProvideService) {
                 identifierForController(options.controller) ||
                 "$ctrl",
                 scope: {},
-                bindToController: options.bindings || {}
+                bindToController: options.bindings || {},
+                template: makeInjectable(options.template, $injector),
+                templateUrl: makeInjectable(options.templateUrl, $injector),
+                transclude: options.transclude,
+                require: options.require
             };
         }
+        factory.$inject = ["$injector"];
 
         return this.directive(name, factory);
     }
 
-    this.$get = ["$injector", "$parse", "$controller", "$rootScope", "$http", "$interpolate", function ($injector: auto.IInjectorService, $parse: IParseService, $controller: IControllerService, $rootScope: IScope, $http: IHttpService, $interpolate: IInterpolateService) {
+    this.$get = ["$injector", "$parse", "$controller", "$rootScope", "$http", "$interpolate", function ($injector: auto.IInjectorService, $parse: IParseService, $controller: IControllerService, $rootScope: IScopeInternal, $http: IHttpService, $interpolate: IInterpolateService) {
         class Attributes implements IAttributes {
             $attr: Object
             public $$observers: {
@@ -221,6 +260,27 @@ export default function $CompileProvider($provide: auto.IProvideService) {
                 return template.replace(/\{\{/g, startSymbol)
                     .replace(/\}\}/g, endSymbol);
             };
+
+        var onChangesQueue: Function[];
+        var onChangesTtl = TTL;
+        function flushOnChanges() {
+            try {
+                onChangesTtl--;
+                if (!onChangesTtl) {
+                    onChangesQueue = null;
+                    throw TTL + "$onChanges() iteration reached. Aborting!";
+                }
+                $rootScope.$apply(function () {
+                    _.forEach(onChangesQueue, function (onChangesHook) {
+                        onChangesHook();
+                    });
+                    onChangesQueue = null;
+                });
+            } finally {
+                onChangesTtl++;
+            }
+        }
+
         function compile($compileNodes: JQuery, maxPriority?: number): ITranscludeFunction {
             var compositeLinkFn = compileNodes($compileNodes, maxPriority);
 
@@ -593,7 +653,34 @@ export default function $CompileProvider($provide: auto.IProvideService) {
                 }
             }
 
-            function initializeDirectiveBindings(scope: IScope, attrs: IAttributes, destination, bindings: IIsolateBindingContainer, newScope: IScope) {
+            function initializeDirectiveBindings(scope: IScope, attrs: IAttributes, destination, bindings: IIsolateBindingContainer, newScope: IScope): IChangesCollection {
+                var initialChanges: IChangesCollection = {}
+                var changes: IChangesCollection;
+                function recordChanges(key: string, currentValue: any, previousValue: any) {
+                    if (destination.$onChanges && currentValue !== previousValue) {
+                        if (!onChangesQueue) {
+                            onChangesQueue = [];
+                            $rootScope.$$postDigest(flushOnChanges);
+                        }
+                        if (!changes) {
+                            changes = {};
+                            onChangesQueue.push(triggerOnChanges);
+                        }
+                        if (changes[key]) {
+                            previousValue = changes[key].previousValue;
+                        }
+                        changes[key] = new SimpleChange(previousValue, currentValue);
+                    }
+                }
+
+                function triggerOnChanges() {
+                    try {
+                        destination.$onChanges(changes);
+                    } finally {
+                        changes = null;
+                    }
+                }
+
                 _.forEach(bindings, function (definition, scopeName) {
                     var attrName = definition.attrName;
                     var unwatch: () => void;
@@ -601,11 +688,14 @@ export default function $CompileProvider($provide: auto.IProvideService) {
                     switch (definition.mode) {
                         case "@":
                             attrs.$observe(attrName, function (newAttrValue) {
+                                var oldValue = destination[scopeName];
                                 destination[scopeName] = newAttrValue;
+                                recordChanges(scopeName, destination[scopeName], oldValue);
                             });
                             if (attrs[attrName]) {
                                 destination[scopeName] = $interpolate(attrs[attrName])(scope);
                             }
+                            initialChanges[scopeName] = new SimpleChange(_UNINITIALIZED_VALUE, destination[scopeName]);
                             break;
                         case "<":
                             if (definition.optional && !attrs[attrName])
@@ -613,9 +703,12 @@ export default function $CompileProvider($provide: auto.IProvideService) {
                             parentGet = $parse(attrs[attrName]);
                             destination[scopeName] = parentGet(scope);
                             unwatch = scope.$watch(parentGet, function (newValue) {
+                                var oldValue = destination[scopeName];
                                 destination[scopeName] = newValue;
+                                recordChanges(scopeName, destination[scopeName], oldValue);
                             });
                             newScope.$on("$destroy", unwatch);
+                            initialChanges[scopeName] = new SimpleChange(_UNINITIALIZED_VALUE, destination[scopeName]);
                             break;
                         case "=":
                             if (definition.optional && !attrs[attrName])
@@ -653,6 +746,7 @@ export default function $CompileProvider($provide: auto.IProvideService) {
                             break;
                     }
                 });
+                return initialChanges;
             }
 
             let nodeLinkFn: INodeLinkFunction = (childLinkFn, scope: IScope, linkNode: Element, boundTranscludeFn: ITranscludeFunctionInternal) => {
@@ -694,7 +788,7 @@ export default function $CompileProvider($provide: auto.IProvideService) {
                 }
                 var scopeDirective = newIsolateScopeDirective || newScopeDirective;
                 if (scopeDirective && controllers[scopeDirective.name]) {
-                    initializeDirectiveBindings(
+                    controllers[scopeDirective.name].initialChanges = initializeDirectiveBindings(
                         scope,
                         attrs,
                         controllers[scopeDirective.name].instance,
@@ -714,6 +808,22 @@ export default function $CompileProvider($provide: auto.IProvideService) {
                         _.assign(controller, requiredControllers);
                     }
                 });
+
+                _.forEach(controllers, function (controller) {
+                    var controllerInstance = controller.instance;
+                    if (controllerInstance.$onInit) {
+                        controllerInstance.$onInit();
+                    }
+                    if (controllerInstance.$onChanges) {
+                        controllerInstance.$onChanges(controller.initialChanges);
+                    }
+                    if (controllerInstance.$onDestroy) {
+                        (newIsolateScopeDirective ? isolateScope : scope).$on("$destroy", function () {
+                            controllerInstance.$onDestroy();
+                        });
+                    }
+                });
+
                 function scopeBoundTranscludeFn(transcludedScope: IScope | ICloneAttachFunction, cloneAttachFn?: ICloneAttachFunction) {
                     var transcludeControllers;
                     if (isCloneAttach(transcludedScope)) {
@@ -742,6 +852,7 @@ export default function $CompileProvider($provide: auto.IProvideService) {
                     }
                     childLinkFn(scopeToChild, linkNode.childNodes, boundTranscludeFn);
                 }
+
                 _.forEachRight(postLinkFns, function (linkFn) {
                     linkFn(
                         linkFn.isolateScope ? isolateScope : scope,
@@ -749,6 +860,13 @@ export default function $CompileProvider($provide: auto.IProvideService) {
                         attrs,
                         linkFn.require && getControllers(linkFn.require, $element),
                         scopeBoundTranscludeFn);
+                });
+
+                _.forEach(controllers, function (controller) {
+                    var controllerInstance = controller.instance;
+                    if (controllerInstance.$postLink) {
+                        controllerInstance.$postLink();
+                    }
                 });
             }
 

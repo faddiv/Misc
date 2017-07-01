@@ -291,7 +291,8 @@ interface INodeList extends List<HTMLElement> {
 
 interface ILateBoundController<T> {
     (): T;
-    instance: T;
+    instance?: T;
+    initialChanges?: IChangesCollection;
 }
 
 interface IDirectiveLinkFnInternal {
@@ -344,5 +345,13 @@ interface IInterpolationFunctionInternal extends IInterpolationFunction {
         valueEq?: boolean,
         expr?: ICompiledExpression): () => void;
 }
-//1025
-//Component Templates
+interface IChangesCollection {
+    [name: string]: IChangesProperty;
+}
+interface IChangesProperty {
+    isFirstChange(): boolean;
+    currentValue: any;
+    previousValue: any;
+}
+//1057
+//Bootstrapping
