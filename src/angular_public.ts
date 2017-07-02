@@ -10,6 +10,7 @@ import { $HttpBackendProvider } from './http_backend';
 import { $HttpProvider, $HttpParamSerializerProvider, $HttpParamSerializerJQLikeProvider } from './http';
 import { default as NgControllerDirective } from './directives/ng_controller';
 import { default as NgTranscludeDirective } from './directives/ng_transclude';
+import { default as NgClickDirective } from './directives/ng_click';
 import { default as $InterpolateProvider } from "./interpolate";
 
 export function publishExternalAPI() {
@@ -31,4 +32,5 @@ export function publishExternalAPI() {
 
     ngModule.directive("ngController", NgControllerDirective);
     ngModule.directive("ngTransclude", NgTranscludeDirective);
+    ngModule.directive("ngClick", NgClickDirective);
 }
