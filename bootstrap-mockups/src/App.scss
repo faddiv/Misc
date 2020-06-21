@@ -1,0 +1,52 @@
+@import "~bootstrap/scss/bootstrap.scss";
+
+.col-placeholder {
+  position: relative;
+  padding: 0;
+  background-color: lightgray;
+  border: 1px solid black;
+  border-radius: 3px;
+  text-align: center;
+  flex: 0 1 10px;
+  &.only-one {
+    flex: 1 0 10px;
+  }
+  
+  &.hovered {
+    background-color: lightcoral;
+  }
+}
+
+.row {
+  min-height: 32px;
+}
+
+.row-placeholder {
+  display: block;
+  background-color: lightgray;
+  border: 1px solid black;
+  border-radius: 3px;
+  text-align: center;
+  margin: {
+    left: -15px;
+    right: -15px;
+  }
+  
+  &.hovered {
+    background-color: lightcoral;
+  }
+}
+
+.toolbar{
+  .card {
+    text-align: center;
+    margin: {
+      top: 10px;
+      bottom: 10px;
+    }
+    .row {
+      display: block;
+      min-height: 24px;
+    }
+  }
+}

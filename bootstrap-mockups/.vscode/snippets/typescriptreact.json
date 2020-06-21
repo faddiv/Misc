@@ -1,0 +1,134 @@
+{
+	"React Component": {
+		"prefix": "react.component",
+		"body": [
+			"import * as React from \"react\";",
+			"",
+			"export interface ${1:${TM_FILENAME_BASE}}Props {",
+			"}",
+			"",
+			"export interface ${1:${TM_FILENAME_BASE}}State {",
+			"}",
+			"",
+			"export class ${1} extends React.Component<${1}Props, ${1}State> {",
+			"\tconstructor(props) {",
+			"\t\tsuper(props);",
+			"\t}",
+			"\trender() {",
+			"\t\treturn (",
+			"\t\t\t$0",
+			"\t\t);",
+			"\t}",
+			"}"
+		],
+		"description": "Log output to console"
+	},
+	"React Stateless Function": {
+		"prefix": "react.function",
+		"body": [
+			"import * as React from \"react\";",
+			"",
+			"interface  ${1:${TM_FILENAME_BASE}}Props { $2 }",
+			"",
+			"export const ${1}: React.FunctionComponent< ${1}Props> = ({ $2, ...rest }) => {",
+			"\treturn (",
+			"\t\t$0",
+			"\t);",
+			"};",
+			"",
+			"${1}.defaultProps = { };"
+		]
+	},
+	"React setState Async": {
+		"prefix": "react.state.async",
+		"body": [
+			"this.setState((prevState, props) => {",
+			"\treturn {",
+			"\t\t$0",
+			"\t};",
+			"});"
+		]
+	},
+	"React deconstruct": {
+		"prefix": "react.deconstruct",
+		"body": [
+			"const { $1 } = this.props;",
+			"const { $0 } = this.state;"
+		]
+	},
+	"React bootstrap table": {
+		"prefix": "table.react",
+		"body": [
+			"<table className=\"table\">",
+			"\t<thead>",
+			"\t\t<tr>",
+			"\t\t\t<td></td>$0",
+			"\t\t</tr>",
+			"\t</thead>",
+			"\t<tbody>",
+			"\t\t{$1.map(item => (",
+			"\t\t\t<tr>",
+			"\t\t\t\t<td></td>",
+			"\t\t\t</tr>",
+			"\t\t))}",
+			"\t</tbody>",
+			"</table>"
+		]
+	},
+	"it Test Karma": {
+		"prefix": "itt",
+		"body": [
+			"it(\"$1\", () => {",
+			"\t$0",
+			"});"
+		],
+		"description": "Karma Test"
+	},
+	"describe Test Karma": {
+		"prefix": "describe",
+		"body": [
+			"describe(\"$1\", () => {",
+			"\t$0",
+			"});"
+		],
+		"description": "Karma Test"
+	},
+	"beforeEach Test Karma": {
+		"prefix": "beforeEach",
+		"body": [
+			"beforeEach(() => {",
+			"\t$0",
+			"});"
+		],
+		"description": "Karma Test"
+	},
+	"beforeAll Test Karma": {
+		"prefix": "beforeAll",
+		"body": [
+			"beforeAll(() => {",
+			"\t$0",
+			"});"
+		],
+		"description": "Karma Test"
+	},
+	"React eventhandler": {
+		"prefix": "react.eventhandler",
+		"body": [
+			"function ${1:Handler}(evt: React.SyntheticEvent<${2:HTMLElement}>) {",
+			"\tevt.preventDefault();$0",
+			"}"
+		]
+	},
+	"deconstruct": {
+		"prefix": "deconstruct",
+		"body": [
+			"const { $0 } = $1;"
+		]
+	},
+	"react useState": {
+		"prefix": "react.useState",
+		"body": [
+			"const [ ${1}, set${1/^(.)(.*)$/${1:/upcase}$2/}] = useState($2);$0"
+		]
+	}
+}
