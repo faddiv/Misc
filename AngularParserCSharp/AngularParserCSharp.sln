@@ -1,0 +1,28 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 15
+VisualStudioVersion = 15.0.26228.9
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AngularParserCSharp", "AngularParserCSharp\AngularParserCSharp.csproj", "{B359D729-9ED8-45FC-A880-17DED5E9CBDC}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AngularParserCSharp.Tests", "AngularParserCSharp.Tests\AngularParserCSharp.Tests.csproj", "{5D4A2CD9-5F81-48FB-BE86-55C4A6B2443B}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{B359D729-9ED8-45FC-A880-17DED5E9CBDC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B359D729-9ED8-45FC-A880-17DED5E9CBDC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B359D729-9ED8-45FC-A880-17DED5E9CBDC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B359D729-9ED8-45FC-A880-17DED5E9CBDC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5D4A2CD9-5F81-48FB-BE86-55C4A6B2443B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5D4A2CD9-5F81-48FB-BE86-55C4A6B2443B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5D4A2CD9-5F81-48FB-BE86-55C4A6B2443B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5D4A2CD9-5F81-48FB-BE86-55C4A6B2443B}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
