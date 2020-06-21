@@ -1,0 +1,20 @@
+.grid {
+  display: grid;
+  grid-auto-flow: row;
+  .cell {
+    height: 20px;
+    border: 1px solid gray;
+
+    &.mine {
+      background-color: indianred;
+    }
+
+    &.neighbour {
+      background-color: lightgray;
+    }
+
+    &.miner {
+      background-color: lightgreen;
+    }
+  }
+}
