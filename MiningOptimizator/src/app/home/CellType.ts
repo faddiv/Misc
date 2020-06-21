@@ -1,6 +1,6 @@
 import { ICell, IMiner } from './Interfaces';
 
-type CellCss = 'empty' | 'mine' | 'miner' | 'neighbour';
+type CellCss = "empty" | "mine" | "miner" | "neighbour" | "mined";
 
 function addIfDefined<T>(arr: T[], elm?: T) {
   if (elm) {
@@ -11,6 +11,7 @@ function addIfDefined<T>(arr: T[], elm?: T) {
 export class CellType implements ICell {
 
   hasMine: boolean;
+  isMined: boolean;
   miner: IMiner;
   up?: CellType;
   down?: CellType;
@@ -33,6 +34,12 @@ export class CellType implements ICell {
     return n;
   }
 
+  reset() {
+    this.hasMine = false;
+    this.miner = undefined;
+    this.isMined = false;
+  }
+
   public css(): CellCss {
     if (!this.hasMine) {
       if (this.miner) {
@@ -42,8 +49,11 @@ export class CellType implements ICell {
         return "neighbour";
       }
       return "empty";
+    } else if(this.isMined) {
+      return "mined";
+    } else {
+      return "mine";
     }
-    return "mine";
   }
 
   get hasMineNeighbour() {

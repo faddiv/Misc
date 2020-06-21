@@ -42,3 +42,21 @@ export function forEach2D<T>(arr: T[][], fun: (val: T) => void) {
     }
   }
 }
+
+export function pushRepeat<T>(arr: T[], item: T, count: number, next: (val: T) => T) {
+  item = next(item);
+  count--;
+  while (count >= 0 && !!item) {
+    arr.push(item);
+    item = next(item);
+    count--;
+  }
+}
+
+export function subArray<T>(arr: T[], from: number, to?: number) {
+  var result: T[] = [];
+  for (let index = from; index < to || arr.length; index++) {
+    result.push(arr[index]);
+  }
+  return result;
+}

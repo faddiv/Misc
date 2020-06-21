@@ -1,4 +1,4 @@
-import { zipArray } from './helpers';
+import { zipArray, flat, distinct, pushRepeat } from './helpers';
 import { IMiner, ICell } from './Interfaces';
 
 export class Miner implements IMiner {
@@ -7,6 +7,7 @@ export class Miner implements IMiner {
   rowTopLeft: number;
   colDownRigth: number;
   rowDownRigth: number;
+  influencedCells: ICell[];
   constructor(
     public cells: ICell[]) {
     cells.sort(minerCellSort);
@@ -16,21 +17,40 @@ export class Miner implements IMiner {
     this.rowTopLeft = cells[0].row;
     this.colDownRigth = cells[3].col;
     this.rowDownRigth = cells[3].row;
+    this.influencedCells = collectInfluencedCells(this);
+  }
+
+  get canPlaceDown() {
+    if (this.placed)
+      return true;
+    if (this.cells.some(cell => cell.miner !== undefined && cell.miner !== this))
+      return false;
+    if (hasMinedSpot(this.influencedCells)) {
+      return false;
+    }
+    return true;
   }
 
   place(down: boolean) {
     if (this.placed == down)
       return false;
-    if (this.cells.some(cell => cell.miner !== undefined && cell.miner !== this))
-      return false;
-    for (const cell of this.cells) {
-      if (down) {
+    if (down) {
+      if (!this.canPlaceDown) {
+        return false;
+      }
+      for (const cell of this.cells) {
         cell.miner = this;
-      } else {
+      }
+    } else {
+      for (const cell of this.cells) {
         cell.miner = undefined;
       }
     }
+    for (const cell of this.influencedCells) {
+      cell.isMined = down;
+    }
     this.placed = down;
+    return true;
   }
 
   equals(other: Miner) {
@@ -103,4 +123,36 @@ function getPossibleMinersLR(cellDown: ICell, cellUp: ICell) {
 
 function noMine(cells: ICell[]) {
   return cells.every(cell => !cell.hasMine);
+}
+
+export function getMiningLocations(cells: ICell[][]) {
+  var mineBorderCells = flat(cells)
+    .filter(cell => cell.canHaveMiner);
+  var miners = flat(mineBorderCells.map(cell => getPossibleMiners(cell)));
+  miners = distinct(miners, (a, b) => a.equals(b));
+  return miners;
+}
+
+export function collectInfluencedCells(miner: IMiner) {
+  var neighbours: ICell[] = [];
+  pushRepeat(neighbours, miner.cells[0], 2, cell => cell.up);
+  pushRepeat(neighbours, miner.cells[2], 2, cell => cell.down);
+  var startingCells = [...neighbours];
+  for (const startCell of startingCells) {
+    pushRepeat(neighbours, startCell, 2, cell => cell.left);
+    pushRepeat(neighbours, startCell, 3, cell => cell.right);
+  }
+  pushRepeat(neighbours, miner.cells[0], 2, cell => cell.left);
+  pushRepeat(neighbours, miner.cells[2], 2, cell => cell.left);
+  pushRepeat(neighbours, miner.cells[1], 2, cell => cell.right);
+  pushRepeat(neighbours, miner.cells[3], 2, cell => cell.right);
+  return neighbours.filter(cell => cell.hasMine);
+}
+
+function hasMinedSpot(cells: ICell[]) {
+  return cells.some(cell => cell.isMined)
+}
+
+export function takeAllMinerUp(miners:IMiner[]) {
+  miners.forEach(miner => miner.place(false));
 }

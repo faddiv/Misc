@@ -3,8 +3,9 @@ import { FormGroup, FormControl } from '@angular/forms';
 import { CellType } from './CellType';
 import { lastItem, forEach2D } from "./helpers";
 import { distinctUntilChanged } from "rxjs/operators";
-import { Miner, getPossibleMiners } from './Miner';
-import { getMiningLocations } from './GridOperations';
+import { Miner, getMiningLocations, takeAllMinerUp } from './Miner';
+import { traversePlacements, resetAll } from './AI';
+import { IPlacement } from './Interfaces';
 
 @Component({
   selector: 'app-home',
@@ -21,6 +22,8 @@ export class HomeComponent implements OnInit {
   cells: CellType[][];
 
   miners: Miner[];
+
+  placements: IPlacement[];
 
   mouseOperation?: boolean;
 
@@ -43,8 +46,16 @@ export class HomeComponent implements OnInit {
   }
 
   reset = () => {
-    forEach2D(this.cells, cell => cell.hasMine = false);
-    this.calcMiners();
+    forEach2D(this.cells, cell => {
+      cell.reset();
+    });
+    this.placements = [];
+    this.miners = [];
+  }
+
+  traverse() {
+    takeAllMinerUp(this.miners);
+    this.placements = traversePlacements(this.miners);
   }
 
   get inPainting() {
@@ -65,7 +76,6 @@ export class HomeComponent implements OnInit {
   cell = (col: number, row: number, hasMine?: boolean) => {
     if (typeof hasMine !== "undefined") {
       this.cells[row][col].hasMine = hasMine;
-      this.recalculate();
     }
     if (row < this.cells.length) {
       if (col < this.cells[row].length) {
@@ -75,15 +85,6 @@ export class HomeComponent implements OnInit {
       }
     } else {
       console.log(`Hit default row: index: ${row} should:${this.rowCount} real:${this.cells[col].length}`);
-    }
-  }
-
-  private recalculate() {
-    for (let col = 0; col < this.cells.length; col++) {
-      const rows = this.cells[col];
-      for (let row = 0; row < rows.length; row++) {
-        const cell = rows[row];
-      }
     }
   }
 
@@ -98,6 +99,15 @@ export class HomeComponent implements OnInit {
     this.mouseOperation = !cell.hasMine;
     cell.hasMine = this.mouseOperation;
     this.calcMiners();
+  }
+
+  applyPlacements(placement: IPlacement) {
+    var applied = placement.applied;
+    takeAllMinerUp(this.miners);
+    resetAll(this.placements);
+    if (applied)
+      return;
+    placement.apply();
   }
 
   drawing(evt: MouseEvent, cell: CellType) {
