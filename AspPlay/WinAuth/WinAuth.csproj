@@ -1,0 +1,48 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp2.2</TargetFramework>
+    <AspNetCoreHostingModel>InProcess</AspNetCoreHostingModel>
+    <TypeScriptCompileBlocked>true</TypeScriptCompileBlocked>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Remove="build-config\html-config.ts" />
+    <None Remove="build-config\run-mode.ts" />
+    <None Remove="build-config\scss-config.ts" />
+    <None Remove="build-config\typescript-config.ts" />
+    <None Remove="build-config\variables-config.ts" />
+    <None Remove="build-config\vendor-config.ts" />
+    <None Remove="webpack.config.ts" />
+  </ItemGroup>
+
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.App" />
+    <PackageReference Include="Microsoft.AspNetCore.Razor.Design" Version="2.2.0" PrivateAssets="All" />
+    <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="2.2.3" />
+    <PackageReference Include="Microsoft.Windows.Compatibility" Version="2.1.1" />
+    <PackageReference Include="NBuilder" Version="6.0.0" />
+    <PackageReference Include="NonFactors.Grid.Mvc6" Version="5.0.0" />
+    <PackageReference Include="System.Linq.Dynamic.Core" Version="1.0.18" />
+  </ItemGroup>
+
+
+  <ItemGroup>
+    <TypeScriptCompile Include="build-config\html-config.ts" />
+    <TypeScriptCompile Include="build-config\run-mode.ts" />
+    <TypeScriptCompile Include="build-config\scss-config.ts" />
+    <TypeScriptCompile Include="build-config\typescript-config.ts" />
+    <TypeScriptCompile Include="build-config\variables-config.ts" />
+    <TypeScriptCompile Include="build-config\vendor-config.ts" />
+    <TypeScriptCompile Include="Modules\mvc-grid.ts" />
+    <TypeScriptCompile Include="webpack.config.ts" />
+  </ItemGroup>
+
+
+  <ItemGroup>
+    <Folder Include="Pages\" />
+    <Folder Include="wwwroot\" />
+  </ItemGroup>
+
+</Project>

@@ -1,0 +1,11 @@
+﻿@{
+    ViewData["Title"] = "Mvc 6 grid";
+}
+@section Scripts {
+    <script asp-src-include="~/Mvc6Grid/index-*.js"></script>
+}
+<div class="row">
+    <div class="col">
+        @Html.AjaxGrid(Url.Action("Data"))
+    </div>
+</div>

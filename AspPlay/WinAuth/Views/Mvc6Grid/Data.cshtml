@@ -1,0 +1,21 @@
+﻿@using WinAuth.Controllers
+@model IList<GridModel>
+@(Html.Grid(Model)
+    .Build(columns =>
+    {
+        columns.Add(model => model.Id);
+        columns.Add(model => model.Name);
+        columns.Add(model => model.Email);
+    })
+    .Id("data-grid")
+    .UsingProcessingMode(GridProcessingMode.Manual)
+    .UsingFilterMode(GridFilterMode.Excel)
+    .Pageable(pager =>
+    {
+        pager.PagesToDisplay = 5;
+        pager.RowsPerPage = 10;
+        pager.TotalRows = ViewBag.TotalRows;
+    })
+    .Filterable()
+    .Sortable()
+)
