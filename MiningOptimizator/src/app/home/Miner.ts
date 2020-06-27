@@ -122,7 +122,7 @@ function getPossibleMinersLR(cellDown: ICell, cellUp: ICell) {
 }
 
 function noMine(cells: ICell[]) {
-  return cells.every(cell => !cell.hasMine);
+  return cells.every(cell => cell.isEmpty);
 }
 
 export function getMiningLocations(cells: ICell[][]) {

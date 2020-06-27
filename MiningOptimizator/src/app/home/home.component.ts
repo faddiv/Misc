@@ -92,13 +92,26 @@ export class HomeComponent implements OnInit {
     if (this.inPainting) {
       return;
     }
-    if (evt.button !== 0) {
-      return;
+    switch (evt.button) {
+      case 0:
+        evt.preventDefault();
+        if (cell.hasMine || cell.isEmpty) {
+          this.mouseOperation = !cell.hasMine;
+          cell.hasMine = this.mouseOperation;
+          this.calcMiners();
+        }
+        break;
+      case 3:
+      case 4:
+        evt.preventDefault();
+        evt.stopPropagation();
+        if (cell.blocked || cell.isEmpty) {
+          cell.blocked = !cell.blocked;
+          this.calcMiners();
+        }
+      default:
+        break;
     }
-    evt.preventDefault();
-    this.mouseOperation = !cell.hasMine;
-    cell.hasMine = this.mouseOperation;
-    this.calcMiners();
   }
 
   applyPlacements(placement: IPlacement) {

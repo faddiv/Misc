@@ -20,5 +20,9 @@
     &.miner {
       background-color: lightgreen;
     }
+
+    &.blocked {
+        background-color: black;
+      }
   }
 }

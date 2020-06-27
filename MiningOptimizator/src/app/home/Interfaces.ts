@@ -10,6 +10,7 @@ export interface ICell extends IEquatable<ICell> {
   miner: IMiner;
   isMined: boolean;
   hasMine: boolean;
+  blocked: boolean;
   readonly col: number;
   readonly row: number;
   readonly up?: ICell;
@@ -18,6 +19,7 @@ export interface ICell extends IEquatable<ICell> {
   readonly right?: ICell;
   readonly canHaveMiner: boolean;
   reset(): void;
+  readonly isEmpty: boolean;
 }
 
 export interface IEquatable<T> {

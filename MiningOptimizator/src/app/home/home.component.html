@@ -27,7 +27,7 @@
             <div class="row">
                 <div class="col">
                     <ul class="list-group">
-                        <li *ngFor="let item of miners" class="list-group-item"
+                        <li *ngFor="let item of miners | slice:0:15" class="list-group-item"
                             [ngClass]="{ active: item.placed, disabled: !item.canPlaceDown }"
                             (click)="item.place(!item.placed)">
                             {{item.toString()}}
@@ -36,7 +36,7 @@
                 </div>
                 <div class="col">
                     <ul class="list-group">
-                        <li *ngFor="let item of placements" class="list-group-item" [ngClass]="{ active: item.applied }"
+                        <li *ngFor="let item of placements | slice:0:15" class="list-group-item" [ngClass]="{ active: item.applied }"
                             (click)="applyPlacements(item)">
                             {{item.toString()}}
                         </li>

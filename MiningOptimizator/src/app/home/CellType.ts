@@ -1,6 +1,6 @@
 import { ICell, IMiner } from './Interfaces';
 
-type CellCss = "empty" | "mine" | "miner" | "neighbour" | "mined";
+type CellCss = "empty" | "mine" | "miner" | "neighbour" | "mined" | "blocked";
 
 function addIfDefined<T>(arr: T[], elm?: T) {
   if (elm) {
@@ -13,6 +13,7 @@ export class CellType implements ICell {
   hasMine: boolean;
   isMined: boolean;
   miner: IMiner;
+  blocked: boolean;
   up?: CellType;
   down?: CellType;
   left?: CellType;
@@ -23,6 +24,7 @@ export class CellType implements ICell {
     public readonly row: number
   ) {
     this.hasMine = false;
+    this.blocked = false;
   }
 
   get neighbours() {
@@ -33,11 +35,14 @@ export class CellType implements ICell {
     addIfDefined(n, this.right);
     return n;
   }
-
+  get isEmpty() {
+    return !this.hasMine && !this.miner && !this.blocked;
+  }
   reset() {
     this.hasMine = false;
     this.miner = undefined;
     this.isMined = false;
+    this.blocked = false;
   }
 
   public css(): CellCss {
@@ -48,8 +53,11 @@ export class CellType implements ICell {
       if (this.hasMineNeighbour) {
         return "neighbour";
       }
+      if (this.blocked) {
+        return "blocked";
+      }
       return "empty";
-    } else if(this.isMined) {
+    } else if (this.isMined) {
       return "mined";
     } else {
       return "mine";
@@ -80,7 +88,7 @@ export class CellType implements ICell {
   }
 
   get canHaveMiner() {
-    return !this.hasMine && this.hasMineNeighbour;
+    return !this.hasMine && !this.blocked && this.hasMineNeighbour;
   }
 
   equals(other: CellType) {
