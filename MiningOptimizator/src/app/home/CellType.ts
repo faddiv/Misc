@@ -50,11 +50,11 @@ export class CellType implements ICell {
       if (this.miner) {
         return "miner";
       }
-      if (this.hasMineNeighbour) {
-        return "neighbour";
-      }
       if (this.blocked) {
         return "blocked";
+      }
+      if (this.hasMineNeighbour) {
+        return "neighbour";
       }
       return "empty";
     } else if (this.isMined) {
