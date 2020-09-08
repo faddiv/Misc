@@ -1,0 +1,39 @@
+{
+  "name": "onlinewallet-redux",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "start": "./node_modules/.bin/webpack-dev-server --debug --hot --inline --progress --colors --open --mode=development",
+    "vsstart": "./node_modules/.bin/webpack-dev-server --debug --hot --inline --progress --colors --mode=development",
+    "build": "./node_modules/.bin/webpack --progress --colors",
+    "release": "./node_modules/.bin/webpack --progress --colors --mode=production"
+  },
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@types/webpack": "^4.41.22",
+    "@types/webpack-env": "^1.15.2",
+    "autoprefixer-loader": "^3.2.0",
+    "awesome-typescript-loader": "^5.2.1",
+    "clean-webpack-plugin": "^3.0.0",
+    "core-js": "^3.6.5",
+    "css-loader": "^4.3.0",
+    "file-loader": "^6.1.0",
+    "html-loader": "^1.3.0",
+    "html-webpack-plugin": "^4.4.1",
+    "mini-css-extract-plugin": "^0.11.1",
+    "node-sass": "^4.14.1",
+    "sass-loader": "^10.0.2",
+    "style-loader": "^1.2.1",
+    "typescript": "^4.0.2",
+    "webpack": "^4.44.1",
+    "webpack-cli": "^3.3.12",
+    "webpack-dev-server": "^3.11.0",
+    "webpack-merge": "^5.1.3"
+  },
+  "dependencies": {
+    "moment": "^2.27.0",
+    "tslib": "^2.0.1"
+  }
+}
