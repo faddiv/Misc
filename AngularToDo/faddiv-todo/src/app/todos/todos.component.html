@@ -1,6 +1,15 @@
-<h1>TODOS</h1>
-<ul>
-  <li *ngFor="let todo of todos|async">
-    asd
-  </li>
-</ul>
+<div class="row">
+    <div class="col">
+        <h1>TODOS</h1>
+        <ul class="list-group">
+            <li *ngFor="let todo of todos|async" class="list-group-item"
+                [ngClass]="{ 'list-group-item-success': todo.checked }" (click)="check(todo)">
+                <fa-icon [icon]="icon.faCheck" *ngIf="todo.checked; else empty"></fa-icon>
+                <span>{{todo.text}}</span>
+                <span>{{todo.createdAt|timestamp|date:'yyyy-MM-dd HH:mm'}}</span>
+                <span>{{todo.checkedAt|timestamp|date:'yyyy-MM-dd HH:mm'}}</span>
+            </li>
+        </ul>
+    </div>
+</div>
+<ng-template #empty><span class="empty"></span></ng-template>

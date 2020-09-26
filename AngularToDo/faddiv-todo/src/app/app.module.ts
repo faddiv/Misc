@@ -13,13 +13,16 @@ import { TodosComponent } from './todos/todos.component';
 import { HomeComponent } from './home/home.component';
 import { ToDoService } from './toDoService/to-do.service';
 import { UserManagementModule } from './user-management';
+import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
+import { TimestampPipe } from './pipes/timestamp.pipe';
 
 @NgModule({
   declarations: [
     AppComponent,
     NavbarComponent,
     TodosComponent,
-    HomeComponent
+    HomeComponent,
+    TimestampPipe
   ],
   imports: [
     BrowserModule,
@@ -27,7 +30,8 @@ import { UserManagementModule } from './user-management';
     AngularFireModule.initializeApp(firebaseConfig["default"]),
     AngularFirestoreModule.enablePersistence(),
     NgbModule,
-    UserManagementModule
+    UserManagementModule,
+    FontAwesomeModule
   ],
   providers: [ToDoService],
   bootstrap: [AppComponent]

@@ -1,5 +1,6 @@
 import { Injectable } from '@angular/core';
 import { AngularFirestore, AngularFirestoreCollection } from '@angular/fire/firestore';
+import { firestore } from 'firebase';
 import { Observable } from 'rxjs';
 import { AuthenticationService } from '../user-management';
 
@@ -7,14 +8,14 @@ type DateTime = Date;
 type RecordIdentifier = string;
 type UserIdentifier = string;
 
-interface INewToDoItem {
+export interface INewToDoItem {
     text: string;
     checked: boolean;
-    createdAt: DateTime;
-    checkedAt?: DateTime;
+    createdAt: firestore.Timestamp;
+    checkedAt?: firestore.Timestamp;
 }
 
-interface IToDoItem extends INewToDoItem {
+export interface IToDoItem extends INewToDoItem {
     id: RecordIdentifier;
 }
 
@@ -36,7 +37,7 @@ export class ToDoService {
         this.connect(null);
     }
 
-    get data() {
+    get data(): Observable<IToDoItem[]> {
         return this._todos;
     }
 

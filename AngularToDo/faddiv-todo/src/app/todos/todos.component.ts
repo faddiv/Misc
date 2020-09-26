@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
-import { ToDoService } from '../toDoService/to-do.service';
+import { ToDoService, IToDoItem } from '../toDoService/to-do.service';
+import { faCheck } from '@fortawesome/free-solid-svg-icons';
 
 @Component({
     selector: 'app-todos',
@@ -12,7 +13,11 @@ export class TodosComponent implements OnInit {
         private _toDoService: ToDoService
     ) {
     }
-    tododod = "";
+
+    icon = {
+      faCheck
+    }
+
     public get todos() {
         return this._toDoService.data;
     }
@@ -20,4 +25,7 @@ export class TodosComponent implements OnInit {
     ngOnInit(): void {
     }
 
+    check(todo: IToDoItem) {
+      todo.checked = !todo.checked;
+    }
 }
