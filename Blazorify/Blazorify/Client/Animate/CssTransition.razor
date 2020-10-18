@@ -1,0 +1,12 @@
+<Transition In="In"
+            Appear="Appear"
+            EnterEnabled="EnterEnabled"
+            EnterTimeout="EnterTimeout"
+            OnEnter="EnteredHandler"
+            OnEntering="OnEntering"
+            OnEntered="EnteredHandler"
+            ExitEnabled="ExitEnabled"
+            ExitTimeout="ExitTimeout"
+            OnExit="ExitHandler"
+            OnExiting="OnExiting"
+            OnExited="ExitedHandler">@ChildContent(new CssTransitionContext(Css, context))</Transition>

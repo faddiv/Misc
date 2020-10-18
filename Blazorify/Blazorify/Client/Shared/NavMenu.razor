@@ -1,0 +1,111 @@
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+    <a class="navbar-brand" href="/">Blazorify</a>
+    <button class="navbar-toggler" type="button" @onclick="ToggleNavMenu">
+        <span class="navbar-toggler-icon"></span>
+    </button>
+    <Transition In="collapseNavMenu"
+                   EnterTimeout="1000"
+                   OnEnter="OnEnter"
+                   OnEntering="OnEntering"
+                   OnEntered="OnEntered"
+                   ExitTimeout="1000"
+                   OnExit="OnExit"
+                   OnExiting="OnExiting"
+                   OnExited="OnExited">
+        @{
+            var css = GetCss(context);
+        }
+        <div @ref="reference" class="navbar-collapse @css" style="@style">
+            <ul class="navbar-nav mr-auto">
+                <li class="nav-item active">
+                    <a class="nav-link" href="#">Home <span class="sr-only">(current)</span></a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#">Link</a>
+                </li>
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        Dropdown
+                    </a>
+                    <div class="dropdown-menu" aria-labelledby="navbarDropdown">
+                        <a class="dropdown-item" href="#">Action</a>
+                        <a class="dropdown-item" href="#">Another action</a>
+                        <div class="dropdown-divider"></div>
+                        <a class="dropdown-item" href="#">Something else here</a>
+                    </div>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link disabled" href="#" tabindex="-1" aria-disabled="true">Disabled</a>
+                </li>
+            </ul>
+            <form class="form-inline my-2 my-lg-0">
+                <input class="form-control mr-sm-2" type="search" placeholder="Search" aria-label="Search">
+                <button class="btn btn-outline-success my-2 my-sm-0" type="submit">Search</button>
+            </form>
+        </div>
+    </Transition>
+</nav>
+
+@code {
+    private bool collapseNavMenu = true;
+    private string style = "";
+    ElementReference reference;
+
+    public string Css { get; set; }
+
+    [Inject]
+    public IJSRuntime JsRuntime { get; set; }
+
+    private void ToggleNavMenu()
+    {
+        collapseNavMenu = !collapseNavMenu;
+    }
+    private string GetCss(TransitionState state)
+    {
+        switch (state)
+        {
+            case TransitionState.Entering:
+                return "collapsing";
+            case TransitionState.Entered:
+                return "collapse show";
+            case TransitionState.Leaving:
+                return "collapsing";
+            case TransitionState.Leaved:
+            default:
+                return "collapse";
+        }
+    }
+    private async Task OnEnter(TransitionState state)
+    {
+    }
+
+    private async Task OnEntering(TransitionState state)
+    {
+        style = "height: 214px";
+    }
+    private async Task OnEntered(TransitionState state)
+    {
+        style = "";
+    }
+
+    private async Task OnExit(TransitionState state)
+    {
+        style = "height: 214px";
+    }
+
+    private async Task OnExiting(TransitionState state)
+    {
+        if(JsRuntime is IJSInProcessRuntime jsRuntime2)
+        {
+            jsRuntime2.InvokeVoid("reflow", reference);
+        } else
+        {
+            await JsRuntime.InvokeVoidAsync("reflow", reference);
+        }
+        style = "height: 0px";
+    }
+    private async Task OnExited(TransitionState state)
+    {
+        style = "";
+    }
+}

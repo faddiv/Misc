@@ -1,0 +1,67 @@
+@page "/"
+@using Blazorify.Client.Popper
+@inject IJSRuntime JSRuntime
+
+<h1>Hello, world!</h1>
+<div class="row">
+    <div class="col">
+        <label><input type="radio" name="Popper" value="@PopperPlacement.Bottom" @onchange="PositionChanged" checked />Bottom</label>
+        <label><input type="radio" name="Popper" value="@PopperPlacement.Left" @onchange="PositionChanged" />Left</label>
+        <label><input type="radio" name="Popper" value="@PopperPlacement.Top" @onchange="PositionChanged" />Top</label>
+        <label><input type="radio" name="Popper" value="@PopperPlacement.Right" @onchange="PositionChanged" />Right</label>
+    </div>
+    <div class="col">
+        <span @ref="target" @onmouseover="Show" @onmouseout="Hide">Welcome to your new app.</span>
+        <div @ref="tooltip" class="@classes">Tooltip</div>
+        <SurveyPrompt Title="How is Blazor working for you?" />
+    </div>
+</div>
+@code {
+    public object target { get; set; }
+    public object tooltip { get; set; }
+
+    public bool display { get; set; } = false;
+
+    public string classes { get; set; } = "popper hide";
+
+    private async Task Show()
+    {
+        if (!display)
+        {
+            classes = "popper show";
+            display = true;
+            await JSRuntime.InvokeVoidAsync("Popper_update");
+        }
+    }
+
+    private void Hide()
+    {
+        if (display)
+        {
+            classes = "popper hide";
+            display = false;
+        }
+    }
+
+    private async Task PositionChanged(ChangeEventArgs evt)
+    {
+        await CreatePopper((string)evt.Value);
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await CreatePopper(PopperPlacement.Bottom);
+        }
+    }
+
+    private async Task CreatePopper(string placement)
+    {
+        await JSRuntime.InvokeVoidAsync("Popper_createPopper", target, tooltip, new Blazorify.Client.Popper.PopperOptions
+        {
+            Placement = placement
+        }
+            );
+    }
+}
