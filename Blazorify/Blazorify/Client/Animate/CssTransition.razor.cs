@@ -1,4 +1,6 @@
 using Microsoft.AspNetCore.Components;
+using Microsoft.JSInterop;
+using System;
 using System.Threading.Tasks;
 
 namespace Blazorify.Client.Animate
@@ -33,7 +35,7 @@ namespace Blazorify.Client.Animate
         public EventCallback<TransitionState> OnEntered { get; set; }
         #endregion
 
-        #region Leave
+        #region Exit
         [Parameter]
         public bool ExitEnabled { get; set; } = true;
 
@@ -65,30 +67,40 @@ namespace Blazorify.Client.Animate
         [Parameter]
         public bool Appear { get; set; } = false;
 
-        public string Css { get; private set; }
+        [Parameter]
+        public EventCallback<ReflowEventExecutor> OnReflow { get; set; }
 
-        private Task EnterHandler(TransitionState state)
+        [Inject]
+        public IJSRuntime JsRuntime { get; set; }
+
+        private async Task EnteringHandler(TransitionState state)
         {
-            Css = EnteringCss;
-            return OnEnter.InvokeAsync(state);
+            await Reflow();
+            await OnEntering.InvokeAsync(state);
         }
 
-        private Task EnteredHandler(TransitionState state)
+        private async Task ExitingHandler(TransitionState state)
         {
-            Css = EnteredCss;
-            return OnEntered.InvokeAsync(state);
+            await Reflow();
+            await OnExiting.InvokeAsync(state);
         }
 
-        private Task ExitHandler(TransitionState state)
+        private string GetCss(TransitionState state)
         {
-            Css = ExitingCss;
-            return OnExiting.InvokeAsync(state);
+            return state switch
+            {
+                TransitionState.Entering => EnteringCss,
+                TransitionState.Entered => EnteredCss,
+                TransitionState.Exiting => ExitingCss,
+                TransitionState.Exited => ExitedCss,
+                _ => throw new Exception($"Invalid state in CssTransition: {state}"),
+            };
         }
 
-        private Task ExitedHandler(TransitionState state)
+        private async Task Reflow()
         {
-            Css = ExitedCss;
-            return OnExited.InvokeAsync(state);
+            var evt = new ReflowEventExecutor(JsRuntime);
+            await OnReflow.InvokeAsync(evt);
         }
     }
 }

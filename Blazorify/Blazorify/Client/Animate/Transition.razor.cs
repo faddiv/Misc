@@ -1,6 +1,4 @@
 using Microsoft.AspNetCore.Components;
-using Microsoft.Extensions.Logging;
-using System.Diagnostics;
 using System.Threading.Tasks;
 
 namespace Blazorify.Client.Animate
@@ -101,7 +99,7 @@ namespace Blazorify.Client.Animate
                     if (ExitEnabled)
                     {
                         await OnExit.InvokeAsync(State);
-                        State = TransitionState.Leaving;
+                        State = TransitionState.Exiting;
                         await Task.Yield();
                         await OnExiting.InvokeAsync(State);
                         await Task.Delay(ExitTimeout);
@@ -122,7 +120,7 @@ namespace Blazorify.Client.Animate
             }
             else
             {
-                State = TransitionState.Leaved;
+                State = TransitionState.Exited;
                 await OnExited.InvokeAsync(State);
             }
         }

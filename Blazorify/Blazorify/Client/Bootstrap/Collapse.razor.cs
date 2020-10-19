@@ -35,9 +35,9 @@ namespace Blazorify.Client.Bootstrap
                     return "collapsing";
                 case TransitionState.Entered:
                     return "collapse show";
-                case TransitionState.Leaving:
+                case TransitionState.Exiting:
                     return "collapsing";
-                case TransitionState.Leaved:
+                case TransitionState.Exited:
                 default:
                     return "collapse";
             }
@@ -55,22 +55,13 @@ namespace Blazorify.Client.Bootstrap
             style = "";
         }
 
-        private async Task OnExit(TransitionState state)
+        private void OnExit(TransitionState state)
         {
             style = "height: 214px";
-            if (JsRuntime is IJSInProcessRuntime jsRuntime2)
-            {
-                jsRuntime2.InvokeVoid("reflow", reference);
-            }
-            else
-            {
-                await JsRuntime.InvokeVoidAsync("reflow", reference);
-            }
         }
 
         private async Task OnExiting(TransitionState state)
         {
-            
             style = "height: 0px";
         }
         private void OnExited(TransitionState state)
