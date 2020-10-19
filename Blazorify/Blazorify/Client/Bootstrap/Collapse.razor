@@ -1,0 +1,16 @@
+<Transition In="Open"
+            EnterTimeout="1000"
+            OnEnter="OnEnter"
+            OnEntering="OnEntering"
+            OnEntered="OnEntered"
+            ExitTimeout="1000"
+            OnExit="OnExit"
+            OnExiting="OnExiting"
+            OnExited="OnExited">
+    @{
+        var css = GetCss(context);
+    }
+    <div @ref="reference" class="@css navbar-collapse" style="@style">
+        @ChildContent
+    </div>
+</Transition>
