@@ -16,6 +16,15 @@
         <SurveyPrompt Title="How is Blazor working for you?" />
     </div>
 </div>
+<div class="row">
+    <div class="col">
+        <button type="button"
+                class="@CssBuilder.Create("btn", ("btn-primary", !alert), ("btn-danger", alert))"
+                @onclick="ToggleButton">
+            Toggle
+        </button>
+    </div>
+</div>
 @code {
     public object target { get; set; }
     public object tooltip { get; set; }
@@ -23,6 +32,8 @@
     public bool display { get; set; } = false;
 
     public string classes { get; set; } = "popper hide";
+
+    public bool alert { get; set; }
 
     private async Task Show()
     {
@@ -63,5 +74,10 @@
             Placement = placement
         }
             );
+    }
+
+    private void ToggleButton()
+    {
+        alert = !alert;
     }
 }

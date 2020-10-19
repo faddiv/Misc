@@ -11,11 +11,11 @@
                EnteringCss="collapsing"
                ExitedCss="collapse"
                ExitingCss="collapsing"
-               OnReflow="evt => evt.Reflow(reference)">
+               OnReflow="evt => evt.Reflow(_reference)">
     @{
         var css = context.Css;
     }
-    <div @ref="reference" class="@css navbar-collapse" style="@style">
+    <div @ref="_reference" @attributes="Attributes" class="@css" style="@_style">
         @ChildContent
     </div>
 </CssTransition>

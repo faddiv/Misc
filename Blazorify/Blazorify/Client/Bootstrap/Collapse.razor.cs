@@ -10,9 +10,9 @@ namespace Blazorify.Client.Bootstrap
 {
     partial class Collapse
     {
-        private string style = "";
+        private string _style = "";
 
-        private ElementReference reference;
+        private ElementReference _reference;
 
         [Parameter]
         public RenderFragment ChildContent { get; set; }
@@ -22,7 +22,6 @@ namespace Blazorify.Client.Bootstrap
 
         [Parameter(CaptureUnmatchedValues = true)]
         public Dictionary<string,object> Attributes { get; set; }
-
 
         [Inject]
         public IJSRuntime JsRuntime { get; set; }
@@ -48,25 +47,25 @@ namespace Blazorify.Client.Bootstrap
 
         private void OnEntering(TransitionState state)
         {
-            style = "height: 214px";
+            _style = "height: 214px";
         }
         private void OnEntered(TransitionState state)
         {
-            style = "";
+            _style = "";
         }
 
         private void OnExit(TransitionState state)
         {
-            style = "height: 214px";
+            _style = "height: 214px";
         }
 
         private async Task OnExiting(TransitionState state)
         {
-            style = "height: 0px";
+            _style = "height: 0px";
         }
         private void OnExited(TransitionState state)
         {
-            style = "";
+            _style = "";
         }
     }
 }
