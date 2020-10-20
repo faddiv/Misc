@@ -1,4 +1,5 @@
 using Blazorify.Client.Animate;
+using Blazorify.Utilities.Styling;
 using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
 using System;
@@ -22,6 +23,9 @@ namespace Blazorify.Client.Bootstrap
 
         [Parameter(CaptureUnmatchedValues = true)]
         public Dictionary<string,object> Attributes { get; set; }
+
+        [Inject]
+        public CssBuilderDelegate Css { get; set; }
 
         [Inject]
         public IJSRuntime JsRuntime { get; set; }

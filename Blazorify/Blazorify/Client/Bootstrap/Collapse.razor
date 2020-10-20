@@ -12,10 +12,7 @@
                ExitedCss="collapse"
                ExitingCss="collapsing"
                OnReflow="evt => evt.Reflow(_reference)">
-    @{
-        var css = context.Css;
-    }
-    <div @ref="_reference" @attributes="Attributes" class="@css" style="@_style">
+    <div @ref="_reference" @attributes="Attributes" class="@Css(context.Css, Attributes)" style="@_style">
         @ChildContent
     </div>
 </CssTransition>
