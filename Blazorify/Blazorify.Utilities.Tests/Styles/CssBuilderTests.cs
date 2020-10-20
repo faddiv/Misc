@@ -91,6 +91,25 @@ namespace Blazorify.Utilities.Styles
         }
 
         [Fact]
+        public void Add_Enumerable_string_adds_value_enumerable()
+        {
+            var result = CssBuilder.Create().Add(
+                new[] { "c1", "c2" }).ToString();
+
+            result.Should().Be("c1 c2");
+        }
+
+        [Fact]
+        public void Add_CssBuilder_adds_from_another_builder()
+        {
+            var original = CssBuilder.Create("c1", "c2");
+            var result = CssBuilder.Create()
+                .Add(original).ToString();
+
+            result.Should().Be("c1 c2");
+        }
+
+        [Fact]
         public void Add_Attributes_adds_class_from_dictionary()
         {
             var attributes = new Dictionary<string, object>
@@ -108,18 +127,21 @@ namespace Blazorify.Utilities.Styles
         {
             var attributes = new Dictionary<string, object>
             {
-                {"class", "c5" },
+                {"class", "c7" },
                 {"other", 123 }
             };
+            var original = CssBuilder.Create("c8", "c9");
 
             var result = CssBuilder.Create(
                 "c1",
                 new { c2 = true },
                 ("c3", true),
                 ("c4", new Func<bool>(() => true)),
-                attributes).ToString();
+                new[] { "c5", "c6" },
+                attributes,
+                original).ToString();
 
-            result.Should().Be("c1 c2 c3 c4 c5");
+            result.Should().Be("c1 c2 c3 c4 c5 c6 c7 c8 c9");
         }
 
     }

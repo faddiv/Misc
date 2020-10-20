@@ -12,6 +12,7 @@ namespace Blazorify.Utilities.Styles
         public CssBuilder() : base(" ")
         {
         }
+
         public static CssBuilder Create(params object[] values)
         {
             var builder = new CssBuilder();
@@ -25,11 +26,19 @@ namespace Blazorify.Utilities.Styles
                 }
                 else if (value is ValueTuple<string, bool> tupleWithCondition)
                 {
-                    builder.Add(tupleWithCondition);
+                    builder.Add(tupleWithCondition.Item1, tupleWithCondition.Item2);
                 }
                 else if (value is ValueTuple<string, Func<bool>> tupleWithPredicate)
                 {
-                    builder.Add(tupleWithPredicate);
+                    builder.Add(tupleWithPredicate.Item1, tupleWithPredicate.Item2);
+                }
+                else if (value is IEnumerable<string> cssList)
+                {
+                    builder.Add(cssList);
+                }
+                else if (value is CssBuilder other)
+                {
+                    builder.Add(other);
                 }
                 else if (value is IReadOnlyDictionary<string, object> attributes)
                 {
@@ -41,11 +50,6 @@ namespace Blazorify.Utilities.Styles
                 }
             }
             return builder;
-        }
-
-        public static CssBuilder Default(string value = null)
-        {
-            return new CssBuilder().Add(value);
         }
 
         public new CssBuilder Add(string value, Func<bool> predicate)
@@ -79,6 +83,22 @@ namespace Blazorify.Utilities.Styles
             {
                 base.Add(item.Item1, item.Item2);
             }
+            return this;
+        }
+
+        public CssBuilder Add(IEnumerable<string> cssList)
+        {
+            if (cssList == null)
+                return this;
+            Values.AddRange(cssList);
+            return this;
+        }
+
+        public CssBuilder Add(CssBuilder cssBuilder)
+        {
+            if (cssBuilder == null)
+                return this;
+            Values.AddRange(cssBuilder.Values);
             return this;
         }
 
