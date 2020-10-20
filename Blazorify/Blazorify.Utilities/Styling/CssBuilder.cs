@@ -5,7 +5,7 @@ using System.Reflection;
 
 namespace Blazorify.Utilities.Styling
 {
-    public class CssBuilder
+    public class CssBuilder : ICssBuilder
     {
         public static ICssBuilderCache DefaultCache { get; set; } = ThreadUnsafeCssBuilderCache.Instance;
         public static ICssBuilderNamingConvention DefaultNamingConvention { get; set; } = new DefaultCssBuilderNamingConvention();
@@ -35,47 +35,51 @@ namespace Blazorify.Utilities.Styling
             return string.Join(Separator, CssClasses);
         }
 
-        public static CssBuilder Create(params object[] values)
+        public CssBuilder this[params object[] values]
         {
-            var builder = new CssBuilder();
-            if (values == null || values.Length == 0)
-                return builder;
-            foreach (var value in values)
+            get
             {
-                if (value is string strValue)
+
+                var builder = new CssBuilder(_cache, _namingConvention);
+                if (values == null || values.Length == 0)
+                    return builder;
+                foreach (var value in values)
                 {
-                    builder.AddInner(strValue);
+                    if (value is string strValue)
+                    {
+                        builder.AddInner(strValue);
+                    }
+                    else if (value is Enum enumValue)
+                    {
+                        builder.Add(enumValue);
+                    }
+                    else if (value is ValueTuple<string, bool> tupleWithCondition)
+                    {
+                        builder.AddInner(tupleWithCondition.Item1, tupleWithCondition.Item2);
+                    }
+                    else if (value is ValueTuple<string, Func<bool>> tupleWithPredicate)
+                    {
+                        builder.AddInner(tupleWithPredicate.Item1, tupleWithPredicate.Item2);
+                    }
+                    else if (value is IEnumerable<string> cssList)
+                    {
+                        builder.Add(cssList);
+                    }
+                    else if (value is CssBuilder other)
+                    {
+                        builder.Add(other);
+                    }
+                    else if (value is IReadOnlyDictionary<string, object> attributes)
+                    {
+                        builder.Add(attributes);
+                    }
+                    else
+                    {
+                        builder.Add(value);
+                    }
                 }
-                else if (value is Enum enumValue)
-                {
-                    builder.Add(enumValue);
-                }
-                else if (value is ValueTuple<string, bool> tupleWithCondition)
-                {
-                    builder.AddInner(tupleWithCondition.Item1, tupleWithCondition.Item2);
-                }
-                else if (value is ValueTuple<string, Func<bool>> tupleWithPredicate)
-                {
-                    builder.AddInner(tupleWithPredicate.Item1, tupleWithPredicate.Item2);
-                }
-                else if (value is IEnumerable<string> cssList)
-                {
-                    builder.Add(cssList);
-                }
-                else if (value is CssBuilder other)
-                {
-                    builder.Add(other);
-                }
-                else if (value is IReadOnlyDictionary<string, object> attributes)
-                {
-                    builder.Add(attributes);
-                }
-                else
-                {
-                    builder.Add(value);
-                }
+                return builder;
             }
-            return builder;
         }
 
         public CssBuilder Add(string value, Func<bool> predicate)
