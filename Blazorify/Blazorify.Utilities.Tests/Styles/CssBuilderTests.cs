@@ -130,6 +130,28 @@ namespace Blazorify.Utilities.Styles
         }
 
         [Fact]
+        public void indexer_uses_a_different_CssBuilder_instance()
+        {
+            var cssBuilder = CreateCssBuilder();
+
+            var result = cssBuilder["c1"].ToString();
+
+            result.Should().Be("c1");
+            cssBuilder.ToString().Should().Be("");
+        }
+
+        [Fact]
+        public void indexer_uses_added_values_from_base_instance()
+        {
+            var cssBuilder = CreateCssBuilder().Add("c1");
+
+            var result = cssBuilder["c2"].ToString();
+
+            result.Should().Be("c1 c2");
+            cssBuilder.ToString().Should().Be("c1");
+        }
+
+        [Fact]
         public void indexer_accepts_multiple_different_parameters()
         {
             var attributes = new Dictionary<string, object>

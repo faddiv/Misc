@@ -46,6 +46,7 @@ namespace Blazorify.Utilities.Styling
             {
 
                 var builder = new CssBuilder(_cache, _namingConvention);
+                builder.Add(CssClasses);
                 if (values == null || values.Length == 0)
                     return builder;
                 foreach (var value in values)
