@@ -19,7 +19,7 @@
 <div class="row">
     <div class="col">
         <button type="button"
-                class="@(Css["btn", ("btn-primary", !alert), ("btn-danger", alert)])"
+                class="@(Css("btn", ("btn-primary", !alert), ("btn-danger", alert)))"
                 @onclick="ToggleButton">
             Toggle
         </button>
@@ -27,7 +27,7 @@
 </div>
 @code {
     [Inject]
-    public CssBuilder Css {get; set;}
+    public CssBuilderDelegate Css {get; set;}
     public object target { get; set; }
     public object tooltip { get; set; }
 

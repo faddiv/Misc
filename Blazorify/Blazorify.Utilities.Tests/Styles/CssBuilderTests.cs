@@ -130,29 +130,17 @@ namespace Blazorify.Utilities.Styles
         }
 
         [Fact]
-        public void indexer_uses_a_different_CssBuilder_instance()
-        {
-            var cssBuilder = CreateCssBuilder();
-
-            var result = cssBuilder["c1"].ToString();
-
-            result.Should().Be("c1");
-            cssBuilder.ToString().Should().Be("");
-        }
-
-        [Fact]
-        public void indexer_uses_added_values_from_base_instance()
+        public void AddMultiple_adds_input_to_the_list()
         {
             var cssBuilder = CreateCssBuilder().Add("c1");
 
-            var result = cssBuilder["c2"].ToString();
+            var result = cssBuilder.AddMultiple("c2").ToString();
 
             result.Should().Be("c1 c2");
-            cssBuilder.ToString().Should().Be("c1");
         }
 
         [Fact]
-        public void indexer_accepts_multiple_different_parameters()
+        public void AddMultiple_accepts_multiple_different_parameters()
         {
             var attributes = new Dictionary<string, object>
             {
@@ -161,7 +149,7 @@ namespace Blazorify.Utilities.Styles
             };
             var other = CreateCssBuilder().Add("c8").Add("c9");
 
-            var result = CreateCssBuilder()[
+            var result = CreateCssBuilder().AddMultiple(
                 "c1",
                 new { c2 = true },
                 ("c3", true),
@@ -170,7 +158,7 @@ namespace Blazorify.Utilities.Styles
                 attributes,
                 other,
                 Dummy.c10
-                ].ToString();
+                ).ToString();
 
             result.Should().Be("c1 c2 c3 c4 c5 c6 c7 c8 c9 c10");
         }

@@ -5,7 +5,7 @@ namespace Blazorify.Utilities.Styling
 {
     public interface ICssBuilder
     {
-        CssBuilder this[params object[] values] { get; }
+        CssBuilder AddMultiple(params object[] values);
 
         CssBuilder Add(CssBuilder cssBuilder);
 
