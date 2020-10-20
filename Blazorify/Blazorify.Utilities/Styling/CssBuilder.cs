@@ -3,16 +3,26 @@ using System.Collections.Generic;
 using System.Linq.Expressions;
 using System.Reflection;
 
-namespace Blazorify.Utilities.Styles
+namespace Blazorify.Utilities.Styling
 {
-    public class CssBuilder : BuilderBase<CssBuilder>
+    public class CssBuilder
     {
         private delegate void AddDelegate(string name, bool condition);
+
+        private const string Separator = " ";
+
+        public List<string> Values { get; }
+
         private static readonly Dictionary<Type, Action<object, AddDelegate>> _valueExtractors = new Dictionary<Type, Action<object, AddDelegate>>();
-        public CssBuilder() : base(" ")
+        public CssBuilder()
         {
+            Values = new List<string>();
         }
 
+        public override string ToString()
+        {
+            return string.Join(Separator, Values);
+        }
         public static CssBuilder Create(params object[] values)
         {
             var builder = new CssBuilder();
@@ -22,15 +32,15 @@ namespace Blazorify.Utilities.Styles
             {
                 if (value is string strValue)
                 {
-                    builder.Add(strValue);
+                    builder.AddInner(strValue);
                 }
                 else if (value is ValueTuple<string, bool> tupleWithCondition)
                 {
-                    builder.Add(tupleWithCondition.Item1, tupleWithCondition.Item2);
+                    builder.AddInner(tupleWithCondition.Item1, tupleWithCondition.Item2);
                 }
                 else if (value is ValueTuple<string, Func<bool>> tupleWithPredicate)
                 {
-                    builder.Add(tupleWithPredicate.Item1, tupleWithPredicate.Item2);
+                    builder.AddInner(tupleWithPredicate.Item1, tupleWithPredicate.Item2);
                 }
                 else if (value is IEnumerable<string> cssList)
                 {
@@ -52,15 +62,15 @@ namespace Blazorify.Utilities.Styles
             return builder;
         }
 
-        public new CssBuilder Add(string value, Func<bool> predicate)
+        public CssBuilder Add(string value, Func<bool> predicate)
         {
-            base.Add(value, predicate);
+            AddInner(value, predicate);
             return this;
         }
 
-        public new CssBuilder Add(string value, bool condition = true)
+        public CssBuilder Add(string value, bool condition = true)
         {
-            base.Add(value, condition);
+            AddInner(value, condition);
             return this;
         }
 
@@ -70,7 +80,7 @@ namespace Blazorify.Utilities.Styles
                 return this;
             foreach (var item in tuple)
             {
-                base.Add(item.Item1, item.Item2);
+                AddInner(item.Item1, item.Item2);
             }
             return this;
         }
@@ -81,7 +91,7 @@ namespace Blazorify.Utilities.Styles
                 return this;
             foreach (var item in tuple)
             {
-                base.Add(item.Item1, item.Item2);
+                AddInner(item.Item1, item.Item2);
             }
             return this;
         }
@@ -112,7 +122,7 @@ namespace Blazorify.Utilities.Styles
                     extractor = CreateExtractor(type);
                     _valueExtractors.Add(type, extractor);
                 }
-                extractor(values, base.Add);
+                extractor(values, AddInner);
             }
             return this;
         }
@@ -123,7 +133,7 @@ namespace Blazorify.Utilities.Styles
                 && attributes.TryGetValue("class", out var css)
                 && css != null)
             {
-                Add((css as string) ?? css.ToString());
+                AddInner(css as string ?? css.ToString());
             }
             return this;
         }
@@ -134,7 +144,6 @@ namespace Blazorify.Utilities.Styles
             var properties = type.GetProperties(BindingFlags.Public | BindingFlags.Instance);
             var valuesParam = Expression.Parameter(typeof(object));
             var addMethod = Expression.Parameter(typeof(AddDelegate));
-            //var invokeMethod = typeof(AddDelegate).GetMethod("Invoke");
             var valuesVar = Expression.Variable(type, "target");
             var castedValuesParam = Expression.Convert(valuesParam, type);
             var valuesVarAssigment = Expression.Assign(valuesVar, castedValuesParam);
@@ -165,5 +174,19 @@ namespace Blazorify.Utilities.Styles
             }
             return propertyName.Replace('_', '-');
         }
+
+        private void AddInner(string value, Func<bool> predicate)
+        {
+            AddInner(value, predicate());
+        }
+
+        private void AddInner(string value, bool condition = true)
+        {
+            if (!string.IsNullOrEmpty(value) && condition)
+            {
+                Values.Add(value);
+            }
+        }
+
     }
 }
