@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 
 namespace Blazorify.Utilities.Styling
@@ -17,6 +17,11 @@ namespace Blazorify.Utilities.Styling
                 _valueExtractors.Add(type, method);
             }
             return method;
+        }
+        
+        public static void ClearCache()
+        {
+            _valueExtractors.Clear();
         }
     }
 }

@@ -1,0 +1,76 @@
+using System;
+using System.Reflection;
+using System.Text;
+
+namespace Blazorify.Utilities.Styling
+{
+    public class DefaultCssBuilderNamingConvention : ICssBuilderNamingConvention
+    {
+        private const char Hyphen = '-';
+        private const char Underscore = '_';
+
+        public bool PropertyUnderscoreToHyphen { get; set; } = true;
+
+        public CssBuilderNamingMode PropertyMode { get; set; }
+            = CssBuilderNamingMode.None;
+
+        public bool EnumUnderscoreToHyphen { get; set; }
+
+        public CssBuilderNamingMode EnumMode { get; set; }
+            = CssBuilderNamingMode.KebabCase;
+
+        public string ToCssClassName(PropertyInfo property)
+        {
+            string name = property.Name;
+            return PropertyMode switch
+            {
+                CssBuilderNamingMode.KebabCase => KebabCase(name, PropertyUnderscoreToHyphen),
+                _ => UnderscoreToHyphen(name, PropertyUnderscoreToHyphen),
+            };
+        }
+
+        public string ToCssClassName(Enum enumValue)
+        {
+            string name = enumValue.ToString();
+            return EnumMode switch
+            {
+                CssBuilderNamingMode.KebabCase => KebabCase(name, EnumUnderscoreToHyphen),
+                _ => UnderscoreToHyphen(name, EnumUnderscoreToHyphen),
+            };
+        }
+
+        private string UnderscoreToHyphen(string name, bool underscoreToHyphen)
+        {
+            if (underscoreToHyphen)
+            {
+                return name.Replace('_', '-');
+            }
+            return name;
+
+        }
+
+        private string KebabCase(string name, bool underscoreToHyphen)
+        {
+            var builder = new StringBuilder(name.Length * 2);
+            builder.Append(char.ToLowerInvariant(name[0]));
+            for (int i = 1; i < name.Length; i++)
+            {
+                var ch = name[i];
+                if (underscoreToHyphen && ch == Underscore)
+                {
+                    builder.Append(Hyphen);
+                }
+                else if (char.IsUpper(ch))
+                {
+                    builder.Append(Hyphen);
+                    builder.Append(char.ToLower(ch));
+                }
+                else
+                {
+                    builder.Append(ch);
+                }
+            }
+            return builder.ToString();
+        }
+    }
+}

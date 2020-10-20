@@ -7,19 +7,24 @@ namespace Blazorify.Utilities.Styling
 {
     public class CssBuilder
     {
-        private static ICssBuilderCache DefaultCache { get; set; } = ThreadUnsafeCssBuilderCache.Instance;
+        public static ICssBuilderCache DefaultCache { get; set; } = ThreadUnsafeCssBuilderCache.Instance;
+        public static ICssBuilderNamingConvention DefaultNamingConvention { get; set; } = new DefaultCssBuilderNamingConvention();
 
         private const string _separator = " ";
 
         private readonly ICssBuilderCache _cache;
+        private readonly ICssBuilderNamingConvention _namingConvention;
 
-        public CssBuilder() : this(DefaultCache)
+        public CssBuilder() : this(DefaultCache, DefaultNamingConvention)
         {
 
         }
-        public CssBuilder(ICssBuilderCache cache)
+        public CssBuilder(
+            ICssBuilderCache cache,
+            ICssBuilderNamingConvention namingConvention)
         {
             _cache = cache ?? throw new ArgumentNullException(nameof(cache));
+            _namingConvention = namingConvention ?? throw new ArgumentNullException(nameof(namingConvention));
             Values = new List<string>();
         }
 
@@ -158,7 +163,7 @@ namespace Blazorify.Utilities.Styling
                     throw new Exception($"Only boolean properties allowed for the css builder. Invalid poperty: {type.Name}.{property.Name} (Type: {property.PropertyType}");
                 }
                 var conditionGetter = Expression.Property(valuesVar, property);
-                var className = GenerateName(property);
+                var className = _namingConvention.ToCssClassName(property);
                 var classNameConstant = Expression.Constant(className);
                 var invokation = Expression.Invoke(addMethod, classNameConstant, conditionGetter);
                 lines.Add(invokation);
@@ -166,16 +171,6 @@ namespace Blazorify.Utilities.Styling
             var body = Expression.Block(new ParameterExpression[] { valuesVar }, lines);
             var method = Expression.Lambda<ProcessObjectDelegate>(body, valuesParam, addMethod);
             return method.Compile();
-        }
-
-        private string GenerateName(PropertyInfo property)
-        {
-            var propertyName = property.Name;
-            if (propertyName.StartsWith('@'))
-            {
-                propertyName = propertyName.Substring(1);
-            }
-            return propertyName.Replace('_', '-');
         }
 
         private void AddInner(string value, Func<bool> predicate)
@@ -192,5 +187,4 @@ namespace Blazorify.Utilities.Styling
         }
 
     }
-
 }

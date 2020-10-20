@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Concurrent;
 
 namespace Blazorify.Utilities.Styling
@@ -12,6 +12,11 @@ namespace Blazorify.Utilities.Styling
         public ProcessObjectDelegate GetOrAdd(Type type, Func<Type, ProcessObjectDelegate> create)
         {
             return _valueExtractors.GetOrAdd(type, create);
+        }
+
+        public static void ClearCache()
+        {
+            _valueExtractors.Clear();
         }
     }
 }
