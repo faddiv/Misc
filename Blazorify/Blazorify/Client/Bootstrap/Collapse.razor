@@ -11,8 +11,8 @@
                EnteringCss="collapsing"
                ExitedCss="collapse"
                ExitingCss="collapsing"
-               OnReflow="evt => evt.Reflow(_reference)">
-    <div @ref="_reference" @attributes="Attributes" class="@Css(context.Css, Attributes)" style="@_style">
+               OnReflow="evt => evt.Reflow(_reference.Ref)">
+    <DynamicTag Tag="@Tag" @ref="_reference" @attributes="Attributes" class="@Css(context.Css, Attributes)" style="@_style">
         @ChildContent
-    </div>
+    </DynamicTag>
 </CssTransition>

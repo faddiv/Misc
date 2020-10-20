@@ -1,10 +1,9 @@
 using Blazorify.Client.Animate;
+using Blazorify.Client.Etc;
 using Blazorify.Utilities.Styling;
 using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
-using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 
 namespace Blazorify.Client.Bootstrap
@@ -13,16 +12,19 @@ namespace Blazorify.Client.Bootstrap
     {
         private string _style = "";
 
-        private ElementReference _reference;
+        private DynamicTag _reference;
 
         [Parameter]
         public RenderFragment ChildContent { get; set; }
 
         [Parameter]
+        public string Tag { get; set; } = "div";
+
+        [Parameter]
         public bool Open { get; set; }
 
         [Parameter(CaptureUnmatchedValues = true)]
-        public Dictionary<string,object> Attributes { get; set; }
+        public Dictionary<string, object> Attributes { get; set; }
 
         [Inject]
         public CssBuilderDelegate Css { get; set; }
