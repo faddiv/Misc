@@ -46,6 +46,10 @@ namespace Blazorify.Utilities.Styling
                 {
                     builder.AddInner(strValue);
                 }
+                else if (value is Enum enumValue)
+                {
+                    builder.Add(enumValue);
+                }
                 else if (value is ValueTuple<string, bool> tupleWithCondition)
                 {
                     builder.AddInner(tupleWithCondition.Item1, tupleWithCondition.Item2);
@@ -121,6 +125,14 @@ namespace Blazorify.Utilities.Styling
             if (cssBuilder == null)
                 return this;
             Values.AddRange(cssBuilder.Values);
+            return this;
+        }
+
+        public CssBuilder Add(Enum enumValue)
+        {
+            if (enumValue == null)
+                return this;
+            AddInner(_namingConvention.ToCssClassName(enumValue));
             return this;
         }
 

@@ -124,6 +124,20 @@ namespace Blazorify.Utilities.Styles
         }
 
         [Fact]
+        public void Add_Enum_adds_enum_by_naming_convention()
+        {
+            var value = Dummy.NameName_name;
+            var result = CssBuilder.Create().Add(value).ToString();
+
+            result.Should().Be("name-name_name");
+        }
+
+        public enum Dummy
+        {
+            NameName_name,
+            c10
+        }
+        [Fact]
         public void Create_accepts_multiple_different_parameters()
         {
             var attributes = new Dictionary<string, object>
@@ -140,9 +154,10 @@ namespace Blazorify.Utilities.Styles
                 ("c4", new Func<bool>(() => true)),
                 new[] { "c5", "c6" },
                 attributes,
-                original).ToString();
+                original,
+                Dummy.c10).ToString();
 
-            result.Should().Be("c1 c2 c3 c4 c5 c6 c7 c8 c9");
+            result.Should().Be("c1 c2 c3 c4 c5 c6 c7 c8 c9 c10");
         }
 
     }
