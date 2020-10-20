@@ -163,6 +163,133 @@ namespace Blazorify.Utilities.Styles
             result.Should().Be("c1 c2 c3 c4 c5 c6 c7 c8 c9 c10");
         }
 
+        [Fact]
+        public void Add_adds_a_class_only_single_time()
+        {
+            var result = CreateCssBuilder()
+                .Add("c1")
+                .Add(("c1", true))
+                .Add(new { c1 = true })
+                .ToString();
+
+            result.Should().Be("c1");
+        }
+
+        [Fact]
+        public void Add_adds_a_class_only_the_first_time()
+        {
+            var result = CreateCssBuilder()
+                .Add("c1")
+                .Add("c2")
+                .Add("c1")
+                .ToString();
+
+            result.Should().Be("c1 c2");
+        }
+
+        [Fact]
+        public void Add_considers_multi_css_in_string_with_condition()
+        {
+            var result = CreateCssBuilder()
+                .Add("c1 c2")
+                .Add("c2 c3", true)
+                .ToString();
+
+            result.Should().Be("c1 c2 c3");
+        }
+
+        [Fact]
+        public void Add_considers_multi_css_in_string_with_predicate()
+        {
+            var result = CreateCssBuilder()
+                .Add("c1 c2")
+                .Add("c2 c3", () => true)
+                .ToString();
+
+            result.Should().Be("c1 c2 c3");
+        }
+
+        [Fact]
+        public void Add_considers_multi_css_in_tuple_with_condition()
+        {
+            var result = CreateCssBuilder()
+                .Add("c1 c2")
+                .Add(("c2 c3", true), ("c3 c4", true))
+                .ToString();
+
+            result.Should().Be("c1 c2 c3 c4");
+        }
+
+        [Fact]
+        public void Add_considers_multi_css_in_enumerable()
+        {
+            var result = CreateCssBuilder()
+                .Add("c1 c2")
+                .Add(new[] { "c2 c3", "c3 c4" })
+                .ToString();
+
+            result.Should().Be("c1 c2 c3 c4");
+        }
+
+        [Fact]
+        public void Add_considers_multi_css_in_CssBuilder()
+        {
+            var other = CreateCssBuilder().Add("c2 c3");
+            var result = CreateCssBuilder()
+                .Add("c1 c2")
+                .Add(other)
+                .ToString();
+
+            result.Should().Be("c1 c2 c3");
+        }
+
+        [Fact]
+        public void Add_considers_multi_css_in_tuple_with_predicate()
+        {
+            var result = CreateCssBuilder()
+                .Add("c1 c2")
+                .Add(("c2 c3", () => true), ("c3 c4", () => true))
+                .ToString();
+
+            result.Should().Be("c1 c2 c3 c4");
+        }
+
+        [Fact]
+        public void Add_considers_multi_css_in_Dictionary()
+        {
+            var dic = new Dictionary<string, object>
+            {
+                {"class", "c2 c3" }
+            };
+            var result = CreateCssBuilder()
+                .Add("c1 c2")
+                .Add(dic)
+                .ToString();
+
+            result.Should().Be("c1 c2 c3");
+        }
+
+        [Fact]
+        public void Add_considers_multi_css_in_AnonymousType()
+        {
+            var result = CreateCssBuilder()
+                .Add("c1 c2")
+                .Add(new { c2 = true, c3 = true })
+                .ToString();
+
+            result.Should().Be("c1 c2 c3");
+        }
+
+        [Fact]
+        public void AddMultiple_adds_a_class_only_single_time()
+        {
+            var result = CreateCssBuilder()
+                .AddMultiple("c1", ("c1", true), new { c1 = true })
+                .ToString();
+
+            result.Should().Be("c1");
+        }
+
         public enum Dummy
         {
             NameName_name,

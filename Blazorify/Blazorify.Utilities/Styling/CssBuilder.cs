@@ -60,7 +60,7 @@ namespace Blazorify.Utilities.Styling
                 }
                 else if (value is ValueTuple<string, Func<bool>> tupleWithPredicate)
                 {
-                    AddInner(tupleWithPredicate.Item1, tupleWithPredicate.Item2);
+                    AddInner(tupleWithPredicate.Item1, tupleWithPredicate.Item2());
                 }
                 else if (value is IEnumerable<string> cssList)
                 {
@@ -84,7 +84,7 @@ namespace Blazorify.Utilities.Styling
 
         public CssBuilder Add(string value, Func<bool> predicate)
         {
-            AddInner(value, predicate);
+            AddInner(value, predicate());
             return this;
         }
 
@@ -111,7 +111,7 @@ namespace Blazorify.Utilities.Styling
                 return this;
             foreach (var item in tuple)
             {
-                AddInner(item.Item1, item.Item2);
+                AddInner(item.Item1, item.Item2());
             }
             return this;
         }
@@ -120,7 +120,10 @@ namespace Blazorify.Utilities.Styling
         {
             if (cssList == null)
                 return this;
-            CssClasses.AddRange(cssList);
+            foreach (var value in cssList)
+            {
+                AddInner(value);
+            }
             return this;
         }
 
@@ -128,7 +131,10 @@ namespace Blazorify.Utilities.Styling
         {
             if (cssBuilder == null)
                 return this;
-            CssClasses.AddRange(cssBuilder.CssClasses);
+            foreach (var value in cssBuilder.CssClasses)
+            {
+                AddInner(value);
+            }
             return this;
         }
 
@@ -189,16 +195,17 @@ namespace Blazorify.Utilities.Styling
             return method.Compile();
         }
 
-        private void AddInner(string value, Func<bool> predicate)
-        {
-            AddInner(value, predicate());
-        }
-
         private void AddInner(string value, bool condition = true)
         {
             if (!string.IsNullOrEmpty(value) && condition)
             {
-                CssClasses.Add(value);
+                foreach (var cssClass in value.Split(' ', StringSplitOptions.RemoveEmptyEntries))
+                {
+                    if (CssClasses.Contains(cssClass))
+                        continue;
+                    CssClasses.Add(cssClass);
+                }
+
             }
         }
 
