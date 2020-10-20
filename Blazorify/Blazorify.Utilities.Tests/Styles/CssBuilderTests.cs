@@ -10,7 +10,7 @@ namespace Blazorify.Utilities.Styles
     {
         private static CssBuilder CreateCssBuilder()
         {
-            return new CssBuilder();
+            return CssBuilder.Create();
         }
 
         [Fact]

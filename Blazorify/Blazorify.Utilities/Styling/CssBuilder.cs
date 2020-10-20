@@ -10,15 +10,20 @@ namespace Blazorify.Utilities.Styling
         public static ICssBuilderCache DefaultCache { get; set; } = ThreadUnsafeCssBuilderCache.Instance;
         public static ICssBuilderNamingConvention DefaultNamingConvention { get; set; } = new DefaultCssBuilderNamingConvention();
 
+        public static CssBuilder Create(
+            ICssBuilderCache _cache = null,
+            ICssBuilderNamingConvention _namingConvention = null)
+        {
+            return new CssBuilder(
+                _cache ?? DefaultCache,
+                _namingConvention ?? DefaultNamingConvention);
+        }
+
         private const string Separator = " ";
 
         private readonly ICssBuilderCache _cache;
         private readonly ICssBuilderNamingConvention _namingConvention;
 
-        public CssBuilder() : this(DefaultCache, DefaultNamingConvention)
-        {
-
-        }
         public CssBuilder(
             ICssBuilderCache cache,
             ICssBuilderNamingConvention namingConvention)
