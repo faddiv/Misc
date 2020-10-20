@@ -10,7 +10,7 @@ namespace Blazorify.Utilities.Styling
         public static ICssBuilderCache DefaultCache { get; set; } = ThreadUnsafeCssBuilderCache.Instance;
         public static ICssBuilderNamingConvention DefaultNamingConvention { get; set; } = new DefaultCssBuilderNamingConvention();
 
-        private const string _separator = " ";
+        private const string Separator = " ";
 
         private readonly ICssBuilderCache _cache;
         private readonly ICssBuilderNamingConvention _namingConvention;
@@ -25,14 +25,14 @@ namespace Blazorify.Utilities.Styling
         {
             _cache = cache ?? throw new ArgumentNullException(nameof(cache));
             _namingConvention = namingConvention ?? throw new ArgumentNullException(nameof(namingConvention));
-            Values = new List<string>();
+            CssClasses = new List<string>();
         }
 
-        public List<string> Values { get; }
+        public List<string> CssClasses { get; }
 
         public override string ToString()
         {
-            return string.Join(_separator, Values);
+            return string.Join(Separator, CssClasses);
         }
 
         public static CssBuilder Create(params object[] values)
@@ -116,7 +116,7 @@ namespace Blazorify.Utilities.Styling
         {
             if (cssList == null)
                 return this;
-            Values.AddRange(cssList);
+            CssClasses.AddRange(cssList);
             return this;
         }
 
@@ -124,7 +124,7 @@ namespace Blazorify.Utilities.Styling
         {
             if (cssBuilder == null)
                 return this;
-            Values.AddRange(cssBuilder.Values);
+            CssClasses.AddRange(cssBuilder.CssClasses);
             return this;
         }
 
@@ -194,7 +194,7 @@ namespace Blazorify.Utilities.Styling
         {
             if (!string.IsNullOrEmpty(value) && condition)
             {
-                Values.Add(value);
+                CssClasses.Add(value);
             }
         }
 
