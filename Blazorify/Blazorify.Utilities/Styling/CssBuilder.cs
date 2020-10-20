@@ -7,22 +7,29 @@ namespace Blazorify.Utilities.Styling
 {
     public class CssBuilder
     {
-        private delegate void AddDelegate(string name, bool condition);
+        private static ICssBuilderCache DefaultCache { get; set; } = ThreadUnsafeCssBuilderCache.Instance;
 
-        private const string Separator = " ";
+        private const string _separator = " ";
 
-        public List<string> Values { get; }
+        private readonly ICssBuilderCache _cache;
 
-        private static readonly Dictionary<Type, Action<object, AddDelegate>> _valueExtractors = new Dictionary<Type, Action<object, AddDelegate>>();
-        public CssBuilder()
+        public CssBuilder() : this(DefaultCache)
         {
+
+        }
+        public CssBuilder(ICssBuilderCache cache)
+        {
+            _cache = cache ?? throw new ArgumentNullException(nameof(cache));
             Values = new List<string>();
         }
 
+        public List<string> Values { get; }
+
         public override string ToString()
         {
-            return string.Join(Separator, Values);
+            return string.Join(_separator, Values);
         }
+
         public static CssBuilder Create(params object[] values)
         {
             var builder = new CssBuilder();
@@ -117,11 +124,7 @@ namespace Blazorify.Utilities.Styling
             if (values != null)
             {
                 var type = values.GetType();
-                if (!_valueExtractors.TryGetValue(type, out var extractor))
-                {
-                    extractor = CreateExtractor(type);
-                    _valueExtractors.Add(type, extractor);
-                }
+                var extractor = _cache.GetOrAdd(type, CreateExtractor);
                 extractor(values, AddInner);
             }
             return this;
@@ -138,7 +141,7 @@ namespace Blazorify.Utilities.Styling
             return this;
         }
 
-        private Action<object, AddDelegate> CreateExtractor(Type type)
+        private ProcessObjectDelegate CreateExtractor(Type type)
         {
             var lines = new List<Expression>();
             var properties = type.GetProperties(BindingFlags.Public | BindingFlags.Instance);
@@ -161,7 +164,7 @@ namespace Blazorify.Utilities.Styling
                 lines.Add(invokation);
             }
             var body = Expression.Block(new ParameterExpression[] { valuesVar }, lines);
-            var method = Expression.Lambda<Action<object, AddDelegate>>(body, valuesParam, addMethod);
+            var method = Expression.Lambda<ProcessObjectDelegate>(body, valuesParam, addMethod);
             return method.Compile();
         }
 
@@ -189,4 +192,5 @@ namespace Blazorify.Utilities.Styling
         }
 
     }
+
 }
