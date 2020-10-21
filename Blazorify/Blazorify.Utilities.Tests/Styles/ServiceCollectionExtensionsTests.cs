@@ -32,7 +32,7 @@ namespace Blazorify.Utilities.Styles
 
             var builderDescription = coll.Should().Contain(sd => sd.ServiceType == typeof(ICssBuilderNamingConvention)).Which;
             builderDescription.Lifetime.Should().Be(ServiceLifetime.Singleton);
-            builderDescription.ImplementationInstance.Should().BeOfType<DefaultCssBuilderNamingConvention>();
+            builderDescription.ImplementationType.Should().Be<DefaultCssBuilderNamingConvention>();
         }
 
         [Fact]
@@ -43,7 +43,7 @@ namespace Blazorify.Utilities.Styles
 
             var builderDescription = coll.Should().Contain(sd => sd.ServiceType == typeof(ICssBuilderCache)).Which;
             builderDescription.Lifetime.Should().Be(ServiceLifetime.Singleton);
-            builderDescription.ImplementationInstance.Should().NotBeNull();
+            builderDescription.ImplementationType.Should().Be<ThreadsafeCssBuilderCache>();
         }
 
         [Fact]
@@ -51,10 +51,11 @@ namespace Blazorify.Utilities.Styles
         {
             ServiceCollection coll = new ServiceCollection();
             OtherNamingConvention namingConvention = new OtherNamingConvention();
-            coll.AddCssBuilder(namingConvention: namingConvention);
 
-            var builderDescription = coll.Should().Contain(sd => sd.ServiceType == typeof(ICssBuilderNamingConvention)).Which;
-            builderDescription.ImplementationInstance.Should().BeSameAs(namingConvention);
+            coll.AddSingleton<ICssBuilderNamingConvention>(namingConvention);
+            coll.AddCssBuilder();
+
+            coll.Should().ContainSingle(sd => sd.ServiceType == typeof(ICssBuilderNamingConvention));
         }
 
         [Fact]
@@ -62,10 +63,11 @@ namespace Blazorify.Utilities.Styles
         {
             ServiceCollection coll = new ServiceCollection();
             OtherCache cache = new OtherCache();
-            coll.AddCssBuilder(builderCache: cache);
 
-            var builderDescription = coll.Should().Contain(sd => sd.ServiceType == typeof(ICssBuilderCache)).Which;
-            builderDescription.ImplementationInstance.Should().BeSameAs(cache);
+            coll.AddSingleton<ICssBuilderCache>(cache);
+            coll.AddCssBuilder();
+
+            coll.Should().ContainSingle(sd => sd.ServiceType == typeof(ICssBuilderCache));
         }
 
         [Fact]

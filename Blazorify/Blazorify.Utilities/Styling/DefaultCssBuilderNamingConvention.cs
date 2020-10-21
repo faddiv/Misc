@@ -12,9 +12,9 @@ namespace Blazorify.Utilities.Styling
         public bool PropertyUnderscoreToHyphen { get; set; } = true;
 
         public CssBuilderNamingMode PropertyMode { get; set; }
-            = CssBuilderNamingMode.None;
+            = CssBuilderNamingMode.KebabCase;
 
-        public bool EnumUnderscoreToHyphen { get; set; }
+        public bool EnumUnderscoreToHyphen { get; set; } = true;
 
         public CssBuilderNamingMode EnumMode { get; set; }
             = CssBuilderNamingMode.KebabCase;

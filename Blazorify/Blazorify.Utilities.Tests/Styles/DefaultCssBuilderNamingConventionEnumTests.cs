@@ -16,7 +16,7 @@ namespace Blazorify.Utilities.Tests.Styles
         public void DefaultValue_is_correct()
         {
             instance.EnumMode.Should().Be(CssBuilderNamingMode.KebabCase);
-            instance.EnumUnderscoreToHyphen.Should().BeFalse();
+            instance.EnumUnderscoreToHyphen.Should().BeTrue();
         }
 
         [Theory]

@@ -16,7 +16,7 @@ namespace Blazorify.Utilities.Styles
         [Fact]
         public void DefaultValue_is_correct()
         {
-            instance.PropertyMode.Should().Be(CssBuilderNamingMode.None);
+            instance.PropertyMode.Should().Be(CssBuilderNamingMode.KebabCase);
             instance.PropertyUnderscoreToHyphen.Should().BeTrue();
         }
 

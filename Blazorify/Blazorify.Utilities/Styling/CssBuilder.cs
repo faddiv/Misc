@@ -7,16 +7,24 @@ namespace Blazorify.Utilities.Styling
 {
     public class CssBuilder : ICssBuilder
     {
-        public static ICssBuilderCache DefaultCache { get; set; } = ThreadUnsafeCssBuilderCache.Instance;
-        public static ICssBuilderNamingConvention DefaultNamingConvention { get; set; } = new DefaultCssBuilderNamingConvention();
+        public static ICssBuilderCache DefaultCache { get; set; }
+        public static ICssBuilderNamingConvention DefaultNamingConvention { get; set; }
 
         public static CssBuilder Create(
-            ICssBuilderCache _cache = null,
-            ICssBuilderNamingConvention _namingConvention = null)
+            ICssBuilderCache cache = null,
+            ICssBuilderNamingConvention namingConvention = null)
         {
+            if(cache == null && DefaultCache == null)
+            {
+                DefaultCache = new ThreadsafeCssBuilderCache();
+            }
+            if (namingConvention == null && DefaultNamingConvention == null)
+            {
+                DefaultNamingConvention = new DefaultCssBuilderNamingConvention();
+            }
             return new CssBuilder(
-                _cache ?? DefaultCache,
-                _namingConvention ?? DefaultNamingConvention);
+                cache ?? DefaultCache,
+                namingConvention ?? DefaultNamingConvention);
         }
 
         private const string Separator = " ";

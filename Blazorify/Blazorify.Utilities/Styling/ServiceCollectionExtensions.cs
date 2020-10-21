@@ -1,4 +1,5 @@
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using System;
 using System.Runtime.InteropServices;
 
@@ -6,21 +7,12 @@ namespace Blazorify.Utilities.Styling
 {
     public static class ServiceCollectionExtensions
     {
-        public static void AddCssBuilder(this IServiceCollection serviceCollection,
-            ICssBuilderCache builderCache = null,
-            ICssBuilderNamingConvention namingConvention = null)
+        public static void AddCssBuilder(this IServiceCollection serviceCollection)
         {
-            builderCache ??= (RuntimeInformation.OSDescription != "web")
-                ? new ThreadsafeCssBuilderCache()
-                : (ICssBuilderCache)new ThreadUnsafeCssBuilderCache();
-            serviceCollection.AddSingleton(builderCache);
-
-            namingConvention ??= new DefaultCssBuilderNamingConvention();
-            serviceCollection.AddSingleton(namingConvention);
-
-            serviceCollection.AddTransient<ICssBuilder, CssBuilder>();
-
-            serviceCollection.AddTransient(CssBuilderDelegateFactory);
+            serviceCollection.TryAddSingleton<ICssBuilderCache, ThreadsafeCssBuilderCache>();
+            serviceCollection.TryAddSingleton<ICssBuilderNamingConvention, DefaultCssBuilderNamingConvention>();
+            serviceCollection.TryAddTransient<ICssBuilder, CssBuilder>();
+            serviceCollection.TryAddTransient(CssBuilderDelegateFactory);
         }
 
         private static CssBuilderDelegate CssBuilderDelegateFactory(IServiceProvider arg)

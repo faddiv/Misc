@@ -126,7 +126,7 @@ namespace Blazorify.Utilities.Styles
             var value = Dummy.NameName_name;
             var result = CreateCssBuilder().Add(value).ToString();
 
-            result.Should().Be("name-name_name");
+            result.Should().Be("name-name-name");
         }
 
         [Fact]
