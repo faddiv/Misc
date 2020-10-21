@@ -2,11 +2,7 @@ using Blazorify.Utilities.Styling;
 using FluentAssertions;
 using Microsoft.Extensions.DependencyInjection;
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
 using Xunit;
 
 namespace Blazorify.Utilities.Styles
@@ -94,15 +90,20 @@ namespace Blazorify.Utilities.Styles
             result.Should().Be("c1 c2");
         }
 
-        public class OtherCache : ICssBuilderCache
+        private class OtherCache : ICssBuilderCache
         {
             public ProcessObjectDelegate GetOrAdd(Type type, Func<Type, ProcessObjectDelegate> create)
             {
                 throw new NotImplementedException();
             }
+
+            public string GetOrAdd(Enum value, Func<Enum, string> create)
+            {
+                throw new NotImplementedException();
+            }
         }
 
-        public class OtherNamingConvention : ICssBuilderNamingConvention
+        private class OtherNamingConvention : ICssBuilderNamingConvention
         {
             public string ToCssClassName(PropertyInfo property)
             {

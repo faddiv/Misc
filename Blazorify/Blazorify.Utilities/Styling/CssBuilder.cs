@@ -151,7 +151,8 @@ namespace Blazorify.Utilities.Styling
         {
             if (enumValue == null)
                 return this;
-            AddInner(_namingConvention.ToCssClassName(enumValue));
+            var cssClass = _cache.GetOrAdd(enumValue, (ev) => _namingConvention.ToCssClassName(ev));
+            AddInner(cssClass);
             return this;
         }
 

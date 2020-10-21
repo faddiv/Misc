@@ -59,7 +59,7 @@ namespace Blazorify.Utilities.Styles
             result.Should().Be("pascal-case--with-under-score");
         }
 
-        public class Dummy
+        private class Dummy
         {
             public bool PascalCase { get; set; }
 

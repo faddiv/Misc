@@ -290,11 +290,26 @@ namespace Blazorify.Utilities.Styles
             result.Should().Be("c1");
         }
 
-        public enum Dummy
+        [Fact]
+        public void Enum_caching_works_correctly()
         {
-            NameName_name,
-            c10
+            var result1 = CreateCssBuilder().AddMultiple(Dummy.NameName_name, Dummy.c10, Dummy2.SomeOther, Dummy2.c20).ToString();
+            var result2 = CreateCssBuilder().AddMultiple(Dummy.NameName_name, Dummy.c10, Dummy2.SomeOther, Dummy2.c20).ToString();
+
+            result1.Should().Be("name-name-name c10 some-other c20");
+            result1.Should().Be(result2);
         }
 
+        public enum Dummy
+        {
+            NameName_name = 1,
+            c10 = 2
+        }
+
+        public enum Dummy2
+        {
+            SomeOther = 1,
+            c20 = 2
+        }
     }
 }
