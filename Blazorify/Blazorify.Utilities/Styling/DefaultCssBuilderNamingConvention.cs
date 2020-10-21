@@ -22,21 +22,25 @@ namespace Blazorify.Utilities.Styling
         public string ToCssClassName(PropertyInfo property)
         {
             string name = property.Name;
-            return PropertyMode switch
+            switch (PropertyMode)
             {
-                CssBuilderNamingMode.KebabCase => KebabCase(name, PropertyUnderscoreToHyphen),
-                _ => UnderscoreToHyphen(name, PropertyUnderscoreToHyphen),
-            };
+                case CssBuilderNamingMode.KebabCase:
+                    return KebabCase(name, PropertyUnderscoreToHyphen);
+                default:
+                    return UnderscoreToHyphen(name, PropertyUnderscoreToHyphen);
+            }
         }
 
         public string ToCssClassName(Enum enumValue)
         {
             string name = enumValue.ToString();
-            return EnumMode switch
+            switch (EnumMode)
             {
-                CssBuilderNamingMode.KebabCase => KebabCase(name, EnumUnderscoreToHyphen),
-                _ => UnderscoreToHyphen(name, EnumUnderscoreToHyphen),
-            };
+                case CssBuilderNamingMode.KebabCase:
+                    return KebabCase(name, EnumUnderscoreToHyphen);
+                default:
+                    return UnderscoreToHyphen(name, EnumUnderscoreToHyphen);
+            }
         }
 
         private string UnderscoreToHyphen(string name, bool underscoreToHyphen)

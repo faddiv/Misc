@@ -14,7 +14,7 @@ namespace Blazorify.Utilities.Styling
             ICssBuilderCache cache = null,
             ICssBuilderNamingConvention namingConvention = null)
         {
-            if(cache == null && DefaultCache == null)
+            if (cache == null && DefaultCache == null)
             {
                 DefaultCache = new ThreadsafeCssBuilderCache();
             }
@@ -28,6 +28,7 @@ namespace Blazorify.Utilities.Styling
         }
 
         private const string Separator = " ";
+        private readonly char[] _separatorArray = new[] { ' ' };
 
         private readonly ICssBuilderCache _cache;
         private readonly ICssBuilderNamingConvention _namingConvention;
@@ -207,7 +208,7 @@ namespace Blazorify.Utilities.Styling
         {
             if (!string.IsNullOrEmpty(value) && condition)
             {
-                foreach (var cssClass in value.Split(' ', StringSplitOptions.RemoveEmptyEntries))
+                foreach (var cssClass in value.Split(_separatorArray, StringSplitOptions.RemoveEmptyEntries))
                 {
                     if (CssClasses.Contains(cssClass))
                         continue;
