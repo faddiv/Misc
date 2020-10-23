@@ -32,6 +32,7 @@ namespace Blazorify.Utilities.Styling
 
         private readonly ICssBuilderCache _cache;
         private readonly ICssBuilderNamingConvention _namingConvention;
+        private readonly List<string> _cssClasses;
 
         public CssBuilder(
             ICssBuilderCache cache,
@@ -39,14 +40,14 @@ namespace Blazorify.Utilities.Styling
         {
             _cache = cache ?? throw new ArgumentNullException(nameof(cache));
             _namingConvention = namingConvention ?? throw new ArgumentNullException(nameof(namingConvention));
-            CssClasses = new List<string>();
+            _cssClasses = new List<string>();
         }
 
-        public List<string> CssClasses { get; }
+        
 
         public override string ToString()
         {
-            return string.Join(Separator, CssClasses);
+            return string.Join(Separator, _cssClasses);
         }
 
         public CssBuilder AddMultiple(params object[] values)
@@ -91,15 +92,15 @@ namespace Blazorify.Utilities.Styling
             return this;
         }
 
-        public CssBuilder Add(string value, Func<bool> predicate)
+        public CssBuilder Add(string cssClass, Func<bool> predicate)
         {
-            AddInner(value, predicate());
+            AddInner(cssClass, predicate());
             return this;
         }
 
-        public CssBuilder Add(string value, bool condition = true)
+        public CssBuilder Add(string cssClass, bool condition = true)
         {
-            AddInner(value, condition);
+            AddInner(cssClass, condition);
             return this;
         }
 
@@ -140,7 +141,7 @@ namespace Blazorify.Utilities.Styling
         {
             if (cssBuilder == null)
                 return this;
-            foreach (var value in cssBuilder.CssClasses)
+            foreach (var value in cssBuilder._cssClasses)
             {
                 AddInner(value);
             }
@@ -211,9 +212,9 @@ namespace Blazorify.Utilities.Styling
             {
                 foreach (var cssClass in value.Split(_separatorArray, StringSplitOptions.RemoveEmptyEntries))
                 {
-                    if (CssClasses.Contains(cssClass))
+                    if (_cssClasses.Contains(cssClass))
                         continue;
-                    CssClasses.Add(cssClass);
+                    _cssClasses.Add(cssClass);
                 }
 
             }

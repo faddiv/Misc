@@ -1,9 +1,8 @@
-using Blazorify.Utilities.Styling;
 using FluentAssertions;
 using System.Reflection;
 using Xunit;
 
-namespace Blazorify.Utilities.Styles
+namespace Blazorify.Utilities.Styling
 {
     public class DefaultCssBuilderNamingConventionPropertyTests
     {

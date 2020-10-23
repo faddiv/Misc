@@ -4,6 +4,11 @@ using System.Collections.Generic;
 
 namespace Blazorify.Utilities.Styling
 {
+    /* I compared the Dictionary with the ConcurrentDictionary. 
+     * It turns out on read, only 20% performace lost, so I dropped the thread unsafe variant.
+     * I also experimented with Enum caching. With default Equality comparer it became twice as 
+     * fast as the non cached version. With the custom Enum comparer it became four times faster.
+     */
     public class ThreadsafeCssBuilderCache : ICssBuilderCache
     {
         private static readonly ConcurrentDictionary<Type, ProcessObjectDelegate> _valueExtractors = new ConcurrentDictionary<Type, ProcessObjectDelegate>();

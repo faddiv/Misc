@@ -1,14 +1,13 @@
-using Blazorify.Utilities.Styling;
 using FluentAssertions;
 using System;
 using System.Collections.Generic;
 using Xunit;
 
-namespace Blazorify.Utilities.Styles
+namespace Blazorify.Utilities.Styling
 {
     public class CssBuilderTests
     {
-        private static CssBuilder CreateCssBuilder()
+        private static ICssBuilder CreateCssBuilder()
         {
             return CssBuilder.Create();
         }

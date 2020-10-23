@@ -1,8 +1,7 @@
-using Blazorify.Utilities.Styling;
 using FluentAssertions;
 using Xunit;
 
-namespace Blazorify.Utilities.Tests.Styles
+namespace Blazorify.Utilities.Styling
 {
     public class DefaultCssBuilderNamingConventionEnumTests
     {

@@ -1,11 +1,10 @@
-using Blazorify.Utilities.Styling;
 using FluentAssertions;
 using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Reflection;
 using Xunit;
 
-namespace Blazorify.Utilities.Styles
+namespace Blazorify.Utilities.Styling
 {
     public class ServiceCollectionExtensionsTests
     {
