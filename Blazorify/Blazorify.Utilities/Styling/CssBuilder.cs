@@ -7,43 +7,33 @@ namespace Blazorify.Utilities.Styling
 {
     public class CssBuilder : ICssBuilder
     {
-        public static ICssBuilderCache DefaultCache { get; set; }
-        public static ICssBuilderNamingConvention DefaultNamingConvention { get; set; }
-
+        public static CssBuilderOptions DefaultOptions { get; set; }
         public static CssBuilder Create(
-            ICssBuilderCache cache = null,
-            ICssBuilderNamingConvention namingConvention = null)
+            CssBuilderOptions options = null)
         {
-            if (cache == null && DefaultCache == null)
+            if (DefaultOptions == null)
             {
-                DefaultCache = new ThreadsafeCssBuilderCache();
+                DefaultOptions = options ?? new CssBuilderOptions();
             }
-            if (namingConvention == null && DefaultNamingConvention == null)
-            {
-                DefaultNamingConvention = new DefaultCssBuilderNamingConvention();
-            }
-            return new CssBuilder(
-                cache ?? DefaultCache,
-                namingConvention ?? DefaultNamingConvention);
+            return new CssBuilder(options ?? DefaultOptions);
         }
 
         private const string Separator = " ";
         private readonly char[] _separatorArray = new[] { ' ' };
 
-        private readonly ICssBuilderCache _cache;
-        private readonly ICssBuilderNamingConvention _namingConvention;
         private readonly List<string> _cssClasses;
 
-        public CssBuilder(
-            ICssBuilderCache cache,
-            ICssBuilderNamingConvention namingConvention)
+        public CssBuilder(CssBuilderOptions options)
         {
-            _cache = cache ?? throw new ArgumentNullException(nameof(cache));
-            _namingConvention = namingConvention ?? throw new ArgumentNullException(nameof(namingConvention));
             _cssClasses = new List<string>();
+            Options = options ?? throw new ArgumentNullException(nameof(options));
+            if (Options.EnumToClassNameConverter == null)
+                throw new ArgumentException("Options.EnumToClassNameConverter can't be null.");
+            if (Options.PropertyToClassNameConverter == null)
+                throw new ArgumentException("Options.PropertyToClassNameConverter can't be null.");
         }
 
-        
+        public CssBuilderOptions Options { get; }
 
         public override string ToString()
         {
@@ -152,7 +142,8 @@ namespace Blazorify.Utilities.Styling
         {
             if (enumValue == null)
                 return this;
-            var cssClass = _cache.GetOrAdd(enumValue, (ev) => _namingConvention.ToCssClassName(ev));
+            var cssClass = ThreadsafeCssBuilderCache.GetOrAdd(enumValue,
+                (ev) => Options.EnumToClassNameConverter.Invoke(ev));
             AddInner(cssClass);
             return this;
         }
@@ -162,7 +153,7 @@ namespace Blazorify.Utilities.Styling
             if (values != null)
             {
                 var type = values.GetType();
-                var extractor = _cache.GetOrAdd(type, CreateExtractor);
+                var extractor = ThreadsafeCssBuilderCache.GetOrAdd(type, CreateExtractor);
                 extractor(values, AddInner);
             }
             return this;
@@ -196,7 +187,7 @@ namespace Blazorify.Utilities.Styling
                     throw new Exception($"Only boolean properties allowed for the css builder. Invalid poperty: {type.Name}.{property.Name} (Type: {property.PropertyType}");
                 }
                 var conditionGetter = Expression.Property(valuesVar, property);
-                var className = _namingConvention.ToCssClassName(property);
+                var className = Options.PropertyToClassNameConverter(property);
                 var classNameConstant = Expression.Constant(className);
                 var invokation = Expression.Invoke(addMethod, classNameConstant, conditionGetter);
                 lines.Add(invokation);

@@ -9,17 +9,17 @@ namespace Blazorify.Utilities.Styling
      * I also experimented with Enum caching. With default Equality comparer it became twice as 
      * fast as the non cached version. With the custom Enum comparer it became four times faster.
      */
-    public class ThreadsafeCssBuilderCache : ICssBuilderCache
+    public static class ThreadsafeCssBuilderCache
     {
         private static readonly ConcurrentDictionary<Type, ProcessObjectDelegate> _valueExtractors = new ConcurrentDictionary<Type, ProcessObjectDelegate>();
         private static readonly ConcurrentDictionary<Enum, string> _enumName = new ConcurrentDictionary<Enum, string>(new EnumEqualityComparer());
 
-        public ProcessObjectDelegate GetOrAdd(Type type, Func<Type, ProcessObjectDelegate> create)
+        public static ProcessObjectDelegate GetOrAdd(Type type, Func<Type, ProcessObjectDelegate> create)
         {
             return _valueExtractors.GetOrAdd(type, create);
         }
 
-        public string GetOrAdd(Enum value, Func<Enum, string> create)
+        public static string GetOrAdd(Enum value, Func<Enum, string> create)
         {
             return _enumName.GetOrAdd(value, create);
         }

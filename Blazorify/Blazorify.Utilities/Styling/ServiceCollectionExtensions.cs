@@ -6,12 +6,17 @@ namespace Blazorify.Utilities.Styling
 {
     public static class ServiceCollectionExtensions
     {
-        public static void AddCssBuilder(this IServiceCollection serviceCollection)
+        public static void AddCssBuilder(this IServiceCollection serviceCollection,
+            Action<CssBuilderOptions> action = null)
         {
-            serviceCollection.TryAddSingleton<ICssBuilderCache, ThreadsafeCssBuilderCache>();
-            serviceCollection.TryAddSingleton<ICssBuilderNamingConvention, DefaultCssBuilderNamingConvention>();
             serviceCollection.TryAddTransient<ICssBuilder, CssBuilder>();
             serviceCollection.TryAddTransient(CssBuilderDelegateFactory);
+            serviceCollection.AddSingleton(p =>
+            {
+                var options = new CssBuilderOptions();
+                action?.Invoke(options);
+                return options;
+            });
         }
 
         public static void AddStyleBuilder(this IServiceCollection serviceCollection)

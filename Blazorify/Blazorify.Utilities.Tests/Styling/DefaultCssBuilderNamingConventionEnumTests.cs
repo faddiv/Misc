@@ -1,11 +1,12 @@
 using FluentAssertions;
+using System;
 using Xunit;
 
 namespace Blazorify.Utilities.Styling
 {
     public class DefaultCssBuilderNamingConventionEnumTests
     {
-        public DefaultCssBuilderNamingConvention instance = new DefaultCssBuilderNamingConvention();
+        public CssBuilderOptions options = new CssBuilderOptions();
 
         public Dummy PascalCase = Dummy.PascalCase;
 
@@ -14,45 +15,45 @@ namespace Blazorify.Utilities.Styling
         [Fact]
         public void DefaultValue_is_correct()
         {
-            instance.EnumMode.Should().Be(CssBuilderNamingMode.KebabCase);
-            instance.EnumUnderscoreToHyphen.Should().BeTrue();
-        }
-
-        [Theory]
-        [InlineData(false, "PascalCase_WithUnderScore")]
-        [InlineData(true, "PascalCase-WithUnderScore")]
-        public void ToCssClassName_uses_EnumUnderscoreToHyphen_value(
-            bool EnumUnderscoreToHyphen, string expected)
-        {
-            instance.EnumMode = CssBuilderNamingMode.None;
-            instance.EnumUnderscoreToHyphen = EnumUnderscoreToHyphen;
-
-            var result = instance.ToCssClassName(PascalCase_WithUnderScore);
-
-            result.Should().Be(expected);
-        }
-
-        [Theory]
-        [InlineData(CssBuilderNamingMode.None, "PascalCase")]
-        [InlineData(CssBuilderNamingMode.KebabCase, "pascal-case")]
-        public void ToCssClassName_uses_EnumMode_value(
-            CssBuilderNamingMode EnumMode, string expected)
-        {
-            instance.EnumMode = EnumMode;
-            instance.EnumUnderscoreToHyphen = false;
-
-            var result = instance.ToCssClassName(PascalCase);
-
-            result.Should().Be(expected);
+            options.EnumToClassNameConverter.Should().Be(new Func<Enum, string>(CssBuilderNamingConventions.KebabCaseWithUnderscoreToHyphen));
         }
 
         [Fact]
-        public void ToCssClassName_can_combine_the_settings()
+        public void None_doesnt_convert()
         {
-            instance.EnumMode = CssBuilderNamingMode.KebabCase;
-            instance.EnumUnderscoreToHyphen = true;
+            options.EnumToClassNameConverter = CssBuilderNamingConventions.None;
 
-            var result = instance.ToCssClassName(PascalCase_WithUnderScore);
+            var result = options.EnumToClassNameConverter(PascalCase_WithUnderScore);
+
+            result.Should().Be("PascalCase_WithUnderScore");
+        }
+
+        [Fact]
+        public void UnderscoreToHyphen_converts_underscore()
+        {
+            options.EnumToClassNameConverter = CssBuilderNamingConventions.UnderscoreToHyphen;
+
+            var result = options.EnumToClassNameConverter(PascalCase_WithUnderScore);
+
+            result.Should().Be("PascalCase-WithUnderScore");
+        }
+
+        [Fact]
+        public void KebabCase_converts_to_kebab_case()
+        {
+            options.EnumToClassNameConverter = CssBuilderNamingConventions.KebabCase;
+
+            var result = options.EnumToClassNameConverter(PascalCase_WithUnderScore);
+
+            result.Should().Be("pascal-case_-with-under-score");
+        }
+
+        [Fact]
+        public void KebabCaseWithUnderscoreToHyphen_converts_to_kebab_case_and_undersore_to_hyphen()
+        {
+            options.EnumToClassNameConverter = CssBuilderNamingConventions.KebabCaseWithUnderscoreToHyphen;
+
+            var result = options.EnumToClassNameConverter(PascalCase_WithUnderScore);
 
             result.Should().Be("pascal-case--with-under-score");
         }

@@ -1,7 +1,5 @@
 using FluentAssertions;
 using Microsoft.Extensions.DependencyInjection;
-using System;
-using System.Reflection;
 using Xunit;
 
 namespace Blazorify.Utilities.Styling
@@ -20,49 +18,28 @@ namespace Blazorify.Utilities.Styling
         }
 
         [Fact]
-        public void AddCssBuilder_registers_DefaultCssBuilderNamingConvention()
+        public void AddCssBuilder_registers_CssBuilderOptions()
         {
             ServiceCollection coll = new ServiceCollection();
             coll.AddCssBuilder();
 
-            var builderDescription = coll.Should().Contain(sd => sd.ServiceType == typeof(ICssBuilderNamingConvention)).Which;
+            var builderDescription = coll.Should().Contain(sd => sd.ServiceType == typeof(CssBuilderOptions)).Which;
             builderDescription.Lifetime.Should().Be(ServiceLifetime.Singleton);
-            builderDescription.ImplementationType.Should().Be<DefaultCssBuilderNamingConvention>();
+            builderDescription.ImplementationFactory.Should().NotBeNull();
         }
 
         [Fact]
-        public void AddCssBuilder_registers_caching()
+        public void AddCssBuilder_uses_options_Action()
         {
             ServiceCollection coll = new ServiceCollection();
-            coll.AddCssBuilder();
+            var called = false;
+            coll.AddCssBuilder((o) => called = true);
 
-            var builderDescription = coll.Should().Contain(sd => sd.ServiceType == typeof(ICssBuilderCache)).Which;
-            builderDescription.Lifetime.Should().Be(ServiceLifetime.Singleton);
-            builderDescription.ImplementationType.Should().Be<ThreadsafeCssBuilderCache>();
-        }
-
-        [Fact]
-        public void AddCssBuilder_registers_custom_NamingConvention()
-        {
-            ServiceCollection coll = new ServiceCollection();
-            OtherNamingConvention namingConvention = new OtherNamingConvention();
-
-            coll.AddSingleton<ICssBuilderNamingConvention>(namingConvention);
-            coll.AddCssBuilder();
-
-            coll.Should().ContainSingle(sd => sd.ServiceType == typeof(ICssBuilderNamingConvention));
-        }
-
-        [Fact]
-        public void AddCssBuilder_registers_custom_Cache()
-        {
-            ServiceCollection coll = new ServiceCollection();
-            OtherCache cache = new OtherCache();
-
-            coll.AddSingleton<ICssBuilderCache>(cache);
-            coll.AddCssBuilder();
-
-            coll.Should().ContainSingle(sd => sd.ServiceType == typeof(ICssBuilderCache));
+            var serviceProvider = coll.BuildServiceProvider();
+            var builder = serviceProvider.GetService<ICssBuilder>();
+            builder.Should().NotBeNull();
+            ((CssBuilder)builder).Options.Should().NotBeNull();
+            called.Should().BeTrue();
         }
 
         [Fact]
@@ -111,30 +88,5 @@ namespace Blazorify.Utilities.Styling
             builderDescription.Lifetime.Should().Be(ServiceLifetime.Transient);
         }
 
-        private class OtherCache : ICssBuilderCache
-        {
-            public ProcessObjectDelegate GetOrAdd(Type type, Func<Type, ProcessObjectDelegate> create)
-            {
-                throw new NotImplementedException();
-            }
-
-            public string GetOrAdd(Enum value, Func<Enum, string> create)
-            {
-                throw new NotImplementedException();
-            }
-        }
-
-        private class OtherNamingConvention : ICssBuilderNamingConvention
-        {
-            public string ToCssClassName(PropertyInfo property)
-            {
-                throw new NotImplementedException();
-            }
-
-            public string ToCssClassName(Enum enumValue)
-            {
-                throw new NotImplementedException();
-            }
-        }
     }
 }
