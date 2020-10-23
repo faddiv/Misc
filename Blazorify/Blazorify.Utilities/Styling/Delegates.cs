@@ -23,4 +23,15 @@ namespace Blazorify.Utilities.Styling
     ///     &lt;div class="@Css("class1", ("class2", true), new { class3 = true})&gt;...&lt;/div&gt;
     /// </example>
     public delegate ICssBuilder CssBuilderDelegate(params object[] arguments);
+
+
+    /// <summary>
+    /// Creates an instace from the StyleBuilder and calls the <see cref="StyleBuilder.AddMultiple(object[])"/> with the given arguments.
+    /// </summary>
+    /// <param name="arguments">List of values that cen be converted to styles.</param>
+    /// <returns>A StyleBuilder instance that contains the processed arguments, and can be used in the style attribute directly.</returns>
+    /// <example>
+    ///     &lt;div style="@Styles(("width", "100px"),("height", "200px", true))"&gt;...&lt;/div&gt;
+    /// </example>
+    public delegate IStyleBuilder StyleBuilderDelegate(params object[] arguments);
 }

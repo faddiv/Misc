@@ -14,12 +14,27 @@ namespace Blazorify.Utilities.Styling
             serviceCollection.TryAddTransient(CssBuilderDelegateFactory);
         }
 
+        public static void AddStyleBuilder(this IServiceCollection serviceCollection)
+        {
+            serviceCollection.TryAddTransient<IStyleBuilder, StyleBuilder>();
+            serviceCollection.TryAddTransient(StyleBuilderDelegateFactory);
+        }
+
         private static CssBuilderDelegate CssBuilderDelegateFactory(IServiceProvider arg)
         {
             return (object[] values) =>
             {
                 var cssBuilder = arg.GetService<ICssBuilder>();
                 return cssBuilder.AddMultiple(values);
+            };
+        }
+
+        private static StyleBuilderDelegate StyleBuilderDelegateFactory(IServiceProvider arg)
+        {
+            return (object[] values) =>
+            {
+                var styleBuilder = arg.GetService<IStyleBuilder>();
+                return styleBuilder.AddMultiple(values);
             };
         }
     }

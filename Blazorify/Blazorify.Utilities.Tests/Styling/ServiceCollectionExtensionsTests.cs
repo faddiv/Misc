@@ -31,7 +31,7 @@ namespace Blazorify.Utilities.Styling
         }
 
         [Fact]
-        public void AddCssBuilder_registers_one_Caching()
+        public void AddCssBuilder_registers_caching()
         {
             ServiceCollection coll = new ServiceCollection();
             coll.AddCssBuilder();
@@ -87,6 +87,28 @@ namespace Blazorify.Utilities.Styling
             var result = css("c1", ("c2", true)).ToString();
 
             result.Should().Be("c1 c2");
+        }
+
+        [Fact]
+        public void AddStyleBuilder_registers_StyleBuilder()
+        {
+            ServiceCollection coll = new ServiceCollection();
+            coll.AddStyleBuilder();
+
+            var builderDescription = coll.Should().Contain(sd => sd.ServiceType == typeof(IStyleBuilder)).Which;
+            builderDescription.ImplementationType.Should().Be<StyleBuilder>();
+            builderDescription.Lifetime.Should().Be(ServiceLifetime.Transient);
+        }
+
+        [Fact]
+        public void AddStyleBuilder_registers_StyleBuilderDelegate()
+        {
+            ServiceCollection coll = new ServiceCollection();
+            coll.AddStyleBuilder();
+
+            var builderDescription = coll.Should().Contain(sd => sd.ServiceType == typeof(StyleBuilderDelegate)).Which;
+            builderDescription.ImplementationFactory.Should().NotBeNull();
+            builderDescription.Lifetime.Should().Be(ServiceLifetime.Transient);
         }
 
         private class OtherCache : ICssBuilderCache
