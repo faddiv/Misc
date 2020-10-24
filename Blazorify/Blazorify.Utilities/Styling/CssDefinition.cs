@@ -12,6 +12,7 @@ namespace Blazorify.Utilities.Styling
 
         private readonly List<string> _cssClasses;
         private readonly CssBuilderOptions _options;
+        private readonly ThreadsafeCssBuilderCache _cache;
 
         internal CssDefinition(CssBuilderOptions options)
         {
@@ -21,6 +22,7 @@ namespace Blazorify.Utilities.Styling
                 throw new ArgumentException("Options.EnumToClassNameConverter can't be null.");
             if (_options.PropertyToClassNameConverter == null)
                 throw new ArgumentException("Options.PropertyToClassNameConverter can't be null.");
+            _cache = options.GetCache();
         }
 
         
@@ -132,7 +134,7 @@ namespace Blazorify.Utilities.Styling
         {
             if (enumValue == null)
                 return this;
-            var cssClass = ThreadsafeCssBuilderCache.GetOrAdd(enumValue,
+            var cssClass = _cache.GetOrAdd(enumValue,
                 (ev) => _options.EnumToClassNameConverter.Invoke(ev));
             AddInner(cssClass);
             return this;
@@ -144,7 +146,7 @@ namespace Blazorify.Utilities.Styling
                 return this;
 
             var type = values.GetType();
-            var extractor = ThreadsafeCssBuilderCache.GetOrAdd(type, CreateExtractor);
+            var extractor = _cache.GetOrAdd(type, CreateExtractor);
             extractor(values, AddInner);
 
             return this;

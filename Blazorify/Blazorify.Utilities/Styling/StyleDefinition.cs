@@ -9,10 +9,12 @@ namespace Blazorify.Utilities.Styling
     {
 
         private readonly List<StyleElement> _styles;
+        private readonly ThreadsafeCssBuilderCache _cache;
 
-        public StyleDefinition()
+        internal StyleDefinition(ThreadsafeCssBuilderCache cache)
         {
             _styles = new List<StyleElement>();
+            _cache = cache;
         }
 
         public StyleDefinition Add(string property, string value, bool condition = true)
@@ -89,7 +91,7 @@ namespace Blazorify.Utilities.Styling
                 return this;
 
             var type = values.GetType();
-            var extractor = ThreadsafeCssBuilderCache.GetOrAdd(type, CreateExtractor);
+            var extractor = _cache.GetOrAdd(type, CreateExtractor);
             extractor(values, AddInner);
 
             return this;

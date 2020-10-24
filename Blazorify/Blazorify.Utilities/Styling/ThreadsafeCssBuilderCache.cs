@@ -9,28 +9,28 @@ namespace Blazorify.Utilities.Styling
      * I also experimented with Enum caching. With default Equality comparer it became twice as 
      * fast as the non cached version. With the custom Enum comparer it became four times faster.
      */
-    internal static class ThreadsafeCssBuilderCache
+    internal class ThreadsafeCssBuilderCache
     {
-        private static readonly ConcurrentDictionary<Type, ProcessCssDelegate> _cssExtractors = new ConcurrentDictionary<Type, ProcessCssDelegate>();
-        private static readonly ConcurrentDictionary<Type, ProcessStyleDelegate> _styleExtractors = new ConcurrentDictionary<Type, ProcessStyleDelegate>();
-        private static readonly ConcurrentDictionary<Enum, string> _enumName = new ConcurrentDictionary<Enum, string>(new EnumEqualityComparer());
+        private readonly ConcurrentDictionary<Type, ProcessCssDelegate> _cssExtractors = new ConcurrentDictionary<Type, ProcessCssDelegate>();
+        private readonly ConcurrentDictionary<Type, ProcessStyleDelegate> _styleExtractors = new ConcurrentDictionary<Type, ProcessStyleDelegate>();
+        private readonly ConcurrentDictionary<Enum, string> _enumName = new ConcurrentDictionary<Enum, string>(new EnumEqualityComparer());
 
-        public static ProcessCssDelegate GetOrAdd(Type type, Func<Type, ProcessCssDelegate> create)
+        public ProcessCssDelegate GetOrAdd(Type type, Func<Type, ProcessCssDelegate> create)
         {
             return _cssExtractors.GetOrAdd(type, create);
         }
 
-        public static ProcessStyleDelegate GetOrAdd(Type type, Func<Type, ProcessStyleDelegate> create)
+        public ProcessStyleDelegate GetOrAdd(Type type, Func<Type, ProcessStyleDelegate> create)
         {
             return _styleExtractors.GetOrAdd(type, create);
         }
 
-        public static string GetOrAdd(Enum value, Func<Enum, string> create)
+        public string GetOrAdd(Enum value, Func<Enum, string> create)
         {
             return _enumName.GetOrAdd(value, create);
         }
 
-        public static void ClearCache()
+        public void ClearCache()
         {
             _cssExtractors.Clear();
             _styleExtractors.Clear();

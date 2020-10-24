@@ -4,9 +4,16 @@ namespace Blazorify.Utilities.Styling
 {
     public class StyleBuilder : IStyleBuilder
     {
+        private readonly ThreadsafeCssBuilderCache _cache;
+
+        public StyleBuilder()
+        {
+            _cache = new ThreadsafeCssBuilderCache();
+        }
+
         public StyleDefinition Create()
         {
-            return new StyleDefinition();
+            return new StyleDefinition(_cache);
         }
 
         public StyleDefinition this[params object[] values]
@@ -56,5 +63,9 @@ namespace Blazorify.Utilities.Styling
             }
         }
 
+        public void ClearCache()
+        {
+            _cache.ClearCache();
+        }
     }
 }

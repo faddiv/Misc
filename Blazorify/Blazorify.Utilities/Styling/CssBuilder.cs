@@ -31,10 +31,5 @@ namespace Blazorify.Utilities.Styling
                 return Create().Add(cssClass).Add(tuple);
             }
         }
-
-        public static void ClearCache()
-        {
-            ThreadsafeCssBuilderCache.ClearCache();
-        }
     }
 }
