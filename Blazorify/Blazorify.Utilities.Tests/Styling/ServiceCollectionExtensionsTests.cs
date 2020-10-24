@@ -42,32 +42,6 @@ namespace Blazorify.Utilities.Styling
         }
 
         [Fact]
-        public void CssBuilderDelegate_processes_the_input_params()
-        {
-            ServiceCollection coll = new ServiceCollection();
-            coll.AddCssBuilder();
-            var provider = coll.BuildServiceProvider();
-            var css = provider.GetService<ICssBuilder>();
-
-            var result = css["c1", ("c2", true)].ToString();
-
-            result.Should().Be("c1 c2");
-        }
-
-        [Fact]
-        public void CssBuilderDelegate_processes_the_input_params_with_function()
-        {
-            ServiceCollection coll = new ServiceCollection();
-            coll.AddCssBuilder();
-            var provider = coll.BuildServiceProvider();
-            var css = provider.GetService<ICssBuilder>();
-
-            var result = css["c1", ("c2", () => true)].ToString();
-
-            result.Should().Be("c1 c2");
-        }
-
-        [Fact]
         public void AddStyleBuilder_registers_StyleBuilder()
         {
             ServiceCollection coll = new ServiceCollection();
