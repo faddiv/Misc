@@ -15,7 +15,7 @@ namespace Blazorify.Utilities.Styling
         private const string Result = "width:100px;height:200px";
 
         private StyleBuilder styleBuilder = new StyleBuilder();
-        private StyleDefinition CreateStyleBuilder()
+        private StyleDefinition CreateStyleDefinition()
         {
             return styleBuilder.Create();
         }
@@ -23,7 +23,7 @@ namespace Blazorify.Utilities.Styling
         [Fact]
         public void Add_string_string_bool_adds_stlyes_if_condition_is_true()
         {
-            var builder = CreateStyleBuilder();
+            var builder = CreateStyleDefinition();
 
             var result = builder.Add(Width, Value1, true)
                 .Add(Border, Value3, false)
@@ -36,7 +36,7 @@ namespace Blazorify.Utilities.Styling
         [Fact]
         public void Add_string_string_Func_bool_adds_stlyes_if_condition_is_true()
         {
-            var builder = CreateStyleBuilder();
+            var builder = CreateStyleDefinition();
 
             var result = builder.Add(Width, Value1, () => true)
                 .Add(Border, Value3, () => false)
@@ -49,7 +49,7 @@ namespace Blazorify.Utilities.Styling
         [Fact]
         public void Add_string_Func_string_bool_adds_stlyes_if_condition_is_true()
         {
-            var builder = CreateStyleBuilder();
+            var builder = CreateStyleDefinition();
 
             var result = builder.Add(Width, () => Value1, true)
                 .Add(Border, () => Value3, false)
@@ -62,7 +62,7 @@ namespace Blazorify.Utilities.Styling
         [Fact]
         public void Add_string_Func_string_Func_bool_adds_stlyes_if_condition_is_true()
         {
-            var builder = CreateStyleBuilder();
+            var builder = CreateStyleDefinition();
 
             var result = builder.Add(Width, () => Value1, () => true)
                 .Add(Border, () => Value3, () => false)
@@ -75,8 +75,8 @@ namespace Blazorify.Utilities.Styling
         [Fact]
         public void Add_StyleBuilder_adds_stlyes()
         {
-            var builder = CreateStyleBuilder().Add(Width, Value1);
-            var builderOther = CreateStyleBuilder()
+            var builder = CreateStyleDefinition().Add(Width, Value1);
+            var builderOther = CreateStyleDefinition()
                 .Add(Height, Value2);
 
             var result = builder.Add(builderOther)
@@ -88,8 +88,8 @@ namespace Blazorify.Utilities.Styling
         [Fact]
         public void Add_Dictionary_adds_stlye_key()
         {
-            var builder = CreateStyleBuilder().Add(Width, Value1);
-            var builderOther = CreateStyleBuilder()
+            var builder = CreateStyleDefinition().Add(Width, Value1);
+            var builderOther = CreateStyleDefinition()
                 .Add(Height, Value2);
 
             var result = builder.Add(builderOther)
@@ -101,7 +101,7 @@ namespace Blazorify.Utilities.Styling
         [Fact]
         public void AddMultiple_adds_string_string()
         {
-            var builder = CreateStyleBuilder();
+            var builder = CreateStyleDefinition();
 
             var result = builder.AddMultiple(
                 (Width, Value1),
@@ -114,7 +114,7 @@ namespace Blazorify.Utilities.Styling
         [Fact]
         public void AddMultiple_adds_string_Func_string()
         {
-            var builder = CreateStyleBuilder();
+            var builder = CreateStyleDefinition();
 
             var result = builder.AddMultiple(
                 (Width, new Func<string>(() => Value1)),
@@ -127,7 +127,7 @@ namespace Blazorify.Utilities.Styling
         [Fact]
         public void AddMultiple_adds_string_string_bool_if_true()
         {
-            var builder = CreateStyleBuilder();
+            var builder = CreateStyleDefinition();
 
             var result = builder.AddMultiple(
                 (Width, Value1, true),
@@ -141,7 +141,7 @@ namespace Blazorify.Utilities.Styling
         [Fact]
         public void AddMultiple_adds_string_string_Func_bool_if_true()
         {
-            var builder = CreateStyleBuilder();
+            var builder = CreateStyleDefinition();
 
             var result = builder.AddMultiple(
                 (Width, Value1, new Func<bool>(() => true)),
@@ -155,7 +155,7 @@ namespace Blazorify.Utilities.Styling
         [Fact]
         public void AddMultiple_adds_string_Func_string_bool_if_true()
         {
-            var builder = CreateStyleBuilder();
+            var builder = CreateStyleDefinition();
 
             var result = builder.AddMultiple(
                 (Width, new Func<string>(() => Value1), true),
@@ -169,7 +169,7 @@ namespace Blazorify.Utilities.Styling
         [Fact]
         public void AddMultiple_adds_string_Func_string_Func_bool_if_true()
         {
-            var builder = CreateStyleBuilder();
+            var builder = CreateStyleDefinition();
 
             var result = builder.AddMultiple(
                 (Width, new Func<string>(() => Value1), new Func<bool>(() => true)),
@@ -183,8 +183,8 @@ namespace Blazorify.Utilities.Styling
         [Fact]
         public void AddMultiple_adds_StyleBuilder()
         {
-            var builder = CreateStyleBuilder().Add(Width, Value1);
-            var builderOther = CreateStyleBuilder()
+            var builder = CreateStyleDefinition().Add(Width, Value1);
+            var builderOther = CreateStyleDefinition()
                 .Add(Height, Value2);
 
             var result = builder.AddMultiple(builderOther)

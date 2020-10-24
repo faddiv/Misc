@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 
 namespace Blazorify.Utilities.Styling
 {
@@ -21,7 +21,12 @@ namespace Blazorify.Utilities.Styling
         {
             get
             {
-                return Create().AddMultiple(values);
+                var style = Create();
+                foreach (var item in values)
+                {
+                    style.Add(item.Item1, item.Item2, item.Item3);
+                }
+                return style;
             }
         }
 
@@ -29,7 +34,12 @@ namespace Blazorify.Utilities.Styling
         {
             get
             {
-                return Create().AddMultiple(values);
+                var style = Create();
+                foreach (var item in values)
+                {
+                    style.Add(item.Item1, item.Item2, item.Item3);
+                }
+                return style;
             }
         }
 
@@ -37,7 +47,12 @@ namespace Blazorify.Utilities.Styling
         {
             get
             {
-                return Create().AddMultiple(values);
+                var style = Create();
+                foreach (var item in values)
+                {
+                    style.Add(item.Item1, item.Item2, item.Item3);
+                }
+                return style;
             }
         }
 
