@@ -53,8 +53,7 @@ namespace Blazorify.Utilities.Styling
         private static string KebabCase(string name, bool underscoreToHyphen)
         {
             var builder = new StringBuilder(name.Length * 2);
-            builder.Append(char.ToLowerInvariant(name[0]));
-            for (int i = 1; i < name.Length; i++)
+            for (int i = 0; i < name.Length; i++)
             {
                 var ch = name[i];
                 if (underscoreToHyphen && ch == Underscore)
@@ -63,8 +62,11 @@ namespace Blazorify.Utilities.Styling
                 }
                 else if (char.IsUpper(ch))
                 {
-                    builder.Append(Hyphen);
-                    builder.Append(char.ToLower(ch));
+                    if (i > 0)
+                    {
+                        builder.Append(Hyphen);
+                    }
+                    builder.Append(char.ToLowerInvariant(ch));
                 }
                 else
                 {
@@ -72,6 +74,6 @@ namespace Blazorify.Utilities.Styling
                 }
             }
             return builder.ToString();
-        }        
+        }
     }
 }

@@ -1,5 +1,7 @@
 using System;
 using System.Collections.Generic;
+using System.Linq.Expressions;
+using System.Reflection;
 
 namespace Blazorify.Utilities.Styling
 {
@@ -75,10 +77,51 @@ namespace Blazorify.Utilities.Styling
                     {
                         throw new Exception($"Invalid style found in the attributes.style: '{styleStr}'");
                     }
-                    AddInner(stylePair[0], stylePair[1]);
+                    AddInner(stylePair[0].Trim(), stylePair[1].Trim());
                 }
             }
             return this;
+        }
+
+        public StyleDefinition Add(object values)
+        {
+            if (values is null)
+                return this;
+
+            var type = values.GetType();
+            var extractor = ThreadsafeCssBuilderCache.GetOrAdd(type, CreateExtractor);
+            extractor(values, AddInner);
+
+            return this;
+        }
+
+        private ProcessStyleDelegate CreateExtractor(Type type)
+        {
+            var lines = new List<Expression>();
+            var properties = type.GetProperties(BindingFlags.Public | BindingFlags.Instance);
+            var valuesParam = Expression.Parameter(typeof(object));
+            var addMethod = Expression.Parameter(typeof(AddStyleDelegate));
+            var valuesVar = Expression.Variable(type);
+            var castedValuesParam = Expression.Convert(valuesParam, type);
+            var valuesVarAssigment = Expression.Assign(valuesVar, castedValuesParam);
+            var trueConstant = Expression.Constant(true);
+            var nullConstant = Expression.Constant(null, typeof(object));
+            var toStringMethod = typeof(object).GetMethod(nameof(object.ToString));
+            lines.Add(valuesVarAssigment);
+            foreach (var property in properties)
+            {
+                var valueGetter = (Expression)Expression.Property(valuesVar, property);
+                var notNull = Expression.ReferenceNotEqual(Expression.Convert(valueGetter, typeof(object)), nullConstant);
+                var stringValue = Expression.Call(valueGetter, toStringMethod);
+                var className = CssBuilderNamingConventions.KebabCaseWithUnderscoreToHyphen(property);
+                var styleNameConstant = Expression.Constant(className);
+                var invokation = Expression.Invoke(addMethod, styleNameConstant, stringValue, trueConstant);
+                var conditionalAdd = Expression.IfThen(notNull, invokation);
+                lines.Add(conditionalAdd);
+            }
+            var body = Expression.Block(new ParameterExpression[] { valuesVar }, lines);
+            var method = Expression.Lambda<ProcessStyleDelegate>(body, valuesParam, addMethod);
+            return method.Compile();
         }
 
         public StyleDefinition AddMultiple(params object[] values)

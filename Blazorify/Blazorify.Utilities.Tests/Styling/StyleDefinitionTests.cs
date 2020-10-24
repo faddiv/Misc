@@ -1,5 +1,6 @@
 using FluentAssertions;
 using System;
+using System.Collections.Generic;
 using Xunit;
 
 namespace Blazorify.Utilities.Styling
@@ -86,16 +87,62 @@ namespace Blazorify.Utilities.Styling
         }
 
         [Fact]
-        public void Add_Dictionary_adds_stlye_key()
+        public void Add_Dictionary_adds_style_key()
         {
             var builder = CreateStyleDefinition().Add(Width, Value1);
-            var builderOther = CreateStyleDefinition()
-                .Add(Height, Value2);
+            var attributes = new Dictionary<string, object>
+            {
+                {"style", $" {Height} : {Value2} " }
+            };
 
-            var result = builder.Add(builderOther)
+            var result = builder.Add(attributes)
                 .ToString();
 
             result.Should().Be(Result);
+        }
+
+        [Fact]
+        public void Add_object_adds_properties_as_styles()
+        {
+            var builder = CreateStyleDefinition();
+
+            var result = builder.Add(new
+            {
+                TextAlign = "center",
+                zIndex = 100,
+                BackgroundColor="black"
+            }).ToString();
+
+            result.Should().Be("text-align:center;z-index:100;background-color:black");
+        }
+
+        [Fact]
+        public void Add_object_renders_prefixes_correctly()
+        {
+            var builder = CreateStyleDefinition();
+
+            var result = builder.Add(new
+            {
+                _webkitTransition = "all 4s ease",
+                _mozTransition = "all 4s ease",
+                _msTransition = "all 4s ease",
+                _oTransition = "all 4s ease",
+            }).ToString();
+
+            result.Should().Be("-webkit-transition:all 4s ease;-moz-transition:all 4s ease;-ms-transition:all 4s ease;-o-transition:all 4s ease");
+        }
+
+        [Fact]
+        public void Add_object_handles_null()
+        {
+            var builder = CreateStyleDefinition();
+
+            var result = builder.Add(new
+            {
+                width = (string)null
+            }).ToString();
+
+            result.Should().BeNullOrEmpty();
         }
 
         [Fact]
@@ -188,6 +235,21 @@ namespace Blazorify.Utilities.Styling
                 .Add(Height, Value2);
 
             var result = builder.AddMultiple(builderOther)
+                .ToString();
+
+            result.Should().Be(Result);
+        }
+
+        [Fact]
+        public void AddMultiple_adds_Dictionary()
+        {
+            var builder = CreateStyleDefinition().Add(Width, Value1);
+            var attributes = new Dictionary<string, object>
+            {
+                {"style", $"{Height}: {Value2}" }
+            };
+
+            var result = builder.AddMultiple(attributes)
                 .ToString();
 
             result.Should().Be(Result);

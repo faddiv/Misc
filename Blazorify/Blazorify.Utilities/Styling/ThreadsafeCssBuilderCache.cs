@@ -11,12 +11,18 @@ namespace Blazorify.Utilities.Styling
      */
     internal static class ThreadsafeCssBuilderCache
     {
-        private static readonly ConcurrentDictionary<Type, ProcessObjectDelegate> _valueExtractors = new ConcurrentDictionary<Type, ProcessObjectDelegate>();
+        private static readonly ConcurrentDictionary<Type, ProcessCssDelegate> _cssExtractors = new ConcurrentDictionary<Type, ProcessCssDelegate>();
+        private static readonly ConcurrentDictionary<Type, ProcessStyleDelegate> _styleExtractors = new ConcurrentDictionary<Type, ProcessStyleDelegate>();
         private static readonly ConcurrentDictionary<Enum, string> _enumName = new ConcurrentDictionary<Enum, string>(new EnumEqualityComparer());
 
-        public static ProcessObjectDelegate GetOrAdd(Type type, Func<Type, ProcessObjectDelegate> create)
+        public static ProcessCssDelegate GetOrAdd(Type type, Func<Type, ProcessCssDelegate> create)
         {
-            return _valueExtractors.GetOrAdd(type, create);
+            return _cssExtractors.GetOrAdd(type, create);
+        }
+
+        public static ProcessStyleDelegate GetOrAdd(Type type, Func<Type, ProcessStyleDelegate> create)
+        {
+            return _styleExtractors.GetOrAdd(type, create);
         }
 
         public static string GetOrAdd(Enum value, Func<Enum, string> create)
@@ -26,7 +32,9 @@ namespace Blazorify.Utilities.Styling
 
         public static void ClearCache()
         {
-            _valueExtractors.Clear();
+            _cssExtractors.Clear();
+            _styleExtractors.Clear();
+            _enumName.Clear();
         }
 
         /// <summary>

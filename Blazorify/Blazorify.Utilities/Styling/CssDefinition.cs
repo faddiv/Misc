@@ -140,12 +140,13 @@ namespace Blazorify.Utilities.Styling
 
         public CssDefinition Add(object values)
         {
-            if (values != null)
-            {
-                var type = values.GetType();
-                var extractor = ThreadsafeCssBuilderCache.GetOrAdd(type, CreateExtractor);
-                extractor(values, AddInner);
-            }
+            if (values == null)
+                return this;
+
+            var type = values.GetType();
+            var extractor = ThreadsafeCssBuilderCache.GetOrAdd(type, CreateExtractor);
+            extractor(values, AddInner);
+
             return this;
         }
 
@@ -160,12 +161,12 @@ namespace Blazorify.Utilities.Styling
             return this;
         }
 
-        private ProcessObjectDelegate CreateExtractor(Type type)
+        private ProcessCssDelegate CreateExtractor(Type type)
         {
             var lines = new List<Expression>();
             var properties = type.GetProperties(BindingFlags.Public | BindingFlags.Instance);
             var valuesParam = Expression.Parameter(typeof(object));
-            var addMethod = Expression.Parameter(typeof(AddDelegate));
+            var addMethod = Expression.Parameter(typeof(AddCssDelegate));
             var valuesVar = Expression.Variable(type);
             var castedValuesParam = Expression.Convert(valuesParam, type);
             var valuesVarAssigment = Expression.Assign(valuesVar, castedValuesParam);
@@ -183,7 +184,7 @@ namespace Blazorify.Utilities.Styling
                 lines.Add(invokation);
             }
             var body = Expression.Block(new ParameterExpression[] { valuesVar }, lines);
-            var method = Expression.Lambda<ProcessObjectDelegate>(body, valuesParam, addMethod);
+            var method = Expression.Lambda<ProcessCssDelegate>(body, valuesParam, addMethod);
             return method.Compile();
         }
 
