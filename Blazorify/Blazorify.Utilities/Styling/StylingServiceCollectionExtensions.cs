@@ -4,12 +4,12 @@ using System;
 
 namespace Blazorify.Utilities.Styling
 {
-    public static class ServiceCollectionExtensions
+    public static class StylingServiceCollectionExtensions
     {
         public static void AddCssBuilder(this IServiceCollection serviceCollection,
             Action<CssBuilderOptions> action = null)
         {
-            serviceCollection.TryAddTransient<ICssBuilder, CssBuilder>();
+            serviceCollection.TryAddSingleton<ICssBuilder, CssBuilder>();
             serviceCollection.AddSingleton(p =>
             {
                 var options = new CssBuilderOptions();

@@ -7,19 +7,8 @@ namespace Blazorify.Utilities.Styling
 {
     public class CssDefinition
     {
-        public static CssBuilderOptions DefaultOptions { get; set; }
-        public static CssDefinition Create(
-            CssBuilderOptions options = null)
-        {
-            if (DefaultOptions == null)
-            {
-                DefaultOptions = options ?? new CssBuilderOptions();
-            }
-            return new CssDefinition(options ?? DefaultOptions);
-        }
-
         private const string Separator = " ";
-        private readonly char[] _separatorArray = new[] { ' ' };
+        private static readonly char[] _separatorArray = new[] { ' ' };
 
         private readonly List<string> _cssClasses;
         private readonly CssBuilderOptions _options;
@@ -177,7 +166,7 @@ namespace Blazorify.Utilities.Styling
             var properties = type.GetProperties(BindingFlags.Public | BindingFlags.Instance);
             var valuesParam = Expression.Parameter(typeof(object));
             var addMethod = Expression.Parameter(typeof(AddDelegate));
-            var valuesVar = Expression.Variable(type, "target");
+            var valuesVar = Expression.Variable(type);
             var castedValuesParam = Expression.Convert(valuesParam, type);
             var valuesVarAssigment = Expression.Assign(valuesVar, castedValuesParam);
             lines.Add(valuesVarAssigment);

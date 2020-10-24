@@ -14,7 +14,7 @@ namespace Blazorify.Utilities.Styling
 
             var builderDescription = coll.Should().Contain(sd => sd.ServiceType == typeof(ICssBuilder)).Which;
             builderDescription.ImplementationType.Should().Be<CssBuilder>();
-            builderDescription.Lifetime.Should().Be(ServiceLifetime.Transient);
+            builderDescription.Lifetime.Should().Be(ServiceLifetime.Singleton);
         }
 
         [Fact]
