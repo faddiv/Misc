@@ -3,15 +3,10 @@ using System.Collections.Generic;
 
 namespace Blazorify.Utilities.Styling
 {
-    public class StyleDefinition : IStyleBuilder
+    public class StyleDefinition
     {
 
         private readonly List<StyleElement> _styles;
-
-        public static IStyleBuilder Create()
-        {
-            return new StyleDefinition();
-        }
 
         public StyleDefinition()
         {

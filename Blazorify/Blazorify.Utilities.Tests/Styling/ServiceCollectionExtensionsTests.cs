@@ -48,20 +48,8 @@ namespace Blazorify.Utilities.Styling
             coll.AddStyleBuilder();
 
             var builderDescription = coll.Should().Contain(sd => sd.ServiceType == typeof(IStyleBuilder)).Which;
-            builderDescription.ImplementationType.Should().Be<StyleDefinition>();
-            builderDescription.Lifetime.Should().Be(ServiceLifetime.Transient);
+            builderDescription.ImplementationType.Should().Be<StyleBuilder>();
+            builderDescription.Lifetime.Should().Be(ServiceLifetime.Singleton);
         }
-
-        [Fact]
-        public void AddStyleBuilder_registers_StyleBuilderDelegate()
-        {
-            ServiceCollection coll = new ServiceCollection();
-            coll.AddStyleBuilder();
-
-            var builderDescription = coll.Should().Contain(sd => sd.ServiceType == typeof(StyleBuilderDelegate)).Which;
-            builderDescription.ImplementationFactory.Should().NotBeNull();
-            builderDescription.Lifetime.Should().Be(ServiceLifetime.Transient);
-        }
-
     }
 }

@@ -4,7 +4,7 @@ using Xunit;
 
 namespace Blazorify.Utilities.Styling
 {
-    public class StyleBuilderTests
+    public class StyleDefinitionTests
     {
         private const string Width = "width";
         private const string Border = "border";
@@ -14,9 +14,10 @@ namespace Blazorify.Utilities.Styling
         private const string Value3 = "1px";
         private const string Result = "width:100px;height:200px";
 
-        private static IStyleBuilder CreateStyleBuilder()
+        private StyleBuilder styleBuilder = new StyleBuilder();
+        private StyleDefinition CreateStyleBuilder()
         {
-            return StyleDefinition.Create();
+            return styleBuilder.Create();
         }
 
         [Fact]
