@@ -12,7 +12,7 @@
                ExitedCss="collapse"
                ExitingCss="collapsing"
                OnReflow="evt => evt.Reflow(_reference.Ref)">
-    <DynamicTag Tag="@Tag" @ref="_reference" @attributes="Attributes" class="@Css(context.Css, Attributes)" style="@_style">
+    <DynamicTag Tag="@Tag" @ref="_reference" @attributes="Attributes" class="@Css[context.Css, Attributes]" style="@_style">
         @ChildContent
     </DynamicTag>
 </CssTransition>

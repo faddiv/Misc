@@ -1,30 +1,21 @@
 using System;
-using System.Collections.Generic;
 
 namespace Blazorify.Utilities.Styling
 {
     public interface ICssBuilder
     {
-        CssDefinition AddMultiple(params object[] values);
+        CssDefinition Create(CssBuilderOptions options = null);
 
-        CssDefinition Add(CssDefinition cssBuilder);
+        /// <summary>
+        /// Creates an instace from the CssBuilder and calls the <see cref="CssDefinition.AddMultiple(object[])"/> with the given arguments.
+        /// </summary>
+        /// <param name="arguments">List of values that cen be converted to css classes.</param>
+        /// <returns>A CssBuilder instance that contains the processed arguments, and can be used in the class attribute directly.</returns>
+        /// <example>
+        ///     &lt;div class="@Css["class1", ("class2", true), new { class3 = true}]&gt;...&lt;/div&gt;
+        /// </example>
+        CssDefinition this[params object[] values] { get; }
 
-        CssDefinition Add(Enum enumValue);
-
-        CssDefinition Add(IEnumerable<string> cssList);
-
-        CssDefinition Add(IReadOnlyDictionary<string, object> attributes);
-
-        CssDefinition Add(object values);
-
-        CssDefinition Add(params (string, bool)[] tuple);
-
-        CssDefinition Add(params (string, Func<bool>)[] tuple);
-
-        CssDefinition Add(string value, bool condition = true);
-
-        CssDefinition Add(string value, Func<bool> predicate);
-
-        string ToString();
+        CssDefinition this[string cssClasses, params (string, Func<bool>)[] tuple] { get; }
     }
 }

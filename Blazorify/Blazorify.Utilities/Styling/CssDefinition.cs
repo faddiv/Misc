@@ -5,7 +5,7 @@ using System.Reflection;
 
 namespace Blazorify.Utilities.Styling
 {
-    public class CssDefinition : ICssBuilder
+    public class CssDefinition
     {
         public static CssBuilderOptions DefaultOptions { get; set; }
         public static CssDefinition Create(
@@ -22,18 +22,19 @@ namespace Blazorify.Utilities.Styling
         private readonly char[] _separatorArray = new[] { ' ' };
 
         private readonly List<string> _cssClasses;
+        private readonly CssBuilderOptions _options;
 
-        public CssDefinition(CssBuilderOptions options)
+        internal CssDefinition(CssBuilderOptions options)
         {
             _cssClasses = new List<string>();
-            Options = options ?? throw new ArgumentNullException(nameof(options));
-            if (Options.EnumToClassNameConverter == null)
+            _options = options ?? throw new ArgumentNullException(nameof(options));
+            if (_options.EnumToClassNameConverter == null)
                 throw new ArgumentException("Options.EnumToClassNameConverter can't be null.");
-            if (Options.PropertyToClassNameConverter == null)
+            if (_options.PropertyToClassNameConverter == null)
                 throw new ArgumentException("Options.PropertyToClassNameConverter can't be null.");
         }
 
-        public CssBuilderOptions Options { get; }
+        
 
         public override string ToString()
         {
@@ -143,7 +144,7 @@ namespace Blazorify.Utilities.Styling
             if (enumValue == null)
                 return this;
             var cssClass = ThreadsafeCssBuilderCache.GetOrAdd(enumValue,
-                (ev) => Options.EnumToClassNameConverter.Invoke(ev));
+                (ev) => _options.EnumToClassNameConverter.Invoke(ev));
             AddInner(cssClass);
             return this;
         }
@@ -187,7 +188,7 @@ namespace Blazorify.Utilities.Styling
                     throw new Exception($"Only boolean properties allowed for the css builder. Invalid poperty: {type.Name}.{property.Name} (Type: {property.PropertyType}");
                 }
                 var conditionGetter = Expression.Property(valuesVar, property);
-                var className = Options.PropertyToClassNameConverter(property);
+                var className = _options.PropertyToClassNameConverter(property);
                 var classNameConstant = Expression.Constant(className);
                 var invokation = Expression.Invoke(addMethod, classNameConstant, conditionGetter);
                 lines.Add(invokation);
@@ -210,6 +211,6 @@ namespace Blazorify.Utilities.Styling
 
             }
         }
-
     }
+
 }

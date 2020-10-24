@@ -27,7 +27,7 @@ namespace Blazorify.Client.Bootstrap
         public Dictionary<string, object> Attributes { get; set; }
 
         [Inject]
-        public CssBuilderDelegate Css { get; set; }
+        public ICssBuilder Css { get; set; }
 
         [Inject]
         public IJSRuntime JsRuntime { get; set; }

@@ -13,7 +13,7 @@ namespace Blazorify.Utilities.Styling
             coll.AddCssBuilder();
 
             var builderDescription = coll.Should().Contain(sd => sd.ServiceType == typeof(ICssBuilder)).Which;
-            builderDescription.ImplementationType.Should().Be<CssDefinition>();
+            builderDescription.ImplementationType.Should().Be<CssBuilder>();
             builderDescription.Lifetime.Should().Be(ServiceLifetime.Transient);
         }
 
@@ -38,19 +38,7 @@ namespace Blazorify.Utilities.Styling
             var serviceProvider = coll.BuildServiceProvider();
             var builder = serviceProvider.GetService<ICssBuilder>();
             builder.Should().NotBeNull();
-            ((CssDefinition)builder).Options.Should().NotBeNull();
             called.Should().BeTrue();
-        }
-
-        [Fact]
-        public void AddCssBuilder_registers_CssBuilderDelegate()
-        {
-            ServiceCollection coll = new ServiceCollection();
-            coll.AddCssBuilder();
-
-            var builderDescription = coll.Should().Contain(sd => sd.ServiceType == typeof(CssBuilderDelegate)).Which;
-            builderDescription.ImplementationFactory.Should().NotBeNull();
-            builderDescription.Lifetime.Should().Be(ServiceLifetime.Transient);
         }
 
         [Fact]
@@ -59,9 +47,22 @@ namespace Blazorify.Utilities.Styling
             ServiceCollection coll = new ServiceCollection();
             coll.AddCssBuilder();
             var provider = coll.BuildServiceProvider();
-            var css = provider.GetService<CssBuilderDelegate>();
+            var css = provider.GetService<ICssBuilder>();
 
-            var result = css("c1", ("c2", true)).ToString();
+            var result = css["c1", ("c2", true)].ToString();
+
+            result.Should().Be("c1 c2");
+        }
+
+        [Fact]
+        public void CssBuilderDelegate_processes_the_input_params_with_function()
+        {
+            ServiceCollection coll = new ServiceCollection();
+            coll.AddCssBuilder();
+            var provider = coll.BuildServiceProvider();
+            var css = provider.GetService<ICssBuilder>();
+
+            var result = css["c1", ("c2", () => true)].ToString();
 
             result.Should().Be("c1 c2");
         }
