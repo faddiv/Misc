@@ -3,28 +3,28 @@ using System.Collections.Generic;
 
 namespace Blazorify.Utilities.Styling
 {
-    public class StyleBuilder : IStyleBuilder
+    public class StyleDefinition : IStyleBuilder
     {
 
         private readonly List<StyleElement> _styles;
 
         public static IStyleBuilder Create()
         {
-            return new StyleBuilder();
+            return new StyleDefinition();
         }
 
-        public StyleBuilder()
+        public StyleDefinition()
         {
             _styles = new List<StyleElement>();
         }
 
-        public StyleBuilder Add(string property, string value, bool condition = true)
+        public StyleDefinition Add(string property, string value, bool condition = true)
         {
             AddInner(property, value, condition);
             return this;
         }
 
-        public StyleBuilder Add(string property, Func<string> value, bool condition = true)
+        public StyleDefinition Add(string property, Func<string> value, bool condition = true)
         {
             if (value is null) throw new ArgumentNullException(nameof(value));
 
@@ -32,7 +32,7 @@ namespace Blazorify.Utilities.Styling
             return this;
         }
 
-        public StyleBuilder Add(string property, string value, Func<bool> predicate)
+        public StyleDefinition Add(string property, string value, Func<bool> predicate)
         {
             if (predicate is null) throw new ArgumentNullException(nameof(predicate));
 
@@ -40,7 +40,7 @@ namespace Blazorify.Utilities.Styling
             return this;
         }
 
-        public StyleBuilder Add(string property, Func<string> value, Func<bool> predicate)
+        public StyleDefinition Add(string property, Func<string> value, Func<bool> predicate)
         {
             if (value is null) throw new ArgumentNullException(nameof(value));
             if (predicate is null) throw new ArgumentNullException(nameof(predicate));
@@ -49,7 +49,7 @@ namespace Blazorify.Utilities.Styling
             return this;
         }
 
-        public StyleBuilder Add(StyleBuilder styleBuilder)
+        public StyleDefinition Add(StyleDefinition styleBuilder)
         {
             if (styleBuilder is null)
                 return this;
@@ -61,7 +61,7 @@ namespace Blazorify.Utilities.Styling
             return this;
         }
 
-        public StyleBuilder Add(IReadOnlyDictionary<string, object> attributes)
+        public StyleDefinition Add(IReadOnlyDictionary<string, object> attributes)
         {
             if (attributes is null)
                 return this;
@@ -86,7 +86,7 @@ namespace Blazorify.Utilities.Styling
             return this;
         }
 
-        public StyleBuilder AddMultiple(params object[] values)
+        public StyleDefinition AddMultiple(params object[] values)
         {
             if (values == null || values.Length == 0)
                 return this;
@@ -118,7 +118,7 @@ namespace Blazorify.Utilities.Styling
                 {
                     AddInner(type6.Item1, type6.Item2(), type6.Item3());
                 }
-                else if (item is StyleBuilder styleBuilder)
+                else if (item is StyleDefinition styleBuilder)
                 {
                     Add(styleBuilder);
                 }

@@ -48,7 +48,7 @@ namespace Blazorify.Utilities.Styling
             coll.AddStyleBuilder();
 
             var builderDescription = coll.Should().Contain(sd => sd.ServiceType == typeof(IStyleBuilder)).Which;
-            builderDescription.ImplementationType.Should().Be<StyleBuilder>();
+            builderDescription.ImplementationType.Should().Be<StyleDefinition>();
             builderDescription.Lifetime.Should().Be(ServiceLifetime.Transient);
         }
 

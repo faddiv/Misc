@@ -16,7 +16,7 @@ namespace Blazorify.Utilities.Styling
 
         private static IStyleBuilder CreateStyleBuilder()
         {
-            return StyleBuilder.Create();
+            return StyleDefinition.Create();
         }
 
         [Fact]

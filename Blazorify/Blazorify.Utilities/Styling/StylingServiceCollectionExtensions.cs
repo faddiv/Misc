@@ -20,7 +20,7 @@ namespace Blazorify.Utilities.Styling
 
         public static void AddStyleBuilder(this IServiceCollection serviceCollection)
         {
-            serviceCollection.TryAddTransient<IStyleBuilder, StyleBuilder>();
+            serviceCollection.TryAddTransient<IStyleBuilder, StyleDefinition>();
             serviceCollection.TryAddTransient(StyleBuilderDelegateFactory);
         }
 

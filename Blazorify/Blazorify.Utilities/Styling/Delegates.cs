@@ -15,7 +15,7 @@ namespace Blazorify.Utilities.Styling
     internal delegate void ProcessObjectDelegate(object cssContainer, AddDelegate addMethod);
 
     /// <summary>
-    /// Creates an instace from the StyleBuilder and calls the <see cref="StyleBuilder.AddMultiple(object[])"/> with the given arguments.
+    /// Creates an instace from the StyleBuilder and calls the <see cref="StyleDefinition.AddMultiple(object[])"/> with the given arguments.
     /// </summary>
     /// <param name="arguments">List of values that cen be converted to styles.</param>
     /// <returns>A StyleBuilder instance that contains the processed arguments, and can be used in the style attribute directly.</returns>
