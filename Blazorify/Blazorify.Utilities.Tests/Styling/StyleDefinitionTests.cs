@@ -110,7 +110,7 @@ namespace Blazorify.Utilities.Styling
             {
                 TextAlign = "center",
                 zIndex = 100,
-                BackgroundColor="black"
+                BackgroundColor = "black"
             }).ToString();
 
             result.Should().Be("text-align:center;z-index:100;background-color:black");
@@ -250,6 +250,22 @@ namespace Blazorify.Utilities.Styling
             };
 
             var result = builder.AddMultiple(attributes)
+                .ToString();
+
+            result.Should().Be(Result);
+        }
+
+        [Fact]
+        public void AddMultiple_adds_Object()
+        {
+            var builder = CreateStyleDefinition();
+
+
+            var result = builder.AddMultiple(new
+            {
+                Width = Value1,
+                Height = Value2
+            })
                 .ToString();
 
             result.Should().Be(Result);

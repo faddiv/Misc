@@ -164,6 +164,10 @@ namespace Blazorify.Utilities.Styling
                 {
                     Add(attributes);
                 }
+                else
+                {
+                    Add(item);
+                }
             }
             return this;
         }
