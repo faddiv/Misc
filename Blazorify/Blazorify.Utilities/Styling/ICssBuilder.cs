@@ -5,25 +5,25 @@ namespace Blazorify.Utilities.Styling
 {
     public interface ICssBuilder
     {
-        CssBuilder AddMultiple(params object[] values);
+        CssDefinition AddMultiple(params object[] values);
 
-        CssBuilder Add(CssBuilder cssBuilder);
+        CssDefinition Add(CssDefinition cssBuilder);
 
-        CssBuilder Add(Enum enumValue);
+        CssDefinition Add(Enum enumValue);
 
-        CssBuilder Add(IEnumerable<string> cssList);
+        CssDefinition Add(IEnumerable<string> cssList);
 
-        CssBuilder Add(IReadOnlyDictionary<string, object> attributes);
+        CssDefinition Add(IReadOnlyDictionary<string, object> attributes);
 
-        CssBuilder Add(object values);
+        CssDefinition Add(object values);
 
-        CssBuilder Add(params (string, bool)[] tuple);
+        CssDefinition Add(params (string, bool)[] tuple);
 
-        CssBuilder Add(params (string, Func<bool>)[] tuple);
+        CssDefinition Add(params (string, Func<bool>)[] tuple);
 
-        CssBuilder Add(string value, bool condition = true);
+        CssDefinition Add(string value, bool condition = true);
 
-        CssBuilder Add(string value, Func<bool> predicate);
+        CssDefinition Add(string value, Func<bool> predicate);
 
         string ToString();
     }

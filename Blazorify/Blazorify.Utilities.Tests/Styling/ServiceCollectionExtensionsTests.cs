@@ -13,7 +13,7 @@ namespace Blazorify.Utilities.Styling
             coll.AddCssBuilder();
 
             var builderDescription = coll.Should().Contain(sd => sd.ServiceType == typeof(ICssBuilder)).Which;
-            builderDescription.ImplementationType.Should().Be<CssBuilder>();
+            builderDescription.ImplementationType.Should().Be<CssDefinition>();
             builderDescription.Lifetime.Should().Be(ServiceLifetime.Transient);
         }
 
@@ -38,7 +38,7 @@ namespace Blazorify.Utilities.Styling
             var serviceProvider = coll.BuildServiceProvider();
             var builder = serviceProvider.GetService<ICssBuilder>();
             builder.Should().NotBeNull();
-            ((CssBuilder)builder).Options.Should().NotBeNull();
+            ((CssDefinition)builder).Options.Should().NotBeNull();
             called.Should().BeTrue();
         }
 

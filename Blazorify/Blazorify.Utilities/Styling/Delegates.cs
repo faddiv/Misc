@@ -15,7 +15,7 @@ namespace Blazorify.Utilities.Styling
     public delegate void ProcessObjectDelegate(object cssContainer, AddDelegate addMethod);
 
     /// <summary>
-    /// Creates an instace from the CssBuilder and calls the <see cref="CssBuilder.AddMultiple(object[])"/> with the given arguments.
+    /// Creates an instace from the CssBuilder and calls the <see cref="CssDefinition.AddMultiple(object[])"/> with the given arguments.
     /// </summary>
     /// <param name="arguments">List of values that cen be converted to css classes.</param>
     /// <returns>A CssBuilder instance that contains the processed arguments, and can be used in the class attribute directly.</returns>

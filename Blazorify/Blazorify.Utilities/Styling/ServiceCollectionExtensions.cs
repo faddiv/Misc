@@ -9,7 +9,7 @@ namespace Blazorify.Utilities.Styling
         public static void AddCssBuilder(this IServiceCollection serviceCollection,
             Action<CssBuilderOptions> action = null)
         {
-            serviceCollection.TryAddTransient<ICssBuilder, CssBuilder>();
+            serviceCollection.TryAddTransient<ICssBuilder, CssDefinition>();
             serviceCollection.TryAddTransient(CssBuilderDelegateFactory);
             serviceCollection.AddSingleton(p =>
             {

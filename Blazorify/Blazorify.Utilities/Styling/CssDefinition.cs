@@ -5,17 +5,17 @@ using System.Reflection;
 
 namespace Blazorify.Utilities.Styling
 {
-    public class CssBuilder : ICssBuilder
+    public class CssDefinition : ICssBuilder
     {
         public static CssBuilderOptions DefaultOptions { get; set; }
-        public static CssBuilder Create(
+        public static CssDefinition Create(
             CssBuilderOptions options = null)
         {
             if (DefaultOptions == null)
             {
                 DefaultOptions = options ?? new CssBuilderOptions();
             }
-            return new CssBuilder(options ?? DefaultOptions);
+            return new CssDefinition(options ?? DefaultOptions);
         }
 
         private const string Separator = " ";
@@ -23,7 +23,7 @@ namespace Blazorify.Utilities.Styling
 
         private readonly List<string> _cssClasses;
 
-        public CssBuilder(CssBuilderOptions options)
+        public CssDefinition(CssBuilderOptions options)
         {
             _cssClasses = new List<string>();
             Options = options ?? throw new ArgumentNullException(nameof(options));
@@ -40,7 +40,7 @@ namespace Blazorify.Utilities.Styling
             return string.Join(Separator, _cssClasses);
         }
 
-        public CssBuilder AddMultiple(params object[] values)
+        public CssDefinition AddMultiple(params object[] values)
         {
             if (values == null || values.Length == 0)
                 return this;
@@ -66,7 +66,7 @@ namespace Blazorify.Utilities.Styling
                 {
                     Add(cssList);
                 }
-                else if (value is CssBuilder other)
+                else if (value is CssDefinition other)
                 {
                     Add(other);
                 }
@@ -82,19 +82,19 @@ namespace Blazorify.Utilities.Styling
             return this;
         }
 
-        public CssBuilder Add(string cssClass, Func<bool> predicate)
+        public CssDefinition Add(string cssClass, Func<bool> predicate)
         {
             AddInner(cssClass, predicate());
             return this;
         }
 
-        public CssBuilder Add(string cssClass, bool condition = true)
+        public CssDefinition Add(string cssClass, bool condition = true)
         {
             AddInner(cssClass, condition);
             return this;
         }
 
-        public CssBuilder Add(params (string, bool)[] tuple)
+        public CssDefinition Add(params (string, bool)[] tuple)
         {
             if (tuple == null || tuple.Length == 0)
                 return this;
@@ -105,7 +105,7 @@ namespace Blazorify.Utilities.Styling
             return this;
         }
 
-        public CssBuilder Add(params (string, Func<bool>)[] tuple)
+        public CssDefinition Add(params (string, Func<bool>)[] tuple)
         {
             if (tuple == null || tuple.Length == 0)
                 return this;
@@ -116,7 +116,7 @@ namespace Blazorify.Utilities.Styling
             return this;
         }
 
-        public CssBuilder Add(IEnumerable<string> cssList)
+        public CssDefinition Add(IEnumerable<string> cssList)
         {
             if (cssList == null)
                 return this;
@@ -127,7 +127,7 @@ namespace Blazorify.Utilities.Styling
             return this;
         }
 
-        public CssBuilder Add(CssBuilder cssBuilder)
+        public CssDefinition Add(CssDefinition cssBuilder)
         {
             if (cssBuilder == null)
                 return this;
@@ -138,7 +138,7 @@ namespace Blazorify.Utilities.Styling
             return this;
         }
 
-        public CssBuilder Add(Enum enumValue)
+        public CssDefinition Add(Enum enumValue)
         {
             if (enumValue == null)
                 return this;
@@ -148,7 +148,7 @@ namespace Blazorify.Utilities.Styling
             return this;
         }
 
-        public CssBuilder Add(object values)
+        public CssDefinition Add(object values)
         {
             if (values != null)
             {
@@ -159,7 +159,7 @@ namespace Blazorify.Utilities.Styling
             return this;
         }
 
-        public CssBuilder Add(IReadOnlyDictionary<string, object> attributes)
+        public CssDefinition Add(IReadOnlyDictionary<string, object> attributes)
         {
             if (attributes != null
                 && attributes.TryGetValue("class", out var css)

@@ -9,7 +9,7 @@ namespace Blazorify.Utilities.Styling
     {
         private static ICssBuilder CreateCssBuilder()
         {
-            return CssBuilder.Create();
+            return CssDefinition.Create();
         }
 
         [Fact]
