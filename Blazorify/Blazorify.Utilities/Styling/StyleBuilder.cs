@@ -4,11 +4,11 @@ namespace Blazorify.Utilities.Styling
 {
     public class StyleBuilder : IStyleBuilder
     {
-        private readonly ThreadsafeCssBuilderCache _cache;
+        private readonly ThreadsafeStyleBuilderCache _cache;
 
         public StyleBuilder()
         {
-            _cache = new ThreadsafeCssBuilderCache();
+            _cache = new ThreadsafeStyleBuilderCache();
         }
 
         public StyleDefinition Create()

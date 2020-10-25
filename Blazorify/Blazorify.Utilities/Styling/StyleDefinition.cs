@@ -9,9 +9,9 @@ namespace Blazorify.Utilities.Styling
     {
 
         private readonly List<StyleElement> _styles;
-        private readonly ThreadsafeCssBuilderCache _cache;
+        private readonly ThreadsafeStyleBuilderCache _cache;
 
-        internal StyleDefinition(ThreadsafeCssBuilderCache cache)
+        internal StyleDefinition(ThreadsafeStyleBuilderCache cache)
         {
             _styles = new List<StyleElement>();
             _cache = cache;
