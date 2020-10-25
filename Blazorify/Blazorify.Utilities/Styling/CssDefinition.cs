@@ -1,3 +1,4 @@
+using Blazorify.Utilities.Styling.Internals;
 using System;
 using System.Collections.Generic;
 using System.Linq.Expressions;
@@ -192,15 +193,14 @@ namespace Blazorify.Utilities.Styling
 
         private void AddInner(string value, bool condition = true)
         {
-            if (!string.IsNullOrEmpty(value) && condition)
-            {
-                foreach (var cssClass in value.Split(_separatorArray, StringSplitOptions.RemoveEmptyEntries))
-                {
-                    if (_options.ExcludeDuplication && _cssClasses.Contains(cssClass))
-                        continue;
-                    _cssClasses.Add(cssClass);
-                }
+            if (string.IsNullOrEmpty(value) || !condition)
+                return;
 
+            foreach (var cssClass in value.Split(_separatorArray, StringSplitOptions.RemoveEmptyEntries))
+            {
+                if (_options.ExcludeDuplication && _cssClasses.Contains(cssClass))
+                    continue;
+                _cssClasses.Add(cssClass);
             }
         }
     }

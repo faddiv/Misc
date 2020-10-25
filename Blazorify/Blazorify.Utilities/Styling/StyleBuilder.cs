@@ -16,20 +16,20 @@ namespace Blazorify.Utilities.Styling
             return new StyleDefinition(_cache);
         }
 
-        public StyleDefinition this[params object[] values]
+        public StyleDefinition this[params object[] arguments]
         {
             get
             {
-                return Create().AddMultiple(values);
+                return Create().AddMultiple(arguments);
             }
         }
 
-        public StyleDefinition this[params (string, string, Func<bool>)[] values]
+        public StyleDefinition this[params (string, string, Func<bool>)[] arguments]
         {
             get
             {
                 var style = Create();
-                foreach (var item in values)
+                foreach (var item in arguments)
                 {
                     style.Add(item.Item1, item.Item2, item.Item3);
                 }
@@ -37,12 +37,12 @@ namespace Blazorify.Utilities.Styling
             }
         }
 
-        public StyleDefinition this[params (string, Func<string>, bool)[] values]
+        public StyleDefinition this[params (string, Func<string>, bool)[] arguments]
         {
             get
             {
                 var style = Create();
-                foreach (var item in values)
+                foreach (var item in arguments)
                 {
                     style.Add(item.Item1, item.Item2, item.Item3);
                 }
@@ -50,12 +50,12 @@ namespace Blazorify.Utilities.Styling
             }
         }
 
-        public StyleDefinition this[params (string, Func<string>, Func<bool>)[] values]
+        public StyleDefinition this[params (string, Func<string>, Func<bool>)[] arguments]
         {
             get
             {
                 var style = Create();
-                foreach (var item in values)
+                foreach (var item in arguments)
                 {
                     style.Add(item.Item1, item.Item2, item.Item3);
                 }

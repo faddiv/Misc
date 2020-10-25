@@ -1,10 +1,9 @@
-﻿using Blazorify.Utilities.Styling.Internals;
 using System;
 using System.Collections.Concurrent;
 
-namespace Blazorify.Utilities.Styling
+namespace Blazorify.Utilities.Styling.Internals
 {
-    internal class ThreadsafeStyleBuilderCache
+    public class ThreadsafeStyleBuilderCache
     {
         private readonly ConcurrentDictionary<Type, ProcessStyleDelegate> _styleExtractors = new ConcurrentDictionary<Type, ProcessStyleDelegate>();
 

@@ -1,9 +1,8 @@
-using Blazorify.Utilities.Styling.Internals;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 
-namespace Blazorify.Utilities.Styling
+namespace Blazorify.Utilities.Styling.Internals
 {
     /* I compared the Dictionary with the ConcurrentDictionary. 
      * It turns out on read, only 20% performace lost, so I dropped the thread unsafe variant.

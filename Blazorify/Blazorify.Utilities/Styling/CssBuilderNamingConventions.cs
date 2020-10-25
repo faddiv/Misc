@@ -4,7 +4,7 @@ using System.Text;
 
 namespace Blazorify.Utilities.Styling
 {
-    public class CssBuilderNamingConventions
+    public static class CssBuilderNamingConventions
     {
 
         private const char Hyphen = '-';
