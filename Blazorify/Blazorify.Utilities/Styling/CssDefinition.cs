@@ -196,7 +196,7 @@ namespace Blazorify.Utilities.Styling
             {
                 foreach (var cssClass in value.Split(_separatorArray, StringSplitOptions.RemoveEmptyEntries))
                 {
-                    if (_cssClasses.Contains(cssClass))
+                    if (_options.ExcludeDuplication && _cssClasses.Contains(cssClass))
                         continue;
                     _cssClasses.Add(cssClass);
                 }

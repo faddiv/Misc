@@ -16,6 +16,8 @@ namespace Blazorify.Utilities.Styling
 
         public Func<Enum, string> EnumToClassNameConverter { get; set; } = CssBuilderNamingConventions.KebabCaseWithUnderscoreToHyphen;
 
+        public bool ExcludeDuplication { get; set; } = false;
+
         internal ThreadsafeCssBuilderCache GetCache()
         {
             return _cache;
