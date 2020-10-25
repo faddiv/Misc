@@ -13,7 +13,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\Blazorify.Utilities\Blazorify.Utilities.csproj" />
     <ProjectReference Include="..\Shared\Blazorify.Shared.csproj" />
   </ItemGroup>
 
