@@ -1,4 +1,4 @@
-namespace Blazorify.Client.Animate
+namespace Foxy.Blazor.Transition
 {
     public enum TransitionState
     {

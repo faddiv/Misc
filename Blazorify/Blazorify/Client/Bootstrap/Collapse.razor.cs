@@ -1,6 +1,5 @@
-using Blazorify.Client.Animate;
 using Blazorify.Client.Etc;
-using Blazorify.Utilities.Styling;
+using Foxy.Blazor.Transition;
 using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
 using System.Collections.Generic;
@@ -24,10 +23,7 @@ namespace Blazorify.Client.Bootstrap
         public bool Open { get; set; }
 
         [Parameter(CaptureUnmatchedValues = true)]
-        public Dictionary<string, object> Attributes { get; set; }
-
-        [Inject]
-        public ICssBuilder Css { get; set; }
+        public IReadOnlyDictionary<string, object> Attributes { get; set; }
 
         [Inject]
         public IJSRuntime JsRuntime { get; set; }
@@ -65,13 +61,23 @@ namespace Blazorify.Client.Bootstrap
             _style = "height: 214px";
         }
 
-        private async Task OnExiting(TransitionState state)
+        private void OnExiting(TransitionState state)
         {
             _style = "height: 0px";
         }
         private void OnExited(TransitionState state)
         {
             _style = "";
+        }
+
+        private string Join(string css, IReadOnlyDictionary<string, object> attributes)
+        {
+            if(attributes.TryGetValue("class", out var css2)
+                && css2 != null && !ReferenceEquals(css2, ""))
+            {
+                return string.Join(' ', css, css2);
+            }
+            return css;
         }
     }
 }

@@ -1,9 +1,10 @@
 using Microsoft.AspNetCore.Components;
+using Microsoft.JSInterop;
 using System.Threading.Tasks;
 
-namespace Blazorify.Client.Animate
+namespace Foxy.Blazor.Transition
 {
-    partial class Transition
+    public class TransitionBase : ComponentBase
     {
         private bool _transitioning = false;
         private bool _innerState;
@@ -43,13 +44,16 @@ namespace Blazorify.Client.Animate
         #endregion
 
         [Parameter]
-        public RenderFragment<TransitionState> ChildContent { get; set; }
+        public EventCallback<TimeoutEventExecutor> OnCalculateEnd { get; set; }
 
         [Parameter]
         public bool In { get; set; }
 
         [Parameter]
         public bool Appear { get; set; } = false;
+
+        [Inject]
+        public IJSRuntime JsRuntime { get; set; }
 
         public TransitionState State { get; private set; }
 
@@ -72,6 +76,36 @@ namespace Blazorify.Client.Animate
             return TransitioningHandle();
         }
 
+        protected virtual async Task FireEnter()
+        {
+            await OnEnter.InvokeAsync(State);
+        }
+
+        private async Task FireEntering()
+        {
+            await OnEntering.InvokeAsync(State);
+        }
+
+        protected async Task FireEntered()
+        {
+            await OnEntered.InvokeAsync(State);
+        }
+
+        private async Task FireExit()
+        {
+            await OnExit.InvokeAsync(State);
+        }
+
+        private async Task FireExiting()
+        {
+            await OnExiting.InvokeAsync(State);
+        }
+
+        protected async Task FireExited()
+        {
+            await OnExited.InvokeAsync(State);
+        }
+
         private async Task TransitioningHandle()
         {
 
@@ -87,10 +121,14 @@ namespace Blazorify.Client.Animate
                 {
                     if (EnterEnabled)
                     {
-                        await OnEnter.InvokeAsync(State);
+                        await FireEnter();
+                        var executor = new TimeoutEventExecutor(this);
+                        await OnCalculateEnd.InvokeAsync(executor);
                         State = TransitionState.Entering;
                         await Task.Yield();
-                        await OnEntering.InvokeAsync(State);
+                        await FireEntering();
+                        if (executor.Subscribed)
+                            return;
                         await Task.Delay(EnterTimeout);
                     }
                 }
@@ -98,31 +136,36 @@ namespace Blazorify.Client.Animate
                 {
                     if (ExitEnabled)
                     {
-                        await OnExit.InvokeAsync(State);
+                        await FireExit();
+                        var executor = new TimeoutEventExecutor(this);
+                        await OnCalculateEnd.InvokeAsync(executor);
                         State = TransitionState.Exiting;
                         await Task.Yield();
-                        await OnExiting.InvokeAsync(State);
+                        await FireExiting();
+                        if (executor.Subscribed)
+                            return;
                         await Task.Delay(ExitTimeout);
-                        _transitioning = false;
                     }
                 }
                 await TransitionedHandler();
-                _transitioning = false;
             }
         }
 
-        private async Task TransitionedHandler()
+        [JSInvokable]
+        public async Task TransitionedHandler()
         {
             if (_innerState)
             {
                 State = TransitionState.Entered;
-                await OnEntered.InvokeAsync(State);
+                await FireEntered();
             }
             else
             {
                 State = TransitionState.Exited;
-                await OnExited.InvokeAsync(State);
+                await FireExited();
             }
+            _transitioning = false;
         }
+
     }
 }

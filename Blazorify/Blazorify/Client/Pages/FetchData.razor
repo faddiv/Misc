@@ -1,3 +1,5 @@
+@implements System.IAsyncDisposable
+@implements System.IDisposable
 @page "/fetchdata"
 @using Blazorify.Shared
 @inject HttpClient Http
@@ -43,4 +45,13 @@ else
         forecasts = await Http.GetFromJsonAsync<WeatherForecast[]>("WeatherForecast");
     }
 
+    public async ValueTask DisposeAsync()
+    {
+        await Task.Delay(500);
+    }
+
+    public void Dispose()
+    {
+        Console.WriteLine("fsdfd");
+    }
 }

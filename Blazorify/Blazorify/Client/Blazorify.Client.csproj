@@ -13,6 +13,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\Foxy.Blazor.Transition\Foxy.Blazor.Transition.csproj" />
     <ProjectReference Include="..\Shared\Blazorify.Shared.csproj" />
   </ItemGroup>
 

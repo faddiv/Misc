@@ -33,8 +33,22 @@
    * @param {HTMLElement} element
    */
   function reflow(element) {
-    return element.offsetHeight;
+    var styles = window.getComputedStyle(element);
+    styles.animationDuration
+    //return document.offsetHeight;
   }
 
-  exports.reflow = reflow;
+  /**
+   * 
+   * @param {HTMLElement} element
+   * @param {any} transition
+   */
+  exports.transitionEndHandler = function transitionEndHandler(element, transition) {
+    var func = function () {
+      transition.invokeMethodAsync("TransitionedHandler");
+      element.removeEventListener("transitionend", func);
+      transition.dispose();
+    }
+    element.addEventListener("transitionend", func, false);
+  }
 })(window, Popper);
