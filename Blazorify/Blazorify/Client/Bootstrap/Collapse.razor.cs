@@ -28,37 +28,25 @@ namespace Blazorify.Client.Bootstrap
         [Inject]
         public IJSRuntime JsRuntime { get; set; }
 
-        private string GetCss(TransitionState state)
+        private async Task OnEnter(TransitionState state)
         {
-            switch (state)
-            {
-                case TransitionState.Entering:
-                    return "collapsing";
-                case TransitionState.Entered:
-                    return "collapse show";
-                case TransitionState.Exiting:
-                    return "collapsing";
-                case TransitionState.Exited:
-                default:
-                    return "collapse";
-            }
-        }
-        private void OnEnter(TransitionState state)
-        {
+            _style = "height: 0px";
         }
 
-        private void OnEntering(TransitionState state)
+        private async Task OnEntering(TransitionState state)
         {
-            _style = "height: 214px";
+            var height = await JsRuntime.InvokeAsync<int>("getElScrollSize", _reference.Ref);
+            _style = $"height: {height}px";
         }
         private void OnEntered(TransitionState state)
         {
-            _style = "";
+            _style = null;
         }
 
-        private void OnExit(TransitionState state)
+        private async Task OnExit(TransitionState state)
         {
-            _style = "height: 214px";
+            var height = await JsRuntime.InvokeAsync<int>("getElHeight", _reference.Ref);
+            _style = $"height: {height}px";
         }
 
         private void OnExiting(TransitionState state)
@@ -67,15 +55,15 @@ namespace Blazorify.Client.Bootstrap
         }
         private void OnExited(TransitionState state)
         {
-            _style = "";
+            _style = null;
         }
 
         private string Join(string css, IReadOnlyDictionary<string, object> attributes)
         {
-            if(attributes.TryGetValue("class", out var css2)
+            if (attributes.TryGetValue("class", out var css2)
                 && css2 != null && !ReferenceEquals(css2, ""))
             {
-                return string.Join(' ', css, css2);
+                return string.Join(' ', css2, css);
             }
             return css;
         }

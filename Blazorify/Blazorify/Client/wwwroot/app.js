@@ -32,10 +32,24 @@
    * 
    * @param {HTMLElement} element
    */
-  function reflow(element) {
-    var styles = window.getComputedStyle(element);
-    styles.animationDuration
-    //return document.offsetHeight;
+  exports.reflow= function reflow(element) {
+    element.offsetHeight;
+  }
+
+  /**
+   * 
+   * @param {HTMLElement} element
+   */
+  exports.getElHeight = function getElHeight(element) {
+    return element.getBoundingClientRect().height
+  }
+
+/**
+ *
+ * @param {HTMLElement} element
+ */
+  exports.getElScrollSize = function getElHeight(element) {
+    return element.scrollHeight;
   }
 
   /**
