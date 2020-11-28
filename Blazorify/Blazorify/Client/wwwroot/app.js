@@ -41,7 +41,6 @@
    * @param {HTMLElement} element
    */
   exports.getElHeight = function getElHeight(element) {
-    console.log(++idx, element, element.getBoundingClientRect());
     return element.getBoundingClientRect().height;
   }
 
@@ -50,7 +49,6 @@
    * @param {HTMLElement} element
    */
   exports.getElScrollSize = function getElHeight(element) {
-    console.log(++idx, element, element.scrollHeight);
     return element.scrollHeight;
   }
 

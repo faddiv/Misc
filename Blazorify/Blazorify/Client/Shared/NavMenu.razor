@@ -3,7 +3,7 @@
     <button class="navbar-toggler" type="button" @onclick="ToggleNavMenu">
         <span class="navbar-toggler-icon"></span>
     </button>
-    <Collapse Tag="section" Open="collapseNavMenu" class="navbar-collapse">
+    <Collapse @ref="_coll" Tag="section" class="navbar-collapse">
         <ul class="navbar-nav mr-auto">
             <li class="nav-item active">
                 <NavLink class="nav-link" href="/">Home <span class="sr-only">(current)</span></NavLink>
@@ -34,9 +34,9 @@
 </nav>
 
 @code {
-    private bool collapseNavMenu = false;
+    public Collapse _coll { get; set; }
     private void ToggleNavMenu()
     {
-        collapseNavMenu = !collapseNavMenu;
+        _coll.Toggle();
     }
 }

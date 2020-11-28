@@ -10,8 +10,8 @@ namespace Blazorify.Client.Bootstrap
     partial class Collapse
     {
         private string _style = "";
-
         private DynamicTag _reference;
+        private CssTransition _trans;
 
         [Parameter]
         public RenderFragment ChildContent { get; set; }
@@ -19,14 +19,16 @@ namespace Blazorify.Client.Bootstrap
         [Parameter]
         public string Tag { get; set; } = "div";
 
-        [Parameter]
-        public bool Open { get; set; }
-
         [Parameter(CaptureUnmatchedValues = true)]
         public IReadOnlyDictionary<string, object> Attributes { get; set; }
 
         [Inject]
         public IJSRuntime JsRuntime { get; set; }
+
+        public void Toggle()
+        {
+            _trans.Toggle();
+        }
 
         private void OnEnter(TransitionState state)
         {

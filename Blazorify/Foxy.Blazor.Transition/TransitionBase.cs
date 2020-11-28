@@ -7,7 +7,9 @@ namespace Foxy.Blazor.Transition
     public class TransitionBase : ComponentBase
     {
         private bool _transitioning = false;
-        private bool _innerState;
+
+        [Inject]
+        internal IJSRuntime JsRuntime { get; set; }
 
         #region Enter
         [Parameter]
@@ -46,34 +48,92 @@ namespace Foxy.Blazor.Transition
         [Parameter]
         public EventCallback<TimeoutEventExecutor> OnCalculateEnd { get; set; }
 
-        [Parameter]
-        public bool In { get; set; }
+        public bool In { get; private set; }
 
         [Parameter]
         public bool Appear { get; set; } = false;
 
-        [Inject]
-        public IJSRuntime JsRuntime { get; set; }
-
         public TransitionState State { get; private set; }
+
+        public async Task Show()
+        {
+            if (In || _transitioning)
+                return;
+            _transitioning = true;
+
+            if (EnterEnabled)
+            {
+                var executor = OnCalculateEnd.HasDelegate
+                    ? new TimeoutEventExecutor(this)
+                    : null;
+
+                await FireEnter();
+                State = TransitionState.Entering;
+                if (executor != null)
+                {
+                    await OnCalculateEnd.InvokeAsync(executor);
+                }
+                await Task.Yield();
+                await FireEntering();
+                if (executor?.Subscribed == true)
+                    return;
+                await Task.Delay(EnterTimeout);
+            }
+            await TransitionedHandler();
+        }
+
+        public async Task Hide()
+        {
+            if (!In || _transitioning)
+                return;
+            _transitioning = true;
+
+            if (ExitEnabled)
+            {
+                var executor = OnCalculateEnd.HasDelegate
+                    ? new TimeoutEventExecutor(this)
+                    : null;
+
+                await FireExit();
+                State = TransitionState.Exiting;
+                if (executor != null)
+                {
+                    await OnCalculateEnd.InvokeAsync(executor);
+                }
+                await Task.Yield();
+                await FireExiting();
+                if (executor?.Subscribed == true)
+                    return;
+                await Task.Delay(ExitTimeout);
+            }
+            await TransitionedHandler();
+        }
+        public Task Toggle()
+        {
+            if(In)
+            {
+                return Hide();
+            } else
+            {
+                return Show();
+            }
+        }
 
         protected override Task OnInitializedAsync()
         {
             if (Appear)
             {
-                _innerState = !In;
-                return TransitioningHandle();
+                In = true;
+                State = TransitionState.Entered;
+                //return TransitioningHandle();
             }
             else
             {
-                _innerState = In;
-                return TransitionedHandler();
+                In = false;
+                State = TransitionState.Exited;
+                //return TransitionedHandler();
             }
-        }
-
-        protected override Task OnParametersSetAsync()
-        {
-            return TransitioningHandle();
+            return Task.CompletedTask;
         }
 
         protected virtual async Task FireEnter()
@@ -81,89 +141,45 @@ namespace Foxy.Blazor.Transition
             await OnEnter.InvokeAsync(State);
         }
 
-        private async Task FireEntering()
+        protected virtual async Task FireEntering()
         {
             await OnEntering.InvokeAsync(State);
         }
 
-        protected async Task FireEntered()
+        protected virtual async Task FireEntered()
         {
             await OnEntered.InvokeAsync(State);
         }
 
-        private async Task FireExit()
+        protected virtual async Task FireExit()
         {
             await OnExit.InvokeAsync(State);
         }
 
-        private async Task FireExiting()
+        protected virtual async Task FireExiting()
         {
             await OnExiting.InvokeAsync(State);
         }
 
-        protected async Task FireExited()
+        protected virtual async Task FireExited()
         {
             await OnExited.InvokeAsync(State);
-        }
-
-        private async Task TransitioningHandle()
-        {
-
-            while (_innerState != In)
-            {
-                if (_transitioning)
-                {
-                    return;
-                }
-                _transitioning = true;
-                _innerState = In;
-                if (_innerState)
-                {
-                    if (EnterEnabled)
-                    {
-                        await FireEnter();
-                        State = TransitionState.Entering;
-                        var executor = new TimeoutEventExecutor(this);
-                        await OnCalculateEnd.InvokeAsync(executor);
-                        await Task.Yield();
-                        await FireEntering();
-                        if (executor.Subscribed)
-                            return;
-                        await Task.Delay(EnterTimeout);
-                    }
-                }
-                else
-                {
-                    if (ExitEnabled)
-                    {
-                        await FireExit();
-                        State = TransitionState.Exiting;
-                        var executor = new TimeoutEventExecutor(this);
-                        await OnCalculateEnd.InvokeAsync(executor);
-                        await Task.Yield();
-                        await FireExiting();
-                        if (executor.Subscribed)
-                            return;
-                        await Task.Delay(ExitTimeout);
-                    }
-                }
-                await TransitionedHandler();
-            }
         }
 
         [JSInvokable]
         public async Task TransitionedHandler()
         {
-            if (_innerState)
-            {
-                State = TransitionState.Entered;
-                await FireEntered();
-            }
-            else
+            if (In)
             {
                 State = TransitionState.Exited;
                 await FireExited();
             }
+            else
+            {
+                State = TransitionState.Entered;
+                await FireEntered();
+            }
+            In = !In;
             _transitioning = false;
         }
 
