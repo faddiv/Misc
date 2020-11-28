@@ -122,9 +122,9 @@ namespace Foxy.Blazor.Transition
                     if (EnterEnabled)
                     {
                         await FireEnter();
+                        State = TransitionState.Entering;
                         var executor = new TimeoutEventExecutor(this);
                         await OnCalculateEnd.InvokeAsync(executor);
-                        State = TransitionState.Entering;
                         await Task.Yield();
                         await FireEntering();
                         if (executor.Subscribed)
@@ -137,9 +137,9 @@ namespace Foxy.Blazor.Transition
                     if (ExitEnabled)
                     {
                         await FireExit();
+                        State = TransitionState.Exiting;
                         var executor = new TimeoutEventExecutor(this);
                         await OnCalculateEnd.InvokeAsync(executor);
-                        State = TransitionState.Exiting;
                         await Task.Yield();
                         await FireExiting();
                         if (executor.Subscribed)

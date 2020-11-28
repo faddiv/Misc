@@ -28,7 +28,7 @@ namespace Blazorify.Client.Bootstrap
         [Inject]
         public IJSRuntime JsRuntime { get; set; }
 
-        private async Task OnEnter(TransitionState state)
+        private void OnEnter(TransitionState state)
         {
             _style = "height: 0px";
         }

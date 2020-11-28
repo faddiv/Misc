@@ -18,14 +18,7 @@ namespace Foxy.Blazor.Transition
         public async Task SubscribeTransitionEnd(ElementReference reference)
         {
             var transition = DotNetObjectReference.Create(_parent);
-            if (_parent.JsRuntime is IJSInProcessRuntime jsRuntime2)
-            {
-                jsRuntime2.InvokeVoid("transitionEndHandler", reference, transition);
-            }
-            else
-            {
-                await _parent.JsRuntime.InvokeVoidAsync("transitionEndHandler", reference, transition);
-            }
+            await _parent.JsRuntime.AddEnetListener(reference, "transitionend", transition, "TransitionedHandler", true);
             Subscribed = true;
         }
     }

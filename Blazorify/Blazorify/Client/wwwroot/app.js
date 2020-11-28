@@ -32,37 +32,26 @@
    * 
    * @param {HTMLElement} element
    */
-  exports.reflow= function reflow(element) {
+  exports.reflow = function reflow(element) {
     element.offsetHeight;
   }
-
+  var idx = 0;
   /**
    * 
    * @param {HTMLElement} element
    */
   exports.getElHeight = function getElHeight(element) {
-    return element.getBoundingClientRect().height
-  }
-
-/**
- *
- * @param {HTMLElement} element
- */
-  exports.getElScrollSize = function getElHeight(element) {
-    return element.scrollHeight;
+    console.log(++idx, element, element.getBoundingClientRect());
+    return element.getBoundingClientRect().height;
   }
 
   /**
-   * 
+   *
    * @param {HTMLElement} element
-   * @param {any} transition
    */
-  exports.transitionEndHandler = function transitionEndHandler(element, transition) {
-    var func = function () {
-      transition.invokeMethodAsync("TransitionedHandler");
-      element.removeEventListener("transitionend", func);
-      transition.dispose();
-    }
-    element.addEventListener("transitionend", func, false);
+  exports.getElScrollSize = function getElHeight(element) {
+    console.log(++idx, element, element.scrollHeight);
+    return element.scrollHeight;
   }
+
 })(window, Popper);
