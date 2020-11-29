@@ -62,7 +62,8 @@ namespace Blazorify.Client.Bootstrap
 
         private string Join(string css, IReadOnlyDictionary<string, object> attributes)
         {
-            if (attributes.TryGetValue("class", out var css2)
+            if (attributes != null
+                && attributes.TryGetValue("class", out var css2) == true
                 && css2 != null && !ReferenceEquals(css2, ""))
             {
                 return string.Join(' ', css2, css);
