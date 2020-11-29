@@ -7,6 +7,7 @@ namespace Foxy.Blazor.Transition
     public class TransitionBase : ComponentBase
     {
         private bool _transitioning = false;
+        private bool _internalIn = false;
 
         [Inject]
         internal IJSRuntime JsRuntime { get; set; }
@@ -48,7 +49,8 @@ namespace Foxy.Blazor.Transition
         [Parameter]
         public EventCallback<TimeoutEventExecutor> OnCalculateEnd { get; set; }
 
-        public bool In { get; private set; }
+        [Parameter]
+        public bool In { get; set; }
 
         [Parameter]
         public bool Appear { get; set; } = false;
@@ -57,9 +59,12 @@ namespace Foxy.Blazor.Transition
 
         public async Task Show()
         {
-            if (In || _transitioning)
+            if (_internalIn)
+                return;
+            if (_transitioning)
                 return;
             _transitioning = true;
+            _internalIn = true;
 
             if (EnterEnabled)
             {
@@ -84,9 +89,12 @@ namespace Foxy.Blazor.Transition
 
         public async Task Hide()
         {
-            if (!In || _transitioning)
+            if (!_internalIn)
+                return;
+            if (_transitioning)
                 return;
             _transitioning = true;
+            _internalIn = false;
 
             if (ExitEnabled)
             {
@@ -108,9 +116,10 @@ namespace Foxy.Blazor.Transition
             }
             await TransitionedHandler();
         }
+
         public Task Toggle()
         {
-            if(In)
+            if (In)
             {
                 return Hide();
             } else
@@ -121,19 +130,32 @@ namespace Foxy.Blazor.Transition
 
         protected override Task OnInitializedAsync()
         {
-            if (Appear)
+            if (In)
             {
-                In = true;
                 State = TransitionState.Entered;
-                //return TransitioningHandle();
             }
             else
             {
-                In = false;
                 State = TransitionState.Exited;
-                //return TransitionedHandler();
             }
-            return Task.CompletedTask;
+            _internalIn = In;
+            return base.OnInitializedAsync();
+        }
+
+        protected override Task OnParametersSetAsync()
+        {
+            if (_internalIn != In)
+            {
+                if (In)
+                {
+                    return Show();
+                }
+                else
+                {
+                    return Hide();
+                }
+            }
+            return base.OnParametersSetAsync();
         }
 
         protected virtual async Task FireEnter()
@@ -167,20 +189,28 @@ namespace Foxy.Blazor.Transition
         }
 
         [JSInvokable]
-        public async Task TransitionedHandler()
+        public Task TransitionedHandler()
         {
-            if (In)
+            if (_internalIn)
             {
-                State = TransitionState.Exited;
-                await FireExited();
+                State = TransitionState.Entered;
             }
             else
             {
-                State = TransitionState.Entered;
-                await FireEntered();
+                State = TransitionState.Exited;
             }
-            In = !In;
+
+            In = _internalIn;
             _transitioning = false;
+
+            if (_internalIn)
+            {
+                return FireEntered();
+            }
+            else
+            {
+                return FireExited();
+            }
         }
 
     }
