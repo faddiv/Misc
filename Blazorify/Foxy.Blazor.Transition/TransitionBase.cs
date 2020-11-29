@@ -53,6 +53,10 @@ namespace Foxy.Blazor.Transition
         public bool In { get; set; }
 
         [Parameter]
+        public EventCallback<bool> InChanged { get; set; }
+
+
+        [Parameter]
         public bool Appear { get; set; } = false;
 
         public TransitionState State { get; private set; }
@@ -189,7 +193,7 @@ namespace Foxy.Blazor.Transition
         }
 
         [JSInvokable]
-        public Task TransitionedHandler()
+        public async Task TransitionedHandler()
         {
             if (_internalIn)
             {
@@ -200,16 +204,20 @@ namespace Foxy.Blazor.Transition
                 State = TransitionState.Exited;
             }
 
-            In = _internalIn;
+            if(In != _internalIn)
+            {
+                In = _internalIn;
+                await InChanged.InvokeAsync(In);
+            }
             _transitioning = false;
 
             if (_internalIn)
             {
-                return FireEntered();
+                await FireEntered();
             }
             else
             {
-                return FireExited();
+                await FireExited();
             }
         }
 

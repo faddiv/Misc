@@ -24,6 +24,22 @@
         </button>
     </div>
 </div>
+<div class="row">
+    <div class="col">
+        <Collapse In="In">
+            <div class="card">
+                <div class="card-header">Header</div>
+                <div class="card-body">
+                    Body Body Body Body Body Body Body Body Body Body Body Body Body Body
+                    Body Body Body Body Body Body Body Body Body Body Body Body Body Body
+                    Body Body Body Body Body Body Body Body Body Body Body Body Body Body
+                    Body Body Body Body Body Body Body Body Body Body Body Body Body Body
+                    Body Body Body Body Body Body Body Body Body Body Body Body Body Body
+                </div>
+            </div>
+        </Collapse>
+    </div>
+</div>
 @code {
     public object target { get; set; }
     public object tooltip { get; set; }
@@ -33,6 +49,8 @@
     public string classes { get; set; } = "popper hide";
 
     public bool alert { get; set; }
+
+    public bool In { get; set; }
 
     private async Task Show()
     {
@@ -78,5 +96,6 @@
     private void ToggleButton()
     {
         alert = !alert;
+        In = !In;
     }
 }

@@ -11,10 +11,12 @@ namespace Blazorify.Client.Bootstrap
     {
         private string _style = "";
         private DynamicTag _reference;
-        private CssTransition _trans;
 
         [Parameter]
         public RenderFragment ChildContent { get; set; }
+
+        [Parameter]
+        public bool In { get; set; }
 
         [Parameter]
         public string Tag { get; set; } = "div";
@@ -27,7 +29,7 @@ namespace Blazorify.Client.Bootstrap
 
         public void Toggle()
         {
-            _trans.Toggle();
+            In = !In;
         }
 
         private void OnEnter(TransitionState state)
