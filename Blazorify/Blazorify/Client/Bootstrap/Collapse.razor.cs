@@ -32,32 +32,33 @@ namespace Blazorify.Client.Bootstrap
             In = !In;
         }
 
-        private void OnEnter(TransitionState state)
+        private void OnEnter(IEnterContext state)
         {
             _style = "height: 0px";
         }
 
-        private async Task OnEntering(TransitionState state)
+        private async Task OnEntering(IEnterContext state)
         {
             var height = await JsRuntime.InvokeAsync<int>("getElScrollSize", _reference.Ref);
             _style = $"height: {height}px";
         }
-        private void OnEntered(TransitionState state)
+
+        private void OnEntered(IEnterContext state)
         {
             _style = null;
         }
 
-        private async Task OnExit(TransitionState state)
+        private async Task OnExit(IExitContext state)
         {
             var height = await JsRuntime.InvokeAsync<int>("getElHeight", _reference.Ref);
             _style = $"height: {height}px";
         }
 
-        private void OnExiting(TransitionState state)
+        private void OnExiting(IExitContext state)
         {
             _style = "height: 0px";
         }
-        private void OnExited(TransitionState state)
+        private void OnExited(IExitContext state)
         {
             _style = null;
         }

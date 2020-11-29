@@ -6,7 +6,7 @@ namespace Foxy.Blazor.Transition
 {
     public static class JsRuntimeExtensions
     {
-        public static ValueTask<object> AddEnetListener<TValue>(
+        public static ValueTask<object> AddEventListener<TValue>(
             this IJSRuntime jsRuntime,
             ElementReference element,
             string eventName,

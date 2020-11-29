@@ -9,20 +9,19 @@ window.Foxy = (function (foxy) {
    * @param {any} blazorTarget
    * @param {string} method
    * @param {boolean} once
+   * @param {object} once
   */
   function addBlazorEventListener(element, eventName, blazorTarget, method, once) {
     var func = function () {
       blazorTarget.invokeMethodAsync(method);
       if (once) {
         element.removeEventListener(eventName, func);
-        blazorTarget.dispose();
       }
     }
     element.addEventListener(eventName, func, false);
     return func;
   }
   foxy.addBlazorEventListener = addBlazorEventListener;
-  console.log(foxy);
   /**
    *
    * @param {HTMLElement} element
@@ -33,7 +32,6 @@ window.Foxy = (function (foxy) {
     element.removeEventListener(eventName, func);
   }
   foxy.removeBlazorEventListener = removeBlazorEventListener;
-  console.log(foxy);
   /*foxy.Blazor = (function (blazor) {
     blazor.Transition = (function (transition) {
 
@@ -43,4 +41,3 @@ window.Foxy = (function (foxy) {
   })(foxy.Blazor || {});*/
   return foxy;
 })(window.Foxy || {});
-console.log(Foxy);

@@ -1,16 +1,19 @@
 using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
+using System;
 using System.Threading.Tasks;
 
 namespace Foxy.Blazor.Transition
 {
-    public class TransitionBase : ComponentBase
+    public abstract class TransitionBase<TContext> : ComponentBase, ITransitionBase, IDisposable
+        where TContext : TransitionContext
     {
-        private bool _transitioning = false;
-        private bool _internalIn = false;
-
+        public TransitionBase()
+        {
+            JsReference = DotNetObjectReference.Create<ComponentBase>(this);
+        }
         [Inject]
-        internal IJSRuntime JsRuntime { get; set; }
+        public IJSRuntime JSRuntime { get; set; }
 
         #region Enter
         [Parameter]
@@ -20,13 +23,13 @@ namespace Foxy.Blazor.Transition
         public int EnterTimeout { get; set; }
 
         [Parameter]
-        public EventCallback<TransitionState> OnEnter { get; set; }
+        public EventCallback<IEnterContext> OnEnter { get; set; }
 
         [Parameter]
-        public EventCallback<TransitionState> OnEntering { get; set; }
+        public EventCallback<IEnterContext> OnEntering { get; set; }
 
         [Parameter]
-        public EventCallback<TransitionState> OnEntered { get; set; }
+        public EventCallback<IEnterContext> OnEntered { get; set; }
         #endregion
 
         #region Exit
@@ -37,17 +40,17 @@ namespace Foxy.Blazor.Transition
         public int ExitTimeout { get; set; }
 
         [Parameter]
-        public EventCallback<TransitionState> OnExit { get; set; }
+        public EventCallback<IExitContext> OnExit { get; set; }
 
         [Parameter]
-        public EventCallback<TransitionState> OnExiting { get; set; }
+        public EventCallback<IExitContext> OnExiting { get; set; }
 
         [Parameter]
-        public EventCallback<TransitionState> OnExited { get; set; }
+        public EventCallback<IExitContext> OnExited { get; set; }
         #endregion
 
         [Parameter]
-        public EventCallback<TimeoutEventExecutor> OnCalculateEnd { get; set; }
+        public EventCallback<ICalculationContext> OnCalculateEnd { get; set; }
 
         [Parameter]
         public bool In { get; set; }
@@ -55,170 +58,216 @@ namespace Foxy.Blazor.Transition
         [Parameter]
         public EventCallback<bool> InChanged { get; set; }
 
+        public TContext Context { get; private set; }
+
+        public TransitionState State => Context?.State ?? (In ? TransitionState.Entered : TransitionState.Exited);
 
         [Parameter]
         public bool Appear { get; set; } = false;
 
-        public TransitionState State { get; private set; }
+        public DotNetObjectReference<ComponentBase> JsReference { get; }
 
-        public async Task Show()
+        public async Task Toggle()
         {
-            if (_internalIn)
+            if (In)
+            {
+                await Hide();
+            }
+            else
+            {
+                await Show(false);
+            }
+        }
+
+        public async Task Show(bool appearing)
+        {
+            if (Context.Transitioning)
+            {
+                // TODO Cancel
                 return;
-            if (_transitioning)
+            }
+            if (Context.State == TransitionState.Entered)
+            {
                 return;
-            _transitioning = true;
-            _internalIn = true;
+            }
+
+            var context = CreateContextInternal(TransitionType.Enter, appearing);
+            context.State = TransitionState.Exited;
 
             if (EnterEnabled)
             {
-                var executor = OnCalculateEnd.HasDelegate
-                    ? new TimeoutEventExecutor(this)
-                    : null;
-
-                await FireEnter();
-                State = TransitionState.Entering;
-                if (executor != null)
-                {
-                    await OnCalculateEnd.InvokeAsync(executor);
-                }
+                await FireEnter(context);
+                context.State = TransitionState.Entering;
+                await OnCalculateEnd.InvokeAsync(context);
                 await Task.Yield();
-                await FireEntering();
-                if (executor?.Subscribed == true)
+                await FireEntering(context);
+                if (context.Subscribed == true)
                     return;
                 await Task.Delay(EnterTimeout);
             }
-            await TransitionedHandler();
+            await TransitionedHandler(context);
         }
 
         public async Task Hide()
         {
-            if (!_internalIn)
+            if (Context.Transitioning)
+            {
+                // TODO Cancel
                 return;
-            if (_transitioning)
+            }
+            if(Context.State == TransitionState.Exited)
+            {
                 return;
-            _transitioning = true;
-            _internalIn = false;
+            }
+            var context = CreateContextInternal(TransitionType.Exit, false);
+            context.State = TransitionState.Entered;
 
             if (ExitEnabled)
             {
-                var executor = OnCalculateEnd.HasDelegate
-                    ? new TimeoutEventExecutor(this)
-                    : null;
-
-                await FireExit();
-                State = TransitionState.Exiting;
-                if (executor != null)
-                {
-                    await OnCalculateEnd.InvokeAsync(executor);
-                }
+                await FireExit(context);
+                context.State = TransitionState.Exiting;
+                await OnCalculateEnd.InvokeAsync(context);
                 await Task.Yield();
-                await FireExiting();
-                if (executor?.Subscribed == true)
+                await FireExiting(context);
+                if (context.Subscribed == true)
                     return;
                 await Task.Delay(ExitTimeout);
             }
-            await TransitionedHandler();
-        }
-
-        public Task Toggle()
-        {
-            if (In)
-            {
-                return Hide();
-            } else
-            {
-                return Show();
-            }
+            await TransitionedHandler(context);
         }
 
         protected override Task OnInitializedAsync()
         {
             if (In)
             {
-                State = TransitionState.Entered;
-            }
-            else
-            {
-                State = TransitionState.Exited;
-            }
-            _internalIn = In;
-            return base.OnInitializedAsync();
-        }
-
-        protected override Task OnParametersSetAsync()
-        {
-            if (_internalIn != In)
-            {
-                if (In)
+                if (Appear)
                 {
-                    return Show();
+                    return Show(true);
                 }
                 else
                 {
-                    return Hide();
+                    Context = CreateContextInternal(TransitionType.Enter, false);
+                    Context.State = TransitionState.Entered;
+                    Context.Transitioning = false;
                 }
             }
-            return base.OnParametersSetAsync();
+            else
+            {
+                Context = CreateContextInternal(TransitionType.Exit, false);
+                Context.State = TransitionState.Exited;
+                Context.Transitioning = false;
+            }
+            return base.OnInitializedAsync();
         }
 
-        protected virtual async Task FireEnter()
+        public override async Task SetParametersAsync(ParameterView parameters)
         {
-            await OnEnter.InvokeAsync(State);
+            var inChanged = parameters.TryGetValue(nameof(In), out bool newIn);
+            if (In == newIn)
+            {
+                inChanged = false;
+            }
+            await base.SetParametersAsync(parameters);
+            if (!inChanged)
+            {
+                return;
+            }
+            if (Context.In == In)
+            {
+                return;
+            }
+            if (In)
+            {
+                await Show(false);
+            }
+            else
+            {
+                await Hide();
+            }
         }
 
-        protected virtual async Task FireEntering()
+        protected virtual async Task FireEnter(IEnterContext context)
         {
-            await OnEntering.InvokeAsync(State);
+            await OnEnter.InvokeAsync(context);
         }
 
-        protected virtual async Task FireEntered()
+        protected virtual async Task FireEntering(IEnterContext context)
         {
-            await OnEntered.InvokeAsync(State);
+            await OnEntering.InvokeAsync(context);
         }
 
-        protected virtual async Task FireExit()
+        protected virtual async Task FireEntered(IEnterContext context)
         {
-            await OnExit.InvokeAsync(State);
+            await OnEntered.InvokeAsync(context);
         }
 
-        protected virtual async Task FireExiting()
+        protected virtual async Task FireExit(IExitContext context)
         {
-            await OnExiting.InvokeAsync(State);
+            await OnExit.InvokeAsync(context);
         }
 
-        protected virtual async Task FireExited()
+        protected virtual async Task FireExiting(IExitContext context)
         {
-            await OnExited.InvokeAsync(State);
+            await OnExiting.InvokeAsync(context);
+        }
+
+        protected virtual async Task FireExited(IExitContext context)
+        {
+            await OnExited.InvokeAsync(context);
         }
 
         [JSInvokable]
-        public async Task TransitionedHandler()
+        public async Task TransitionedHandler(TransitionContext context)
         {
-            if (_internalIn)
+            switch (context.Type)
             {
-                State = TransitionState.Entered;
-            }
-            else
-            {
-                State = TransitionState.Exited;
-            }
+                case TransitionType.Enter:
+                    context.State = TransitionState.Entered;
+                    context.In = true;
+                    context.Transitioning = false;
 
-            if(In != _internalIn)
-            {
-                In = _internalIn;
-                await InChanged.InvokeAsync(In);
-            }
-            _transitioning = false;
+                    if (context.In != In)
+                    {
+                        await SetIn(context.In);
+                    }
+                    await FireEntered(context);
+                    break;
+                case TransitionType.Exit:
+                    context.State = TransitionState.Exited;
+                    context.In = false;
+                    context.Transitioning = false;
 
-            if (_internalIn)
-            {
-                await FireEntered();
+                    if (context.In != In)
+                    {
+                        await SetIn(context.In);
+                    }
+                    await FireExited(context);
+                    break;
+                default:
+                    throw new InvalidOperationException($"the given state is not enter nor exit.");
             }
-            else
-            {
-                await FireExited();
-            }
+        }
+
+        private TContext CreateContextInternal(TransitionType type, bool appearing)
+        {
+            if (Context != null)
+                Context.Dispose();
+            var context = CreateContext(type, appearing);
+            Context = context;
+            return context;
+        }
+
+        protected abstract TContext CreateContext(TransitionType type, bool appearing);
+
+        public void Dispose()
+        {
+            JsReference.Dispose();
+        }
+
+        private async Task SetIn(bool newIn)
+        {
+            In = newIn;
+            await InChanged.InvokeAsync(newIn);
         }
 
     }

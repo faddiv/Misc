@@ -1,17 +1,24 @@
 using Microsoft.AspNetCore.Components;
-using Microsoft.JSInterop;
 using System;
 
 namespace Foxy.Blazor.Transition
 {
     partial class CssTransition
     {
+        public static string DefaultAppearingCss = "appearing";
+        public static string DefaultAppearedCss = "appeared";
         public static string DefaultEnteringCss = "entering";
         public static string DefaultEnteredCss = "entered";
         public static string DefaultExitingCss = "exiting";
         public static string DefaultExitedCss = "exited";
 
         #region Enter
+        [Parameter]
+        public string AppearingCss { get; set; } = DefaultAppearingCss;
+
+        [Parameter]
+        public string AppearedCss { get; set; } = DefaultAppearedCss;
+
         [Parameter]
         public string EnteringCss { get; set; } = DefaultEnteringCss;
 
@@ -28,16 +35,16 @@ namespace Foxy.Blazor.Transition
         #endregion
 
         [Parameter]
-        public RenderFragment<string> ChildContent { get; set; }
+        public RenderFragment<ICssTransitionRenderContext> ChildContent { get; set; }
 
-        private string GetCss(TransitionState state)
+        internal string GetCss(TransitionState state, bool appearing)
         {
             switch (state)
             {
                 case TransitionState.Entering:
-                    return EnteringCss;
+                    return appearing ? AppearingCss : EnteringCss;
                 case TransitionState.Entered:
-                    return EnteredCss;
+                    return appearing ? AppearedCss : EnteredCss;
                 case TransitionState.Exiting:
                     return ExitingCss;
                 case TransitionState.Exited:
@@ -45,6 +52,11 @@ namespace Foxy.Blazor.Transition
                 default:
                     throw new Exception($"Invalid state in CssTransition: {state}");
             }
+        }
+
+        protected override CssTransitionContext CreateContext(TransitionType type, bool appearing)
+        {
+            return new CssTransitionContext(this, type, appearing);
         }
     }
 }

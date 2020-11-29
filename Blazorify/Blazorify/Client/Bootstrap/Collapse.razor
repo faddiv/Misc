@@ -12,7 +12,7 @@
                ExitedCss="collapse"
                ExitingCss="collapsing"
                OnCalculateEnd="evt => evt.SubscribeTransitionEnd(_reference.Ref)">
-    <DynamicTag Tag="@Tag" @ref="_reference" @attributes="Attributes" class="@Join(context, Attributes)" style="@_style">
+    <DynamicTag Tag="@Tag" @ref="_reference" @attributes="Attributes" class="@Join(context.Css, Attributes)" style="@_style">
         @ChildContent
     </DynamicTag>
 </CssTransition>
