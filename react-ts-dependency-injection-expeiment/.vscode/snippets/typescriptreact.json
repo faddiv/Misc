@@ -1,0 +1,122 @@
+{
+	"React Stateless Function": {
+		"prefix": "function.react",
+		"body": [
+			"import { FunctionComponent } from \"react\";",
+			"",
+			"interface  ${1:${TM_FILENAME_BASE}}Props {",
+      "  $2               ",
+      "}",
+			"",
+			"export const ${1}: FunctionComponent< ${1}Props> = ({ $2, ...rest }) => {",
+			"\treturn (",
+			"\t\t$0",
+			"\t);",
+			"};",
+			""
+		]
+	},
+	"react useState": {
+		"prefix": "useState.react",
+		"body": [
+			"const [ ${1}, set${1/^(.)(.*)$/${1:/upcase}$2/}] = useState($2);$0"
+		]
+	},
+	"react effect": {
+		"prefix": "useEffect.react",
+		"body": [
+			"useEffect(() => {",
+			"  $0",
+			"}, []);"
+		]
+  },
+	"react ref": {
+		"prefix": "useRef.react",
+		"body": [
+			"const $1 = useRef($2);$0"
+		]
+  },
+	"react callback": {
+		"prefix": "useCallback.react",
+		"body": [
+			"const $1 = useCallback(() => {",
+			"  $0",
+			"}, []);"
+		]
+  },
+	"React eventhandler": {
+		"prefix": "eventHandler.react",
+		"body": [
+			"function ${1:Handler}(evt: React.SyntheticEvent<${2:HTMLElement}>) {",
+			"\tevt.preventDefault();$0",
+			"}"
+		]
+	},
+	"Deconstruct an object": {
+		"prefix": "deconstruct.obj",
+		"body": [
+			"const { $0 } = $1;"
+		]
+  },
+  "Deconstruct an array": {
+		"prefix": "deconstruct.array",
+		"body": [
+			"const [ $0 ] = $1;"
+		]
+	},
+	"React bootstrap table": {
+		"prefix": "table.bootstrap",
+		"body": [
+			"<table className=\"table\">",
+			"\t<thead>",
+			"\t\t<tr>",
+			"\t\t\t<td></td>$0",
+			"\t\t</tr>",
+			"\t</thead>",
+			"\t<tbody>",
+			"\t\t{$1.map(item => (",
+			"\t\t\t<tr>",
+			"\t\t\t\t<td></td>",
+			"\t\t\t</tr>",
+			"\t\t))}",
+			"\t</tbody>",
+			"</table>"
+		]
+	},
+	"it Test Karma": {
+		"prefix": "itt",
+		"body": [
+			"it(\"$1\", () => {",
+			"\t$0",
+			"});"
+		],
+		"description": "Karma Test"
+	},
+	"describe Test Karma": {
+		"prefix": "describe",
+		"body": [
+			"describe(\"$1\", () => {",
+			"\t$0",
+			"});"
+		],
+		"description": "Karma Test"
+	},
+	"beforeEach Test Karma": {
+		"prefix": "beforeEach",
+		"body": [
+			"beforeEach(() => {",
+			"\t$0",
+			"});"
+		],
+		"description": "Karma Test"
+	},
+	"beforeAll Test Karma": {
+		"prefix": "beforeAll",
+		"body": [
+			"beforeAll(() => {",
+			"\t$0",
+			"});"
+		],
+		"description": "Karma Test"
+	}
+}
