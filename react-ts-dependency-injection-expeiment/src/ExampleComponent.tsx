@@ -1,27 +1,27 @@
 import { FunctionComponent } from "react";
-import { injector, injectServices } from "./react-injector/injectServices";
+import { injector } from "./react-injector/injectServices";
 
 interface ExampleComponentProps {
   service1: any,
-  service2: any,
+  service3: any,
   otherProp: any
 }
 
-const ExampleComponent: FunctionComponent<ExampleComponentProps> = ({ service1, service2, otherProp, ...rest }) => {
+const ExampleComponent: FunctionComponent<ExampleComponentProps> = ({ service1, service3, otherProp }) => {
   return (
-    <div>OK</div>
+    <div>{service1} {service3} {otherProp}</div>
   );
 };
 
-const inject = injector({
-  service1: {},
-  service3: {}
+const { componentInjector: componentInjector } = injector({
+  service1: () => "Hello",
+  service3: () => new String("from service")
 });
 
-const NewComponent = inject(ExampleComponent, "service1");
+const NewComponent = componentInjector(ExampleComponent, "service1", "service3");
 
-const ExampleComponentUsage: FunctionComponent<any> = ({ ...rest }) => {
+export const ExampleComponentUsage: FunctionComponent<any> = ({ ...rest }) => {
   return (
-    <NewComponent otherProp="" service2=""></NewComponent>
+    <NewComponent otherProp=". other."></NewComponent>
   );
 };
