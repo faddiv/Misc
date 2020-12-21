@@ -13,12 +13,15 @@ const ExampleComponent: FunctionComponent<ExampleComponentProps> = ({ service1, 
   );
 };
 
-const { componentInjector: componentInjector } = injector({
+const { withServices } = injector({
   service1: () => "Hello",
-  service3: () => new String("from service")
+  service2: () => "Hello2",
+  service3: () => new String("from service"),
+  service4: () => "from service",
+  service5: () => "from service"
 });
 
-const NewComponent = componentInjector(ExampleComponent, "service1", "service3");
+const NewComponent = withServices("service1", "service3")(ExampleComponent);
 
 export const ExampleComponentUsage: FunctionComponent<any> = ({ ...rest }) => {
   return (
