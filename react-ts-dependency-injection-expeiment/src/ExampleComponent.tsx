@@ -1,13 +1,5 @@
 import { FunctionComponent } from "react";
-import { injector } from "./react-injector/injectServices";
-
-const { withServices, useService, useServices } = injector({
-  service1: () => "Hello",
-  service2: () => 42,
-  service3: () => new String("from service"),
-  service4: () => "from service",
-  service5: () => {return { important: "Do remember" };}
-});
+import { useService, useServices, withServices } from "./appServices";
 
 interface ExampleComponentProps {
   service1: any,

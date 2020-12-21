@@ -1,17 +1,26 @@
-import { ComponentType, PropsWithChildren } from "react";
+import { ComponentType, createContext, FunctionComponent, PropsWithChildren, useContext } from "react";
 
-type ServiceCreator = () => any;
+export type ServiceCreator = () => any;
 
-interface ServiceCollection {
+export interface ServiceCollection {
   [key: string]: ServiceCreator;
 }
 
+export interface ServiceProviderProps<SC extends ServiceCollection> {
+  services?: SC;
+}
+
+
 export function injector<SC extends ServiceCollection>(services: SC) {
   const instances: any = {};
+  const serviceConstructors = services;
 
-  function getService(injectable: string): any {
+  const context = createContext(services);
+  const Provider = context.Provider;
+
+  function getService(sc: SC, injectable: string): any {
     if (typeof instances[injectable] === "undefined") {
-      const serviceCreator = services[injectable];
+      const serviceCreator = sc[injectable];
       if (typeof serviceCreator !== "function") {
         throw new Error(`the service '${injectable}' must be a function`);
       }
@@ -21,14 +30,16 @@ export function injector<SC extends ServiceCollection>(services: SC) {
   }
 
   function useService<S extends Extract<keyof SC, string>, O extends ReturnType<SC[S]>>(injectable: S): O {
-    return getService(injectable);
+    const sc = useContext(context);
+    return getService(sc, injectable);
   }
 
   function useServices<S extends Extract<keyof SC, string>, O extends ReturnType<SC[S]>>(...injectable: S[]): { [key in S]: O } {
     const newProps: any = {};
+    const sc = useContext(context);
     for (let index = 0; index < injectable.length; index++) {
       const key = injectable[index];
-      newProps[key] = getService(key);
+      newProps[key] = getService(sc, key);
     }
     return newProps;
   }
@@ -40,7 +51,7 @@ export function injector<SC extends ServiceCollection>(services: SC) {
       function ComponentWithServices(props: PropsWithChildren<Omit<P, S>>) {
         const newProps: any = {
           ...props,
-          ...useServices(...injectable)
+          ...useServices.apply(undefined, injectable)
         };
         return <Component {...newProps as P} />;
       }
@@ -49,9 +60,20 @@ export function injector<SC extends ServiceCollection>(services: SC) {
     }
   }
 
+
+  const ServiceProvider: FunctionComponent<ServiceProviderProps<SC>> = ({ services, children }) => {
+
+    return (
+      <Provider value={services || serviceConstructors}>
+        {children}
+      </Provider>
+    );
+  }
+
   return {
     withServices,
     useServices,
-    useService
+    useService,
+    ServiceProvider
   }
 }
