@@ -10,7 +10,6 @@ export interface ServiceProviderProps<SC extends ServiceCollection> {
   services?: SC;
 }
 
-
 export function injector<SC extends ServiceCollection>(services: SC) {
   const instances: any = {};
   const serviceConstructors = services;
@@ -29,12 +28,12 @@ export function injector<SC extends ServiceCollection>(services: SC) {
     return instances[injectable];
   }
 
-  function useService<S extends Extract<keyof SC, string>, O extends ReturnType<SC[S]>>(injectable: S): O {
+  function useService<S extends Extract<keyof SC, string>>(injectable: S): ReturnType<SC[S]> {
     const sc = useContext(context);
     return getService(sc, injectable);
   }
 
-  function useServices<S extends Extract<keyof SC, string>, O extends ReturnType<SC[S]>>(...injectable: S[]): { [key in S]: O } {
+  function useServices<S extends Extract<keyof SC, string>>(...injectable: S[]): { [key in S]: ReturnType<SC[key]> } {
     const newProps: any = {};
     const sc = useContext(context);
     for (let index = 0; index < injectable.length; index++) {
@@ -46,7 +45,7 @@ export function injector<SC extends ServiceCollection>(services: SC) {
 
   function withServices<S extends Extract<keyof SC, string>>(...injectable: S[]) {
 
-    return function componentInjector<P extends { [key in S]: any }>(Component: ComponentType<P>): ComponentType<Omit<P, S>> {
+    return function componentInjector<P extends { [key in S]: ReturnType<SC[key]> }>(Component: ComponentType<P>): ComponentType<Omit<P, S>> {
 
       function ComponentWithServices(props: PropsWithChildren<Omit<P, S>>) {
         const newProps: any = {
@@ -59,7 +58,6 @@ export function injector<SC extends ServiceCollection>(services: SC) {
       return ComponentWithServices;
     }
   }
-
 
   const ServiceProvider: FunctionComponent<ServiceProviderProps<SC>> = ({ services, children }) => {
 
