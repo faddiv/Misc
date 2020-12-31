@@ -2,7 +2,7 @@ import React from 'react';
 import logo from './logo.svg';
 import './App.css';
 import { ExampleComponentUsage } from './ExampleComponent';
-import { appServiceCollection, ServiceProvider } from './appServices';
+import { appServiceCollection, ServiceContextProvider } from './appServices';
 
 
 function App() {
@@ -11,7 +11,7 @@ function App() {
     service1: () => "xxx"
   }
   return (
-    <ServiceProvider services={modified}>
+    <ServiceContextProvider services={modified}>
       <div className="App">
         <header className="App-header">
           <img src={logo} className="App-logo" alt="logo" />
@@ -29,7 +29,7 @@ function App() {
           <ExampleComponentUsage />
         </header>
       </div>
-    </ServiceProvider>
+    </ServiceContextProvider>
   );
 }
 

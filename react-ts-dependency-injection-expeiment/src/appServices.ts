@@ -8,4 +8,4 @@ export const appServiceCollection = {
   service5: () => { return { important: "Do remember" }; }
 };
 
-export const { withServices, useService, useServices, ServiceProvider } = injector(appServiceCollection);
+export const { withServices, useService, useServices, ServiceContextProvider } = injector(appServiceCollection);

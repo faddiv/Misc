@@ -10,6 +10,14 @@ export interface ServiceProviderProps<SC extends ServiceCollection> {
   services?: SC;
 }
 
+/**
+ * Creates the dependency injection container. Use like this:
+ *
+ * ```ts
+ * export const { withServices, useService, useServices, ServiceProvider } = injector(services);
+ * ```
+ * @param services Collection of the service creators.
+ */
 export function injector<SC extends ServiceCollection>(services: SC) {
   const instances: any = {};
   const serviceConstructors = services;
@@ -59,7 +67,7 @@ export function injector<SC extends ServiceCollection>(services: SC) {
     }
   }
 
-  const ServiceProvider: FunctionComponent<ServiceProviderProps<SC>> = ({ services, children }) => {
+  const ServiceContextProvider: FunctionComponent<ServiceProviderProps<SC>> = ({ services, children }) => {
 
     return (
       <Provider value={services || serviceConstructors}>
@@ -69,9 +77,24 @@ export function injector<SC extends ServiceCollection>(services: SC) {
   }
 
   return {
+    /**
+     * Higher order component that injects the specified services into the react component, and excludes it from the typescript typing.
+     * @param injectable Service names to be injected.
+     */
     withServices,
+    /**
+     * Returns with multpile services specified by name.
+     * @param injectable Service names to be injected.
+     */
     useServices,
+    /**
+     * Returns with a single service specified by name.
+     * @param injectable Service name to be injected.
+     */
     useService,
-    ServiceProvider
+    /**
+     * Provides context to the service injection. If value provided, all the services will be replaced.
+     */
+    ServiceContextProvider
   }
 }
