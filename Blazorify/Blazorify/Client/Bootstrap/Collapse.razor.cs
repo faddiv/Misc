@@ -2,6 +2,7 @@ using Blazorify.Client.Etc;
 using Foxy.Blazor.Transition;
 using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
@@ -50,8 +51,8 @@ namespace Blazorify.Client.Bootstrap
 
         private async Task OnExit(IExitContext state)
         {
-            var height = await JsRuntime.InvokeAsync<int>("getElHeight", _reference.Ref);
-            _style = $"height: {height}px";
+            var height = await JsRuntime.InvokeAsync<double>("getElHeight", _reference.Ref);
+            _style = FormattableString.Invariant($"height: {height:#.##}px");
         }
 
         private void OnExiting(IExitContext state)

@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Components;
+using Microsoft.Extensions.Logging;
 using Microsoft.JSInterop;
 using System;
 using System.Threading.Tasks;
@@ -10,8 +11,11 @@ namespace Foxy.Blazor.Transition
     {
         public TransitionBase()
         {
-            JsReference = DotNetObjectReference.Create<ComponentBase>(this);
         }
+
+        [Inject]
+        public ILogger<TransitionBase<TContext>> Logger { get; set; }
+
         [Inject]
         public IJSRuntime JSRuntime { get; set; }
 
@@ -65,8 +69,6 @@ namespace Foxy.Blazor.Transition
         [Parameter]
         public bool Appear { get; set; } = false;
 
-        public DotNetObjectReference<ComponentBase> JsReference { get; }
-
         public async Task Toggle()
         {
             if (In)
@@ -81,59 +83,104 @@ namespace Foxy.Blazor.Transition
 
         public async Task Show(bool appearing)
         {
-            if (Context.Transitioning)
+            var context = Context;
+            try
             {
-                // TODO Cancel
-                return;
-            }
-            if (Context.State == TransitionState.Entered)
-            {
-                return;
-            }
-
-            var context = CreateContextInternal(TransitionType.Enter, appearing);
-            context.State = TransitionState.Exited;
-
-            if (EnterEnabled)
-            {
-                await FireEnter(context);
-                context.State = TransitionState.Entering;
-                await OnCalculateEnd.InvokeAsync(context);
-                await Task.Yield();
-                await FireEntering(context);
-                if (context.Subscribed == true)
+                Logger.LogInformation("Show started {0}", context);
+                if (!context.Transitioning
+                    && context.State == TransitionState.Entered)
+                {
                     return;
-                await Task.Delay(EnterTimeout);
+                }
+                if (context.Transitioning)
+                {
+                    Logger.LogInformation("Cancel");
+                    context.Cancel();
+                }
+
+                context = CreateContextAndMakeCurrentInternal(TransitionType.Enter, appearing);
+                context.State = TransitionState.Exited;
+                var token = context.CancellationToken;
+
+                if (EnterEnabled)
+                {
+                    Logger.LogInformation("FireEnter started {0}", context);
+                    await FireEnter(context);
+                    token.ThrowIfCancellationRequested();
+                    context.State = TransitionState.Entering;
+                    Logger.LogInformation("OnCalculateEnd started {0}", context);
+                    await OnCalculateEnd.InvokeAsync(context);
+                    token.ThrowIfCancellationRequested();
+                    Logger.LogInformation("Yield started {0}", context);
+                    await Task.Yield();
+                    token.ThrowIfCancellationRequested();
+                    Logger.LogInformation("FireEntering started {0}", context);
+                    await FireEntering(context);
+                    token.ThrowIfCancellationRequested();
+                    Logger.LogInformation("Wait for end {0}", context);
+                    if (context.Subscribed == true)
+                        return;
+                    await Task.Delay(EnterTimeout);
+                    token.ThrowIfCancellationRequested();
+                }
+                await TransitionedHandler(context);
             }
-            await TransitionedHandler(context);
+            catch (Exception ex)
+            when (ex is OperationCanceledException || ex is InvalidOperationException)
+            {
+                Logger.LogInformation("Cancel executed {0}", context);
+            }
         }
 
         public async Task Hide()
         {
-            if (Context.Transitioning)
+            var context = Context;
+            try
             {
-                // TODO Cancel
-                return;
-            }
-            if(Context.State == TransitionState.Exited)
-            {
-                return;
-            }
-            var context = CreateContextInternal(TransitionType.Exit, false);
-            context.State = TransitionState.Entered;
-
-            if (ExitEnabled)
-            {
-                await FireExit(context);
-                context.State = TransitionState.Exiting;
-                await OnCalculateEnd.InvokeAsync(context);
-                await Task.Yield();
-                await FireExiting(context);
-                if (context.Subscribed == true)
+                Logger.LogInformation("Hide started {0}", context);
+                if (!context.Transitioning
+                    && context.State == TransitionState.Exited)
+                {
                     return;
-                await Task.Delay(ExitTimeout);
+                }
+                if (context.Transitioning)
+                {
+                    Logger.LogInformation("Cancel");
+                    context.Cancel();
+                }
+
+                context = CreateContextAndMakeCurrentInternal(TransitionType.Exit, false);
+                context.State = TransitionState.Entered;
+                var token = context.CancellationToken;
+
+                if (ExitEnabled)
+                {
+                    Logger.LogInformation("FireExit started {0}", context);
+                    await FireExit(context);
+                    token.ThrowIfCancellationRequested();
+                    context.State = TransitionState.Exiting;
+                    Logger.LogInformation("OnCalculateEnd started {0}", context);
+                    await OnCalculateEnd.InvokeAsync(context);
+                    token.ThrowIfCancellationRequested();
+                    Logger.LogInformation("Yield started {0}", context);
+                    await Task.Yield();
+                    token.ThrowIfCancellationRequested();
+                    Logger.LogInformation("FireExiting started {0}", context);
+                    await FireExiting(context);
+                    token.ThrowIfCancellationRequested();
+                    Logger.LogInformation("Wait for end {0}", context);
+                    if (context.Subscribed == true)
+                        return;
+                    await Task.Delay(ExitTimeout);
+                    token.ThrowIfCancellationRequested();
+                }
+                await TransitionedHandler(context);
             }
-            await TransitionedHandler(context);
+            catch (Exception ex)
+            when (ex is OperationCanceledException || ex is InvalidOperationException)
+            {
+                Logger.LogInformation("Cancel executed {0}", context);
+            }
         }
 
         protected override Task OnInitializedAsync()
@@ -146,16 +193,16 @@ namespace Foxy.Blazor.Transition
                 }
                 else
                 {
-                    Context = CreateContextInternal(TransitionType.Enter, false);
-                    Context.State = TransitionState.Entered;
-                    Context.Transitioning = false;
+                    var context = CreateContextAndMakeCurrentInternal(TransitionType.Enter, false);
+                    context.State = TransitionState.Entered;
+                    context.Transitioning = false;
                 }
             }
             else
             {
-                Context = CreateContextInternal(TransitionType.Exit, false);
-                Context.State = TransitionState.Exited;
-                Context.Transitioning = false;
+                var context = CreateContextAndMakeCurrentInternal(TransitionType.Exit, false);
+                context.State = TransitionState.Exited;
+                context.Transitioning = false;
             }
             return base.OnInitializedAsync();
         }
@@ -172,10 +219,7 @@ namespace Foxy.Blazor.Transition
             {
                 return;
             }
-            if (Context.In == In)
-            {
-                return;
-            }
+            Logger.LogInformation("In changed {0} vs {1}", In, Context);
             if (In)
             {
                 await Show(false);
@@ -219,40 +263,62 @@ namespace Foxy.Blazor.Transition
         [JSInvokable]
         public async Task TransitionedHandler(TransitionContext context)
         {
-            switch (context.Type)
+            if (context is null)
+                throw new ArgumentNullException(nameof(context));
+
+            try
             {
-                case TransitionType.Enter:
-                    context.State = TransitionState.Entered;
-                    context.In = true;
-                    context.Transitioning = false;
+                Logger.LogInformation("End handler started {0}", context);
+                var token = context.CancellationToken;
+                token.ThrowIfCancellationRequested();
+                switch (context.Type)
+                {
+                    case TransitionType.Enter:
+                        context.State = TransitionState.Entered;
+                        context.In = true;
+                        context.Transitioning = false;
 
-                    if (context.In != In)
-                    {
-                        await SetIn(context.In);
-                    }
-                    await FireEntered(context);
-                    break;
-                case TransitionType.Exit:
-                    context.State = TransitionState.Exited;
-                    context.In = false;
-                    context.Transitioning = false;
+                        if (context.In != In)
+                        {
+                            Logger.LogInformation("SetIn {0}", context);
+                            await SetIn(context.In);
+                            token.ThrowIfCancellationRequested();
+                        }
+                        Logger.LogInformation("FireEntered {0}", context);
+                        await FireEntered(context);
+                        break;
+                    case TransitionType.Exit:
+                        context.State = TransitionState.Exited;
+                        context.In = false;
+                        context.Transitioning = false;
 
-                    if (context.In != In)
-                    {
-                        await SetIn(context.In);
-                    }
-                    await FireExited(context);
-                    break;
-                default:
-                    throw new InvalidOperationException($"the given state is not enter nor exit.");
+                        if (context.In != In)
+                        {
+                            Logger.LogInformation("SetIn {0}", context);
+                            await SetIn(context.In);
+                            token.ThrowIfCancellationRequested();
+                        }
+                        Logger.LogInformation("FireExited {0}", context);
+                        await FireExited(context);
+                        break;
+                    default:
+                        throw new InvalidOperationException($"the given state is not enter nor exit.");
+                }
+                context.Dispose();
+            }
+            catch (Exception ex)
+            when (ex is OperationCanceledException || ex is InvalidOperationException)
+            {
+                Logger.LogInformation("Cancel executed {0}", context);
             }
         }
 
-        private TContext CreateContextInternal(TransitionType type, bool appearing)
+        private TContext CreateContextAndMakeCurrentInternal(TransitionType type, bool appearing)
         {
-            if (Context != null)
-                Context.Dispose();
-            var context = CreateContext(type, appearing);
+            var context = Context;
+            if (context != null)
+                context.Dispose();
+            context = CreateContext(type, appearing);
             Context = context;
             return context;
         }
@@ -261,7 +327,7 @@ namespace Foxy.Blazor.Transition
 
         public void Dispose()
         {
-            JsReference.Dispose();
+            Context?.Dispose();
         }
 
         private async Task SetIn(bool newIn)

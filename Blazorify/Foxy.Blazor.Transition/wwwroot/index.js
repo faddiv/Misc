@@ -2,6 +2,8 @@
 // wrapped in a .NET API
 window.Foxy = (function (foxy) {
 
+  var functionHandlers = new Map();
+  var increment = 0;
   /**
    *
    * @param {HTMLElement} element
@@ -10,6 +12,7 @@ window.Foxy = (function (foxy) {
    * @param {string} method
    * @param {boolean} once
    * @param {object} once
+   * @returns {number} function handle
   */
   function addBlazorEventListener(element, eventName, blazorTarget, method, once) {
     var func = function () {
@@ -19,17 +22,25 @@ window.Foxy = (function (foxy) {
       }
     }
     element.addEventListener(eventName, func, false);
-    return func;
+    var key = ++increment;
+    functionHandlers.set(key, func);
+    return key;
   }
   foxy.addBlazorEventListener = addBlazorEventListener;
   /**
    *
    * @param {HTMLElement} element
    * @param {string} eventName
-   * @param {any} func
+   * @param {number} functionHandle
    */
-  function removeBlazorEventListener(element, eventName, func) {
-    element.removeEventListener(eventName, func);
+  function removeBlazorEventListener(element, eventName, functionHandle) {
+    var func = functionHandlers.get(functionHandle);
+    if (func) {
+      element.removeEventListener(eventName, func);
+      functionHandlers.delete(functionHandle);
+    } else {
+      console.warn("Function with handle already removed.", functionHandle);
+    }
   }
   foxy.removeBlazorEventListener = removeBlazorEventListener;
   /*foxy.Blazor = (function (blazor) {

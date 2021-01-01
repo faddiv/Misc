@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
 using System;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Foxy.Blazor.Transition
@@ -9,6 +10,12 @@ namespace Foxy.Blazor.Transition
         IEnterContext, IExitContext, ICalculationContext, ITransitionRenderContext, IDisposable
     {
         private TransitionState _state;
+        private readonly CancellationTokenSource _cancellationTokenSource;
+        private int _transitionEndEventHandler;
+        private ElementReference? _transitioningElement;
+        private bool _disposed = false;
+
+        public CancellationToken CancellationToken { get; }
 
         internal bool Subscribed { get; private set; }
 
@@ -49,11 +56,14 @@ namespace Foxy.Blazor.Transition
             Appearing = appearing;
             Transitioning = true;
             JsReference = DotNetObjectReference.Create(this);
+            _cancellationTokenSource = new CancellationTokenSource();
+            CancellationToken = _cancellationTokenSource.Token;
         }
 
         public async Task SubscribeTransitionEnd(ElementReference reference)
         {
-            await JsRuntime.AddEventListener(
+            _transitioningElement = reference;
+            _transitionEndEventHandler = await JsRuntime.AddEventListenerAsync(
                 reference, "transitionend",
                 JsReference, nameof(TransitionedHandler),
                 true);
@@ -73,25 +83,56 @@ namespace Foxy.Blazor.Transition
 
         public void Dispose()
         {
+            if (_disposed)
+                return;
+            if (JsRuntime is IJSInProcessRuntime &&
+                _transitionEndEventHandler != 0 &&
+                _transitioningElement.HasValue)
+            {
+                JsRuntime.RemoveEventListener(_transitioningElement.Value, "transitionend", _transitionEndEventHandler);
+            }
             JsReference.Dispose();
-        }
-    }
-
-    public class CssTransitionContext : TransitionContext, ICssTransitionRenderContext
-    {
-        public string Css { get; private set; }
-        public CssTransitionContext(
-            ITransitionBase parent,
-            TransitionType type,
-            bool appearing) :
-            base(parent, type, appearing)
-        {
+            _cancellationTokenSource.Dispose();
+            _disposed = true;
         }
 
-        protected override void StateChanged()
+        internal void Cancel()
         {
-            var parent = (CssTransition)Parent;
-            Css = parent.GetCss(State, Appearing);
+            _cancellationTokenSource.Cancel();
+        }
+
+        public override string ToString()
+        {
+            var builder = new System.Text.StringBuilder();
+
+            builder.Append(Type).Append(" ");
+            if (Transitioning)
+            {
+                builder.Append("Transitioning ");
+            } else
+            {
+                builder.Append("Stable ");
+            }
+            builder.Append(State);
+            if(this.Appearing)
+                builder.Append(" Appearing");
+            if (In)
+            {
+                builder.Append(" In");
+            }
+            else
+            {
+                builder.Append(" Out");
+            }
+            if(Subscribed)
+            {
+                builder.Append(" Has transition end handler");
+            }
+            if(this._cancellationTokenSource.IsCancellationRequested)
+            {
+                builder.Append(" Cancelling");
+            }
+            return builder.ToString();
         }
     }
 }
