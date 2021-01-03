@@ -1,0 +1,157 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`createInitialDeck to match to the snapshot 1`] = `
+Deck {
+  "cards": Array [
+    Card {
+      "player": 2,
+      "value": 1,
+    },
+    Card {
+      "player": 2,
+      "value": 1,
+    },
+    Card {
+      "player": 2,
+      "value": 2,
+    },
+    Card {
+      "player": 2,
+      "value": 2,
+    },
+    Card {
+      "player": 2,
+      "value": 3,
+    },
+    Card {
+      "player": 2,
+      "value": 3,
+    },
+    Card {
+      "player": 2,
+      "value": 4,
+    },
+    Card {
+      "player": 2,
+      "value": 4,
+    },
+    Card {
+      "player": 2,
+      "value": 5,
+    },
+    Card {
+      "player": 2,
+      "value": 5,
+    },
+    Card {
+      "player": 2,
+      "value": 6,
+    },
+    Card {
+      "player": 2,
+      "value": 6,
+    },
+    Card {
+      "player": 2,
+      "value": 7,
+    },
+    Card {
+      "player": 2,
+      "value": 7,
+    },
+    Card {
+      "player": 2,
+      "value": 8,
+    },
+    Card {
+      "player": 2,
+      "value": 8,
+    },
+    Card {
+      "player": 2,
+      "value": 9,
+    },
+    Card {
+      "player": 2,
+      "value": 9,
+    },
+  ],
+}
+`;
+
+exports[`shuffle new deck contains the old cards shuffled 1`] = `
+Array [
+  Card {
+    "player": 1,
+    "value": 2,
+  },
+  Card {
+    "player": 1,
+    "value": 4,
+  },
+  Card {
+    "player": 1,
+    "value": 1,
+  },
+  Card {
+    "player": 1,
+    "value": 5,
+  },
+  Card {
+    "player": 1,
+    "value": 8,
+  },
+  Card {
+    "player": 1,
+    "value": 4,
+  },
+  Card {
+    "player": 1,
+    "value": 2,
+  },
+  Card {
+    "player": 1,
+    "value": 3,
+  },
+  Card {
+    "player": 1,
+    "value": 8,
+  },
+  Card {
+    "player": 1,
+    "value": 6,
+  },
+  Card {
+    "player": 1,
+    "value": 6,
+  },
+  Card {
+    "player": 1,
+    "value": 1,
+  },
+  Card {
+    "player": 1,
+    "value": 7,
+  },
+  Card {
+    "player": 1,
+    "value": 3,
+  },
+  Card {
+    "player": 1,
+    "value": 5,
+  },
+  Card {
+    "player": 1,
+    "value": 7,
+  },
+  Card {
+    "player": 1,
+    "value": 9,
+  },
+  Card {
+    "player": 1,
+    "value": 9,
+  },
+]
+`;
