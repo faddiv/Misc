@@ -16,7 +16,7 @@ namespace ProxiesBenchmark
             var simple = Decorate.DecorateSimple(target);
             Console.WriteLine($"DecorateSimple: {simple.Add(1, 2)}");
 
-            var realProxy = Decorate.WithRealProxy(target);
+            var realProxy = Decorate.WithRealProxy(new CalculatorMarshalled());
             Console.WriteLine($"WithRealProxy: {realProxy.Add(1, 2)}");
 
             var dispatchProxy = Decorate.WithDispatchProxy<ICalculator>(target);
@@ -29,7 +29,7 @@ namespace ProxiesBenchmark
             Console.WriteLine($"WithInheritedDynamicProxy: {inheritedDynamicProxy.Add(1, 2)}");
 
             var summaries = BenchmarkRunner.Run(typeof(Program).Assembly);
-            foreach (var summary in summaries)
+            /*foreach (var summary in summaries)
             {
                 var processStartInfo = new ProcessStartInfo(
                 "c:\\Program Files\\R\\R-3.6.2\\bin\\Rscript.exe",
@@ -39,7 +39,7 @@ namespace ProxiesBenchmark
                 };
                 var process = Process.Start(processStartInfo);
                 process.WaitForExit();
-            }
+            }*/
         }
     }
 }

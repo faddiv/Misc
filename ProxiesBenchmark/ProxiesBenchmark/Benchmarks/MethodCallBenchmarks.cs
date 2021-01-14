@@ -8,6 +8,7 @@ namespace ProxiesBenchmark.Benchmarks
     public class MethodCallBenchmarks : BenchmarksBase
     {
         private Calculator target;
+        private CalculatorMarshalled target2;
         private ICalculator simple;
         private ICalculator real;
         private ICalculator dispatch;
@@ -20,8 +21,9 @@ namespace ProxiesBenchmark.Benchmarks
         public void Setup()
         {
             target = new Calculator();
+            target2 = new CalculatorMarshalled();
             simple = Decorate.DecorateSimple(target);
-            real = Decorate.WithRealProxy(target);
+            real = Decorate.WithRealProxy(target2);
             dispatch = Decorate.WithDispatchProxy<ICalculator>(target);
             composite = Decorate.WithCompositeDynamicProxy<ICalculator>(target);
             inherited = Decorate.WithInheritedDynamicProxy<Calculator>();

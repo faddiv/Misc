@@ -7,10 +7,12 @@ namespace ProxiesBenchmark.Benchmarks
     public class CreationBenchmarks : BenchmarksBase
     {
         private Calculator target;
+        private CalculatorMarshalled target2;
         [GlobalSetup]
         public void Setup()
         {
             target = new Calculator();
+            target2 = new CalculatorMarshalled();
         }
 
         [Benchmark]
@@ -22,7 +24,7 @@ namespace ProxiesBenchmark.Benchmarks
         [Benchmark]
         public ICalculator WithRealProxy()
         {
-            return Decorate.WithRealProxy(target);
+            return Decorate.WithRealProxy(target2);
         }
 
         [Benchmark]
