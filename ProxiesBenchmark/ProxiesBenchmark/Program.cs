@@ -1,10 +1,6 @@
 using BenchmarkDotNet.Running;
 using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.IO;
-using System.Linq;
-using System.Text;
+
 
 namespace ProxiesBenchmark
 {
@@ -12,6 +8,7 @@ namespace ProxiesBenchmark
     {
         static void Main(string[] args)
         {
+            Decorate.InitLightInject();
             var target = new Calculator();
             var simple = Decorate.DecorateSimple(target);
             Console.WriteLine($"DecorateSimple: {simple.Add(1, 2)}");
@@ -28,7 +25,13 @@ namespace ProxiesBenchmark
             var inheritedDynamicProxy = Decorate.WithInheritedDynamicProxy<Calculator>();
             Console.WriteLine($"WithInheritedDynamicProxy: {inheritedDynamicProxy.Add(1, 2)}");
 
+            var lightInject = Decorate.WithLightInject();
+            Console.WriteLine($"WithLightInject: {lightInject.Add(1, 2)}");
+
+
+
             var summaries = BenchmarkRunner.Run(typeof(Program).Assembly);
+            
             /*foreach (var summary in summaries)
             {
                 var processStartInfo = new ProcessStartInfo(

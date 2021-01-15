@@ -14,12 +14,14 @@ namespace ProxiesBenchmark.Benchmarks
         private ICalculator dispatch;
         private ICalculator composite;
         private ICalculator inherited;
+        private ICalculator lightInject;
         private Random rnd = new Random();
         private int a;
         private int b;
         [GlobalSetup]
         public void Setup()
         {
+            Decorate.InitLightInject();
             target = new Calculator();
             target2 = new CalculatorMarshalled();
             simple = Decorate.DecorateSimple(target);
@@ -27,6 +29,7 @@ namespace ProxiesBenchmark.Benchmarks
             dispatch = Decorate.WithDispatchProxy<ICalculator>(target);
             composite = Decorate.WithCompositeDynamicProxy<ICalculator>(target);
             inherited = Decorate.WithInheritedDynamicProxy<Calculator>();
+            lightInject = Decorate.WithLightInject();
             a = rnd.Next(1000);
             b = rnd.Next(1000);
         }
@@ -59,6 +62,12 @@ namespace ProxiesBenchmark.Benchmarks
         public int WithInheritedDynamicProxy()
         {
             return inherited.Add(a, b);
+        }
+
+        [Benchmark]
+        public int WithLightInject()
+        {
+            return lightInject.Add(a, b);
         }
     }
 }

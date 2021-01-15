@@ -1,12 +1,26 @@
 using System;
+using System.Linq.Expressions;
 using System.Reflection;
 using Castle.DynamicProxy;
+using LightInject.Interception;
 
 namespace ProxiesBenchmark
 {
     public static class Decorate
     {
         private static readonly ProxyGenerator _generator = new ProxyGenerator();
+        private static readonly ProxyBuilder _proxyBuilder = new ProxyBuilder();
+        private static Type _proxyType;
+        private static Func<ICalculator> _createCalculator;
+
+        public static void InitLightInject()
+        {
+            if (_createCalculator != null)
+                return;
+            _proxyType = _proxyBuilder.GetProxyType(new ProxyDefinition(typeof(Calculator), true).Implement(() => new LightInjectInterceptor()));
+            var newExpression = Expression.New(_proxyType.GetConstructor(Type.EmptyTypes));
+            _createCalculator = Expression.Lambda<Func<ICalculator>>(newExpression).Compile();
+        }
         public static T WithRealProxy<T>(T target) where T : MarshalByRefObject
         {
             var decorator = new RealProxyExampleDecorator<T>(target);
@@ -33,6 +47,11 @@ namespace ProxiesBenchmark
         public static ICalculator DecorateSimple(ICalculator calculator)
         {
             return new CalculatorProxy(calculator);
+        }
+
+        public static ICalculator WithLightInject()
+        {
+            return _createCalculator();
         }
     }
 }

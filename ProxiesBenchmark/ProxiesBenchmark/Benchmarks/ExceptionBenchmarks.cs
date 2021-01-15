@@ -5,7 +5,6 @@ using System;
 namespace ProxiesBenchmark.Benchmarks
 {
     [ArtifactsPath(".\\Benchmarks")]
-    [ExecutionValidator(failOnError: false)]
     public class ExceptionBenchmarks : BenchmarksBase
     {
         private Calculator target;
@@ -15,11 +14,13 @@ namespace ProxiesBenchmark.Benchmarks
         private ICalculator dispatch;
         private ICalculator composite;
         private ICalculator inherited;
+        private ICalculator lightInject;
         private Random rnd = new Random();
         private string a;
         [GlobalSetup]
         public void Setup()
         {
+            Decorate.InitLightInject();
             target = new Calculator();
             target2 = new CalculatorMarshalled();
             simple = Decorate.DecorateSimple(target);
@@ -27,6 +28,7 @@ namespace ProxiesBenchmark.Benchmarks
             dispatch = Decorate.WithDispatchProxy<ICalculator>(target);
             composite = Decorate.WithCompositeDynamicProxy<ICalculator>(target);
             inherited = Decorate.WithInheritedDynamicProxy<Calculator>();
+            lightInject = Decorate.WithLightInject();
             a = rnd.Next(1000).ToString();
         }
 
@@ -85,6 +87,18 @@ namespace ProxiesBenchmark.Benchmarks
             try
             {
                 inherited.Throw(a);
+            }
+            catch (Exception)
+            {
+            }
+        }
+
+        [Benchmark]
+        public void WithLightInject()
+        {
+            try
+            {
+                lightInject.Throw(a);
             }
             catch (Exception)
             {

@@ -11,6 +11,7 @@ namespace ProxiesBenchmark.Benchmarks
         [GlobalSetup]
         public void Setup()
         {
+            Decorate.InitLightInject();
             target = new Calculator();
             target2 = new CalculatorMarshalled();
         }
@@ -43,6 +44,12 @@ namespace ProxiesBenchmark.Benchmarks
         public ICalculator WithInheritedDynamicProxy()
         {
             return Decorate.WithInheritedDynamicProxy<Calculator>();
+        }
+
+        [Benchmark]
+        public ICalculator WithLightInject()
+        {
+            return Decorate.WithLightInject();
         }
     }
 }
