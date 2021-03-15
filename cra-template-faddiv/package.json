@@ -1,0 +1,12 @@
+{
+  "name": "cra-template-faddiv",
+  "version": "0.1.0",
+  "private": true,
+  "engines": {
+    "node": ">=10"
+  },
+  "files": [
+    "template",
+    "template.json"
+  ]
+}
