@@ -1,4 +1,5 @@
 import { ChangeEvent, FunctionComponent, useCallback, useMemo } from "react";
+import { Form } from "react-bootstrap";
 import { FlagInfo } from "../../flagsService/flagList";
 
 interface CountryAutocompleteProps {
@@ -26,7 +27,7 @@ export const CountryAutocomplete: FunctionComponent<CountryAutocompleteProps> = 
   }, [onValueChanged]);
   return (
     <>
-      <input type="text" name="guess" list="flag-names" value={value} onChange={changeHandler} />
+      <Form.Control type="text" name="guess" autoComplete="off" list="flag-names" value={value} onChange={changeHandler} />
       <datalist id="flag-names">
         {filteredFlagList.map(flag => <option key={flag.Pic} value={flag.Hun} />)}
       </datalist>

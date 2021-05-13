@@ -2,7 +2,23 @@
 
 .main {
     text-align: center;
-    .country-flag {
-        width: 300px;
+}
+.alert-placeholder {
+    height: 60px;
+    margin: 5px 0px;
+}
+.pic-placeholder {
+    height: 200px;
+    img {
+        max-height: 200px;
+        max-width: 100%;
+    }
+}
+.input-placeholder {
+    display: flex;
+    flex-flow: column;
+    margin: 5px 0px;
+    form {
+        align-self: center;
     }
 }

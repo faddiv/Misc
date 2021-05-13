@@ -1,5 +1,6 @@
 import { FunctionComponent } from "react";
 import { Button, Card, Col, Form, Row } from "react-bootstrap";
+import { AlertBox } from "../../alerts";
 import { useChangeToSetterHandler } from "../../common";
 import { useFlagFilter } from "../../flagFilter";
 import { usePlayList } from "../../flagsService/usePlayLists";
@@ -16,6 +17,7 @@ export const PlayListsPage: FunctionComponent<PlayListsPageProps> = () => {
   const searchTextChangeHandler = useChangeToSetterHandler(filterFlags);
   return (
     <>
+      <AlertBox />
       <Row>
         <Col md={3}>
           <Row>

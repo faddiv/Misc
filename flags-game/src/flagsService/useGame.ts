@@ -46,5 +46,5 @@ export function useGame(selected: PlayList | null) {
     setGuessStep(1);
   }, [flagInfo, selected, guessStep, pickNew, input, alertService, incrementCorrect, incrementWrong]);
 
-  return { pickNew, guess, flagInfo, input, setInput, gameState };
+  return { pickNew, guess, flagInfo, input, setInput, gameState, guessStep };
 }
