@@ -1,6 +1,6 @@
 import { FunctionComponent, useCallback } from "react";
 import { Button } from "react-bootstrap";
-import { PlayListWithFlag } from "../../flagsService/playList";
+import { PlayListWithFlag } from "../flagsService/playList";
 
 interface SelectButtonProps {
   playList: PlayListWithFlag;
@@ -15,6 +15,8 @@ export const SelectButton: FunctionComponent<SelectButtonProps> = ({ playList, o
     onSelected(playList.id);
   }, [playList, selected, onSelected]);
   return (
-    <Button key={playList.id} className="w-100" variant={selected ? "primary" : "info"} onClick={selectHandler}>{playList.name}</Button>
+    <Button key={playList.id} variant={selected ? "primary" : "info"} className="w-100 mt-1 mb-1" onClick={selectHandler}>
+      {playList.name}
+    </Button>
   );
 };

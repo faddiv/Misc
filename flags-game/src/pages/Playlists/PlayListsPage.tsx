@@ -4,7 +4,7 @@ import { AlertBox } from "../../alerts";
 import { useChangeToSetterHandler } from "../../common";
 import { useFlagFilter } from "../../flagFilter";
 import { usePlayList } from "../../flagsService/usePlayLists";
-import { PlSelectElement } from "./PlSelectElement";
+import { SelectButton } from "../../ViewComponents";
 import { SelectableFlagList } from "./SelectableFlagList";
 
 interface PlayListsPageProps {
@@ -22,7 +22,9 @@ export const PlayListsPage: FunctionComponent<PlayListsPageProps> = () => {
         <Col md={3}>
           <Row>
             {plList.map(value =>
-              <Col key={value.id} xs={6} md={12}><PlSelectElement playList={value} selected={value.id === selected?.id} onPlayListSelected={selectElement} /></Col>
+              <Col key={value.id} xs={6} md={12}>
+                <SelectButton playList={value} selected={value.id === selected?.id} onSelected={selectElement} />
+              </Col>
             )}
           </Row>
           <Button variant="Primary" className="w-100" onClick={newElementHandler}>Add new</Button>

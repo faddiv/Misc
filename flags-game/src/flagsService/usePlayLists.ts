@@ -53,9 +53,12 @@ export function usePlayList() {
     });
   }, []);
 
-  const selectElement = useCallback((newSelected: PlayListWithFlag) => {
-    setSelected({ ...newSelected });
-  }, []);
+  const selectElement = useCallback((selectedId: number) => {
+    var selectedElement = plList.find(e => e.id === selectedId);
+    if (selectedElement) {
+      setSelected(selectedElement);
+    }
+  }, [plList]);
   const saveHandler = useCallback((evt: FormEvent<HTMLFormElement>) => {
     if (selected === null)
       return;

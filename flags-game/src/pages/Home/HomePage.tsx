@@ -5,7 +5,7 @@ import { flags } from "../../flagsService/flagList";
 import { useGame } from "../../flagsService/useGame";
 import { useStaticFlagList } from "../../flagsService/usePlayLists";
 import { CountryAutocomplete } from "./CountryAutocomplete";
-import { SelectButton } from "./selectButton";
+import { SelectButton } from "../../ViewComponents";
 
 interface HomePageProps {
 
@@ -22,7 +22,9 @@ export const HomePage: FunctionComponent<HomePageProps> = () => {
           <br className="d-block d-md-none" />
           <Row>
             {plList.map(playList =>
-              <Col xs={6} md={12} key={playList.id}><SelectButton playList={playList} onSelected={selectPlay} selected={selected?.id === playList.id} /></Col>
+              <Col xs={6} md={12} key={playList.id}>
+                <SelectButton playList={playList} onSelected={selectPlay} selected={selected?.id === playList.id} />
+              </Col>
             )}
           </Row>
         </Col>
