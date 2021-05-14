@@ -1,5 +1,6 @@
-import { ChangeEvent, FunctionComponent, useCallback, useMemo } from "react";
+import { ChangeEvent, FunctionComponent, useCallback, useMemo, useRef } from "react";
 import { Form } from "react-bootstrap";
+import { Typeahead } from "react-bootstrap-typeahead";
 import { FlagInfo } from "../../flagsService/flagList";
 
 interface CountryAutocompleteProps {
@@ -7,30 +8,35 @@ interface CountryAutocompleteProps {
   value: string;
   onValueChanged: (newValue: string) => void;
 }
+const mobile = /Mobile|Android|iP(hone|od)|IEMobile|BlackBerry|Kindle|Silk-Accelerated|(hpw|web)OS|Opera M(obi|ini)/.test(navigator.userAgent);
 
 export const CountryAutocomplete: FunctionComponent<CountryAutocompleteProps> = ({ flags, value, onValueChanged }) => {
-  const filteredFlagList = useMemo(() => {
-    if (value === "")
-      return [] as FlagInfo[];
-    const regex1 = new RegExp("^" + value, "i");
-    const regex2 = new RegExp(value, "i");
-    const list = [
-      ...flags.filter(e => e.Hun.search(regex1) !== -1),
-      ...flags.filter(e => e.Hun.search(regex2) !== -1 && e.Hun.search(regex1) === -1)
-    ];
-    if (list.length >= 1 && list[0].Hun === value)
-      return [] as FlagInfo[];
-    return list.slice(0, 8);
-  }, [value, flags]);
-  const changeHandler = useCallback((evt: ChangeEvent<HTMLInputElement>) => {
-    onValueChanged(evt.target.value);
+  const ref = useRef<Typeahead<FlagInfo>>(null);
+  const changeHandler = useCallback((selections: FlagInfo[] | undefined) => {
+    if (selections && selections.length > 0) {
+      onValueChanged(selections[0].Hun);
+    }
   }, [onValueChanged]);
+  if(ref.current && !value) {
+    ref.current.clear();
+  }
   return (
-    <>
-      <Form.Control type="text" name="guess" autoComplete="off" list="flag-names" value={value} onChange={changeHandler} />
-      <datalist id="flag-names">
-        {filteredFlagList.map(flag => <option key={flag.Pic} value={flag.Hun} />)}
-      </datalist>
-    </>
+      <Typeahead
+        ref={ref}
+        caseSensitive={false}
+        ignoreDiacritics={true}
+        options={flags}
+        placeholder="Country name"
+        highlightOnlyResult
+        onChange={changeHandler}
+        labelKey={labelFormatter}
+        align="left"
+        maxResults={8}
+        flip
+      />
   );
 };
+
+function labelFormatter(option: FlagInfo) {
+  return option.Hun;
+}
