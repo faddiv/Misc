@@ -1,17 +1,10 @@
-export enum Continent {
-  Africa,
-  Asia,
-  Europe,
-  NorthAmerica,
-  Oceania,
-  SouthAmerica,
-}
+import { Continent } from "./continentList";
 
 export interface FlagInfo {
   Pic: string;
   Eng: string;
   Hun: string;
-  Loc?: Continent;
+  Loc: Continent|null;
 }
 
 export const flags: FlagInfo[] = [

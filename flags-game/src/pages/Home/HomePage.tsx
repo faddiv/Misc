@@ -6,6 +6,7 @@ import { useGame } from "../../flagsService/useGame";
 import { useStaticFlagList } from "../../flagsService/usePlayLists";
 import { CountryAutocomplete } from "./CountryAutocomplete";
 import { SelectButton } from "../../ViewComponents";
+import { ContinentSelector } from "./ContinentSelector";
 
 interface HomePageProps {
 
@@ -13,7 +14,7 @@ interface HomePageProps {
 
 export const HomePage: FunctionComponent<HomePageProps> = () => {
   const { plList, selected, selectPlay } = useStaticFlagList();
-  const { input, setInput, guess, pickNew, flagInfo, gameState, guessStep } = useGame(selected);
+  const { input, setInput, guess, pickNew, flagInfo, gameState, guessStep, continent, setContinent } = useGame(selected);
 
   return (
     <>
@@ -35,17 +36,16 @@ export const HomePage: FunctionComponent<HomePageProps> = () => {
           <div className="pic-placeholder">
             <img src={`Flags/${flagInfo.Pic}`} className="country-flag border" alt="logo" />
           </div>
-          <div className="input-placeholder">
-            <Form onSubmit={guess} inline>
-              <InputGroup>
-                <CountryAutocomplete value={input} onValueChanged={setInput} flags={flags} />
-                <InputGroup.Append>
-                  <Button type="submit" variant="primary">{guessStep === 1 ? "Next" : "Check"} </Button>
-                  <Button type="button" variant="secondary" onClick={pickNew}>Pick</Button>
-                </InputGroup.Append>
-              </InputGroup>
-            </Form>
-          </div>
+          <Form onSubmit={guess}>
+            <InputGroup className="mt-1">
+              <CountryAutocomplete value={input} onValueChanged={setInput} flags={flags} />
+              <InputGroup.Append>
+                <Button type="submit" variant="primary">{guessStep === 1 ? "Next" : "Check"} </Button>
+                <Button type="button" variant="secondary" onClick={pickNew}>Pick</Button>
+              </InputGroup.Append>
+            </InputGroup>
+            <ContinentSelector className="mt-1" continent={continent} onContinentSelected={setContinent} />
+          </Form>
           <br />
           Correct: {gameState.numOfCorrect} Wrong: {gameState.numOfWrong}
           <br />

@@ -1,11 +1,11 @@
 @import "~bootstrap/scss/bootstrap";
-@import '~react-bootstrap-typeahead/css/Typeahead.scss';
+@import "~react-bootstrap-typeahead/css/Typeahead.scss";
 
 .main {
     text-align: center;
 }
 .alert-placeholder {
-    height: 60px;
+    height: 50px;
     margin: 5px 0px;
 }
 .pic-placeholder {
@@ -21,5 +21,31 @@
     margin: 5px 0px;
     form {
         align-self: center;
+    }
+}
+
+.continent-color- {
+    &north-america {
+        background-color: red;
+    }
+
+    &south-america {
+        background-color: green;
+    }
+
+    &africa {
+        background-color: purple;
+    }
+
+    &europe {
+        background-color: royalblue;
+    }
+
+    &asia {
+        background-color: cornflowerblue;
+    }
+
+    &oceania {
+        background-color: orange;
     }
 }

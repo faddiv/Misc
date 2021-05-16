@@ -1,5 +1,4 @@
-import { ChangeEvent, FunctionComponent, useCallback, useMemo, useRef } from "react";
-import { Form } from "react-bootstrap";
+import { FunctionComponent, useCallback, useEffect, useRef } from "react";
 import { Typeahead } from "react-bootstrap-typeahead";
 import { FlagInfo } from "../../flagsService/flagList";
 
@@ -8,7 +7,6 @@ interface CountryAutocompleteProps {
   value: string;
   onValueChanged: (newValue: string) => void;
 }
-const mobile = /Mobile|Android|iP(hone|od)|IEMobile|BlackBerry|Kindle|Silk-Accelerated|(hpw|web)OS|Opera M(obi|ini)/.test(navigator.userAgent);
 
 export const CountryAutocomplete: FunctionComponent<CountryAutocompleteProps> = ({ flags, value, onValueChanged }) => {
   const ref = useRef<Typeahead<FlagInfo>>(null);
@@ -17,11 +15,14 @@ export const CountryAutocomplete: FunctionComponent<CountryAutocompleteProps> = 
       onValueChanged(selections[0].Hun);
     }
   }, [onValueChanged]);
-  if(ref.current && !value) {
-    ref.current.clear();
-  }
+  useEffect(() => {
+    if(ref.current && !value) {
+      ref.current.clear();
+    }
+  }, [value]);
   return (
       <Typeahead
+        id="country-name"
         ref={ref}
         caseSensitive={false}
         ignoreDiacritics={true}

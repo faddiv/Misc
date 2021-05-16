@@ -38,7 +38,8 @@ export function expand(flagNames: string[]) {
       Eng: element.Eng,
       Hun: element.Hun,
       Pic: element.Pic,
-      checked: flagNames.indexOf(element.Pic) !== -1
+      checked: flagNames.indexOf(element.Pic) !== -1,
+      Loc: element.Loc
     });
   }
   return result;
