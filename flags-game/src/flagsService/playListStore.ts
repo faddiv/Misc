@@ -1,50 +1,46 @@
+import { extTable } from "../common/extendedStore";
 import { PlayList } from "./playList";
 
-if (typeof (localStorage) === "undefined") {
-  alert("Local storage not supported.");
-}
+const table = extTable<PlayList>("PlayList");
 
-const playListPrefix = "PlayList_";
-const idGeneratorKey = "id_generator";
-
-function getNextId() {
-
-  var idText = localStorage.getItem(idGeneratorKey);
-  let id = idText === null ? 0 : parseInt(idText);
-  id++;
-  localStorage.setItem(idGeneratorKey, id.toString());
-  return id;
-}
+// update logic
+(() => {
+  const playListPrefix = "PlayList_";
+  const idGeneratorKey = "id_generator";
+  const id_generator = localStorage.getItem(idGeneratorKey);
+  if (id_generator === null)
+    return;
+  for (let index = 0; index < localStorage.length; index++) {
+    var key = localStorage.key(index);
+    if (key === null)
+      continue;
+    if (!key.startsWith(playListPrefix))
+      continue;
+    const json = localStorage.getItem(key);
+    if (json === null)
+      continue;
+    const element = JSON.parse(json) as PlayList;
+    element.id = 0;
+    table.saveElement(element);
+    localStorage.removeItem(key);
+  }
+  localStorage.removeItem(idGeneratorKey);
+})();
 
 function getPlayListKeys() {
-  const playLists: number[] = [];
-  for (let index = 0; index < localStorage.length; index++) {
-    const element = localStorage.key(index);
-    if (element !== null && element.startsWith(playListPrefix)) {
-      playLists.push(parseInt(element.substring(playListPrefix.length)));
-    }
-  }
-  return playLists;
+  return table.getKeys();
 }
 
-function getPlayList(key: number): PlayList {
-  const json = localStorage.getItem(playListPrefix + key);
-  if (json === null) {
-    throw new Error("Playlist doesn't exists: " + key);
-  }
-  const playList: PlayList = JSON.parse(json);
-  return playList;
+function getPlayList(key: number) {
+  return table.getElementByKey(key);
 }
 
 function savePlayList(playList: PlayList) {
-  const id = playList.id === 0 ? getNextId() : playList.id;
-  const json = JSON.stringify({ ...playList, id });
-  localStorage.setItem(playListPrefix + id.toString(), json);
-  return id;
+  return table.saveElement(playList);
 }
 
 function isEmpty() {
-  return localStorage.getItem(idGeneratorKey) === null;
+  return table.isEmpty();
 }
 
 export const playListStore = {

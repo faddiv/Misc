@@ -1,16 +1,19 @@
 import { useCallback, useEffect, useReducer } from "react";
+import { PlayList } from "../flagsService/playList";
 import { Actions } from "./actionsAndState";
 import { initGameState, reducer } from "./reducer";
 
-export function useFlagPicker(flags: string[]) {
-  const [gameState, dispatch] = useReducer(reducer, flags, initGameState);
+export function useFlagPicker(playList: PlayList | null) {
+
+  const [gameState, dispatch] = useReducer(reducer, playList, initGameState);
+  const currentId = gameState.id;
 
   useEffect(() => {
-    if (gameState.flags === flags) {
+    if (playList === null || currentId === playList.id) {
       return;
     }
-    dispatch({ type: Actions.Reset, flags });
-  }, [gameState, flags]);
+    dispatch({ type: Actions.Reset, playList });
+  }, [currentId, playList]);
 
   const incrementCorrect = useCallback((flag: string) => {
     dispatch({ type: Actions.IncrementCorrect, flag });

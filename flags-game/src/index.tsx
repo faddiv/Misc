@@ -4,6 +4,10 @@ import './index.scss';
 import App from './App';
 import reportWebVitals from './reportWebVitals';
 
+if (typeof (localStorage) === "undefined") {
+  alert("Local storage not supported.");
+}
+
 ReactDOM.render(
   <React.StrictMode>
     <App />

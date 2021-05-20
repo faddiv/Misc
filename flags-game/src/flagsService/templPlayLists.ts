@@ -18,6 +18,8 @@ function generateList() {
   const list: PlayListWithFlag[] = [];
   for (const key of playListStore.getPlayListKeys()) {
     const element = playListStore.getPlayList(key);
+    if (element === null)
+      continue;
     const invalids = validateFlags(element.flags);
     list.push({
       id: element.id,

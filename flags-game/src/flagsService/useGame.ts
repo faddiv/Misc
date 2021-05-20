@@ -9,7 +9,7 @@ const empty: FlagInfo = { Pic: "", Eng: "", Hun: "", Loc: null };
 
 export function useGame(selected: PlayList | null) {
   const alertService = useService("alert");
-  const { gameState, incrementCorrect, incrementWrong, pickFlag } = useFlagPicker(selected?.flags ?? []);
+  const { gameState, incrementCorrect, incrementWrong, pickFlag } = useFlagPicker(selected);
   const [guessStep, setGuessStep] = useState(0);
   const [input, setInput] = useState("");
   const [continent, setContinent] = useState<Continent | null>(null);

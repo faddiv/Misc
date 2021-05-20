@@ -1,52 +1,20 @@
 import { IGameFlagStateCollection, IGameState, PickFlagActions, Actions } from "./actionsAndState";
 import { pickRandom } from "../common";
+import { getStateForPlay, saveStateOfPlay } from "./gameStateStore";
+import { PlayList } from "../flagsService/playList";
+import { pickFlagInternal } from "./flagPicker";
 
-function pickFlagInternal(state: IGameState) {
-  const flagList = Object.keys(state.flagsState);
-  const maxValue = sumRatios(state);
-  const randomNum = pickRandom(maxValue);
-  let count = 0;
-  for (const flag of flagList) {
-    const stats = state.flagsState[flag];
-    count += (stats.wrong + 1) / (stats.correct + 1);
-    if (count >= randomNum) {
-      return flag;
-    }
-  }
-  return flagList[flagList.length - 1];
-}
-
-function sumRatios(state: IGameState) {
-  let count = 0;
-  const flagList = Object.keys(state.flagsState);
-  for (const flag of flagList) {
-    const stats = state.flagsState[flag];
-    count += (stats.wrong + 1) / (stats.correct + 1);
-  }
-  return count;
-}
-
-export function initGameState(flags: string[]): IGameState {
-  return {
-    flags,
-    lastFlag: flags[pickRandom(flags.length)],
-    numOfPlay: 0,
-    numOfCorrect: 0,
-    numOfWrong: 0,
-    flagsState: flags.reduce((flagCollection, flag) => {
-      flagCollection[flag] = {
-        correct: 0,
-        numOfPlay: 0,
-        wrong: 0
-      }; return flagCollection
-    }, {} as IGameFlagStateCollection)
-  };
+export function initGameState(playList: PlayList | null): IGameState {
+  return getStateForPlay(playList);
 }
 
 export function reducer(state: IGameState, action: PickFlagActions): IGameState {
+  let newState = state;
   switch (action.type) {
     case Actions.IncrementCorrect:
-      return {
+      newState = {
+        id: state.id,
+        version: state.version,
         flags: state.flags,
         numOfPlay: state.numOfPlay + 1,
         numOfWrong: state.numOfWrong,
@@ -61,8 +29,11 @@ export function reducer(state: IGameState, action: PickFlagActions): IGameState 
           }
         }
       };
+      break;
     case Actions.IncrementWrong:
-      return {
+      newState = {
+        id: state.id,
+        version: state.version,
         flags: state.flags,
         numOfPlay: state.numOfPlay + 1,
         numOfWrong: state.numOfWrong + 1,
@@ -77,6 +48,7 @@ export function reducer(state: IGameState, action: PickFlagActions): IGameState 
           }
         }
       };
+      break;
     case Actions.PickFlag:
       if (state.flags.length === 0)
         return state;
@@ -85,8 +57,10 @@ export function reducer(state: IGameState, action: PickFlagActions): IGameState 
         lastFlag: pickFlagInternal(state)
       };
     case Actions.Reset:
-      return initGameState(action.flags);
+      return initGameState(action.playList);
     default:
       return state;
   }
+  saveStateOfPlay(newState);
+  return newState;
 }

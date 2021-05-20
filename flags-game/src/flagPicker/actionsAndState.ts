@@ -1,4 +1,5 @@
 import { Action } from "../common";
+import { PlayList } from "../flagsService/playList";
 
 export enum Actions {
   IncrementCorrect = "flagPicker.IncrementCorrect",
@@ -20,7 +21,7 @@ export interface PickFlagAction extends Action<typeof Actions.PickFlag> {
 }
 
 export interface ResetAction extends Action<typeof Actions.Reset> {
-  flags: string[];
+  playList: PlayList;
 }
 
 
@@ -37,6 +38,8 @@ export interface IGameFlagStateCollection {
 }
 
 export interface IGameState {
+  id: number;
+  version: number;
   flags: string[];
   lastFlag: string;
   numOfPlay: number;
