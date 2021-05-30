@@ -1,5 +1,4 @@
-import { IGameFlagStateCollection, IGameState, PickFlagActions, Actions } from "./actionsAndState";
-import { pickRandom } from "../common";
+import { IGameState, PickFlagActions, Actions } from "./actionsAndState";
 import { getStateForPlay, saveStateOfPlay } from "./gameStateStore";
 import { PlayList } from "../flagsService/playList";
 import { pickFlagInternal } from "./flagPicker";
@@ -26,6 +25,7 @@ export function reducer(state: IGameState, action: PickFlagActions): IGameState 
             numOfPlay: state.flagsState[action.flag].numOfPlay + 1,
             correct: state.flagsState[action.flag].correct + 1,
             wrong: state.flagsState[action.flag].wrong,
+            lastPlay: state.numOfPlay
           }
         }
       };
@@ -45,6 +45,7 @@ export function reducer(state: IGameState, action: PickFlagActions): IGameState 
             numOfPlay: state.flagsState[action.flag].numOfPlay + 1,
             correct: state.flagsState[action.flag].correct,
             wrong: state.flagsState[action.flag].wrong + 1,
+            lastPlay: state.numOfPlay
           }
         }
       };

@@ -1,27 +1,22 @@
-import { pickRandom } from "../common";
+import { pickRandom, findValIndex } from "../common";
 import { IGameState } from "./actionsAndState";
-
-function sumRatios(state: IGameState) {
-  let count = 0;
-  const flagList = Object.keys(state.flagsState);
-  for (const flag of flagList) {
-    const stats = state.flagsState[flag];
-    count += (stats.wrong + 1) / (stats.correct + 1);
-  }
-  return count;
-}
 
 export function pickFlagInternal(state: IGameState) {
   const flagList = Object.keys(state.flagsState);
-  const maxValue = sumRatios(state);
-  const randomNum = pickRandom(maxValue);
-  let count = 0;
+  const chances: number[] = [];
+  let total = 0;
   for (const flag of flagList) {
     const stats = state.flagsState[flag];
-    count += (stats.wrong + 1) / (stats.correct + 1);
-    if (count >= randomNum) {
-      return flag;
-    }
+    const chanceOldness = Math.min(state.numOfPlay - (stats.lastPlay || 0), flagList.length) / flagList.length;
+    const wrong = Math.max(stats.wrong, 1);
+    const correct = Math.max(stats.correct, 1);
+    const z = Math.min(wrong, correct) - 1;
+    const chanceWrong = (wrong - z) / (wrong + correct - 2 * z);
+    const chanceTotal = (chanceOldness + chanceWrong) / 2;
+    total += chanceTotal;
+    chances.push(total);
   }
-  return flagList[flagList.length - 1];
+  const randomNum = pickRandom(total);
+  const index = findValIndex(randomNum, chances, 0, chances.length);
+  return flagList[index];
 }

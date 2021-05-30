@@ -31,6 +31,7 @@ export interface IGameFlagState {
   correct: number;
   wrong: number;
   numOfPlay: number;
+  lastPlay: number;
 }
 
 export interface IGameFlagStateCollection {

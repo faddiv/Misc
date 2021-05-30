@@ -38,7 +38,8 @@ export function getStateForPlay(playList: PlayList | null): IGameState {
       flagCollection[flag] = {
         correct: 0,
         numOfPlay: 0,
-        wrong: 0
+        wrong: 0,
+        lastPlay: -1
       }; return flagCollection
     }, {} as IGameFlagStateCollection)
   }
