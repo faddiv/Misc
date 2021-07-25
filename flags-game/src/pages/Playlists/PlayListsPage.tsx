@@ -1,5 +1,9 @@
 import { FunctionComponent } from "react";
-import { Button, Card, Col, Form, Row } from "react-bootstrap";
+import Button from "react-bootstrap/Button";
+import Col from "react-bootstrap/Col";
+import Form from "react-bootstrap/Form";
+import Row from "react-bootstrap/Row";
+import Card from "react-bootstrap/Card";
 import { AlertBox } from "../../alerts";
 import { useChangeToSetterHandler } from "../../common";
 import { useFlagFilter } from "../../flagFilter";

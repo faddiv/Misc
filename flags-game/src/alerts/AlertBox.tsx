@@ -1,5 +1,5 @@
 import { FunctionComponent, useCallback, useEffect, useReducer } from "react";
-import { Alert } from "react-bootstrap";
+import Alert from "react-bootstrap/Alert";
 import { useService } from "../services";
 import { Actions, AlertState } from "./actionsAndState";
 import { reducer } from "./reducer";

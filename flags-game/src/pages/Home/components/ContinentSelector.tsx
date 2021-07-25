@@ -1,5 +1,7 @@
 import { ChangeEvent, FunctionComponent, memo, useCallback } from "react";
-import { Col, Form, Row } from "react-bootstrap";
+import Row from "react-bootstrap/Row";
+import Col from "react-bootstrap/Col";
+import Form from "react-bootstrap/Form";
 import { Continent, continents } from "../../../flagsService/continentList";
 
 interface ContinentSelectorProps {

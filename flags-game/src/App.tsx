@@ -1,4 +1,4 @@
-import { Container } from 'react-bootstrap';
+import Container from 'react-bootstrap/Container';
 import { BrowserRouter } from "react-router-dom";
 import { Switch, Route } from "react-router";
 import { HomePage } from './pages/Home/HomePage';

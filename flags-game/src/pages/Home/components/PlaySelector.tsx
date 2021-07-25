@@ -1,5 +1,6 @@
 import { FunctionComponent, memo, useEffect } from "react";
-import { Col, Row } from "react-bootstrap";
+import Row from "react-bootstrap/Row";
+import Col from "react-bootstrap/Col";
 import { PlayList } from "../../../flagsService/playList";
 import { useStaticFlagList } from "../../../flagsService/usePlayLists";
 import { SelectButton } from "../../../ViewComponents";

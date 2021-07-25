@@ -1,5 +1,5 @@
 import { FunctionComponent, useCallback } from "react";
-import { Button } from "react-bootstrap";
+import Button from "react-bootstrap/Button";
 import { PlayListWithFlag } from "../flagsService/playList";
 
 interface SelectButtonProps {

@@ -1,5 +1,7 @@
 import { FunctionComponent, useCallback } from "react";
-import { Button, Card, Col } from "react-bootstrap";
+import Button from "react-bootstrap/Button";
+import Col from "react-bootstrap/Col";
+import Card from "react-bootstrap/Card";
 import { FlagChecked } from "../../flagsService/playList";
 
 interface SelectableFlagProps {

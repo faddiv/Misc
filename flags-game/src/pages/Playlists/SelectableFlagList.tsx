@@ -1,5 +1,5 @@
 import { FunctionComponent } from "react";
-import { Row } from "react-bootstrap";
+import Row from "react-bootstrap/Row";
 import { FlagChecked } from "../../flagsService/playList";
 import { SelectableFlag } from "./SelectableFlag";
 
