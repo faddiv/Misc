@@ -1,19 +1,21 @@
-import { FunctionComponent } from "react";
+import { FunctionComponent, useState } from "react";
 import { Button, Col, Form, InputGroup, Row } from "react-bootstrap";
 import { AlertBox } from "../../alerts";
 import { flags } from "../../flagsService/flagList";
 import { useGame } from "../../flagsService/useGame";
-import { useStaticFlagList } from "../../flagsService/usePlayLists";
-import { CountryAutocomplete } from "./CountryAutocomplete";
-import { SelectButton } from "../../ViewComponents";
-import { ContinentSelector } from "./ContinentSelector";
+import { CountryAutocomplete } from "./components/CountryAutocomplete";
+import { ContinentSelector } from "./components/ContinentSelector";
+import { PlaySelector } from "./components/PlaySelector";
+import { PlayList } from "../../flagsService/playList";
+import { FlagView } from "./components/FlagView";
 
 interface HomePageProps {
 
 }
 
 export const HomePage: FunctionComponent<HomePageProps> = () => {
-  const { plList, selected, selectPlay } = useStaticFlagList();
+
+  const [selected, setSelected] = useState<PlayList | null>(null);
   const { input, setInput, guess, pickNew, flagInfo, gameState, guessStep, continent, setContinent } = useGame(selected);
 
   return (
@@ -21,20 +23,14 @@ export const HomePage: FunctionComponent<HomePageProps> = () => {
       <Row>
         <Col xs={{ span: 12, order: 2 }} md={{ span: 2, order: 1 }}>
           <br className="d-block d-md-none" />
-          <Row>
-            {plList.map(playList =>
-              <Col xs={6} md={12} key={playList.id}>
-                <SelectButton playList={playList} onSelected={selectPlay} selected={selected?.id === playList.id} />
-              </Col>
-            )}
-          </Row>
+          <PlaySelector selectedChanged={setSelected} />
         </Col>
         <Col xs={{ span: 12, order: 1 }} md={{ span: 10, order: 2 }}>
           <div className="alert-placeholder">
             <AlertBox />
           </div>
           <div className="pic-placeholder">
-            <img src={`Flags/${flagInfo.Pic}`} className="country-flag border" alt="logo" />
+            <FlagView flagInfo={flagInfo} />
           </div>
           <Form onSubmit={guess}>
             <InputGroup className="mt-1">

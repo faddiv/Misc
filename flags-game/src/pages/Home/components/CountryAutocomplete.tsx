@@ -1,6 +1,6 @@
 import { FunctionComponent, useCallback, useEffect, useRef } from "react";
 import { Typeahead } from "react-bootstrap-typeahead";
-import { FlagInfo } from "../../flagsService/flagList";
+import { FlagInfo } from "../../../flagsService/flagList";
 
 interface CountryAutocompleteProps {
   flags: FlagInfo[],

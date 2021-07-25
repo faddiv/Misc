@@ -1,6 +1,6 @@
-import { ChangeEvent, FunctionComponent, useCallback } from "react";
+import { ChangeEvent, FunctionComponent, memo, useCallback } from "react";
 import { Col, Form, Row } from "react-bootstrap";
-import { Continent, continents } from "../../flagsService/continentList";
+import { Continent, continents } from "../../../flagsService/continentList";
 
 interface ContinentSelectorProps {
   className: string;
@@ -8,8 +8,7 @@ interface ContinentSelectorProps {
   onContinentSelected: (value: Continent | null) => void;
 }
 
-export const ContinentSelector: FunctionComponent<ContinentSelectorProps> = ({ className, continent, onContinentSelected }) => {
-
+export const ContinentSelector: FunctionComponent<ContinentSelectorProps> = memo(({ className, continent, onContinentSelected }) => {
   const onChangeHandler = useCallback((evt: ChangeEvent<HTMLInputElement>) => {
     const value = evt.target.value;
     const newContinent = continents.find(e => e.name === value);
@@ -31,4 +30,4 @@ export const ContinentSelector: FunctionComponent<ContinentSelectorProps> = ({ c
         </Col>)}
     </Row>
   );
-};
+});
