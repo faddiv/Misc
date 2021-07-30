@@ -16,6 +16,7 @@ export const MainNavbar: FunctionComponent<MainNavbarProps> = () => {
           <Nav.Link as={NavLink} to="/" exact={true}>Home</Nav.Link>
           <Nav.Link as={NavLink} to="/example1">Event With Child</Nav.Link>
           <Nav.Link as={NavLink} to="/example2">Context Drilling</Nav.Link>
+          <Nav.Link as={NavLink} to="/example3">Parent Rendered</Nav.Link>
         </Nav>
       </Navbar.Collapse>
     </Navbar>
