@@ -1,4 +1,4 @@
-import { FunctionComponent, memo, useRef } from "react";
+import { FunctionComponent, useRef } from "react";
 import { TheDisplay } from "./TheDisplay";
 
 interface TheDisplayWrapperProps {

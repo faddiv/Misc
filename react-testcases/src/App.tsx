@@ -6,6 +6,7 @@ import { MainNavbar } from './MainNavbar';
 import { EventWithChild } from './pages/EventWithChild/EventWithChild';
 import { ContextDrilling } from './pages/ContextDrilling/ContextDrilling';
 import { ParentRendered } from './pages/ParentRendered/ParentRendered';
+import { ContextValueConsumerExample } from './pages/ContextValueConsumer/ContextValueConsumerExample';
 
 function App() {
   return (
@@ -17,6 +18,7 @@ function App() {
           <Route path="/example1" component={EventWithChild} />
           <Route path="/example2" component={ContextDrilling} />
           <Route path="/example3" component={ParentRendered} />
+          <Route path="/example4" component={ContextValueConsumerExample} />
         </Switch>
       </Container>
     </BrowserRouter>

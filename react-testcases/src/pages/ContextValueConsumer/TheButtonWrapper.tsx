@@ -1,5 +1,5 @@
 import { FunctionComponent, useRef } from "react";
-import { TheButton } from "./TheButton";
+import { TheButton1, TheButton2 } from "./TheButton";
 
 interface TheButtonWrapperProps {
 
@@ -10,8 +10,9 @@ export const TheButtonWrapper: FunctionComponent<TheButtonWrapperProps> = () => 
     rr.current++;
     return (
         <div>
-            <div>Before the button {rr.current}</div>
-            <TheButton />
+            <div>TheButtonWrapper: {rr.current}</div>
+            <TheButton1 />
+            <TheButton2 />
         </div>
     );
 };

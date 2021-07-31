@@ -1,4 +1,4 @@
-import { FunctionComponent, memo, useCallback, useContext, useRef } from "react";
+import { FunctionComponent, useCallback, useContext, useRef } from "react";
 import { Button } from "react-bootstrap";
 import { TheContext } from "./TheContext";
 

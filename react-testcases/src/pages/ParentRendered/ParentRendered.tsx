@@ -33,7 +33,7 @@ export const ParentRendered: FunctionComponent<ParentRenderedProps> = () => {
         <Child3 cn={6} num={1} >Inner counter: {counter1}</Child3>
       </Row>
       <ChangingComponent>
-        <Col>Counter: {counter1} RC2: {++rc2.current}</Col>
+        <Wrapper><Col>Counter: {counter1} RC2: {++rc2.current}</Col></Wrapper>
       </ChangingComponent>
     </>
   );
@@ -82,3 +82,9 @@ const ChangingComponent = memo(({ children }: PropsWithChildren<{}>) => {
     </Row>
   );
 });
+
+const Wrapper = ({ children }: PropsWithChildren<{}>) => {
+  const rc = useRef(0);
+  rc.current++;
+  return (<div><div>Wrapper: {rc.current}</div><div>{children}</div></div>)
+}
