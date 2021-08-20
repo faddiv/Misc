@@ -1,0 +1,22 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project 
+  ToolsVersion="4.0" 
+  DefaultTargets="Build"
+  TreatAsLocalProperty="TaskFolder;TasksAssembly"
+  xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+  <PropertyGroup>
+    <TaskFolder Condition=" '$(MSBuildRuntimeType)' == 'Core' ">netstandard2.0</TaskFolder>
+    <TaskFolder Condition=" '$(MSBuildRuntimeType)' != 'Core' ">net48</TaskFolder>
+    <TasksAssembly>$(MSBuildThisFileDirectory)tasks\$(TaskFolder)\$(MSBuildThisFileName).dll</TasksAssembly>
+  </PropertyGroup>
+
+  <UsingTask TaskName="$(MSBuildThisFileName).CustomTask" AssemblyFile="$(TasksAssembly)"/>
+
+  <Target Name="_ResolveFilesForCustomTask">
+    <ItemGroup>
+      <CustomTaskFilesParameter Condition=" '@(CustomTaskFilesParameter)' == '' " Include="**\*.cs" />
+    </ItemGroup>
+  </Target>
+  
+</Project>

@@ -1,0 +1,21 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFrameworks>netstandard2.0;net48</TargetFrameworks>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <Version>1.0.0</Version>
+    <!-- Change the default location where NuGet will put the build output -->
+    <BuildOutputTargetFolder>build\tasks\</BuildOutputTargetFolder>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Build.Utilities.Core" Version="16.10.0" PrivateAssets="all"/>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="build*\CssModules.*">
+      <PackagePath>\</PackagePath>
+    </Content>
+  </ItemGroup>
+  
+</Project>

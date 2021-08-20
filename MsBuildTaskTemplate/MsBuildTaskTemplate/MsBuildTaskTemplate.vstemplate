@@ -1,0 +1,32 @@
+<VSTemplate Version="3.0.0" xmlns="http://schemas.microsoft.com/developer/vstemplate/2005" Type="Project">
+  <TemplateData>
+    <Name>MsBuild Task</Name>
+    <Description>Template for building MsBuild task.</Description>
+    <ProjectType>CSharp</ProjectType>
+    <LanguageTag>CSharp</LanguageTag>
+    <PlatformTag>Windows</PlatformTag>
+    <PlatformTag>Linux</PlatformTag>
+    <ProjectTypeTag>Extension</ProjectTypeTag>
+    <SortOrder>1000</SortOrder>
+    <CreateNewFolder>true</CreateNewFolder>
+    <DefaultName>MsBuildTask</DefaultName>
+    <ProvideDefaultName>true</ProvideDefaultName>
+    <LocationField>Enabled</LocationField>
+    <EnableLocationBrowseButton>true</EnableLocationBrowseButton>
+    <CreateInPlace>true</CreateInPlace>
+    <Icon>MsBuildTaskTemplate.ico</Icon>
+  </TemplateData>
+  <TemplateContent>
+    <Project File="ProjectTemplate.csproj" ReplaceParameters="true">
+      <Folder Name="build" TargetFolderName="build">
+        <ProjectItem ReplaceParameters="false" TargetFileName="$projectname$.props">CustomTask.props</ProjectItem>
+        <ProjectItem ReplaceParameters="false" TargetFileName="$projectname$.targets">CustomTask.targets</ProjectItem>
+      </Folder>
+      <Folder Name="buildMultiTargeting" TargetFolderName="buildMultiTargeting">
+        <ProjectItem ReplaceParameters="false" TargetFileName="$projectname$.props">CustomTask.props</ProjectItem>
+        <ProjectItem ReplaceParameters="false" TargetFileName="$projectname$.targets">CustomTask.targets</ProjectItem>
+      </Folder>
+      <ProjectItem ReplaceParameters="true" TargetFileName="CustomTask.cs" OpenInEditor="true">CustomTask.cs</ProjectItem>
+    </Project>
+  </TemplateContent>
+</VSTemplate>
