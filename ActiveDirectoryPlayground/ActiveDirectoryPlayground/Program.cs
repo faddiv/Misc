@@ -1,6 +1,8 @@
+using ActiveDirectoryPlayground;
 using System.DirectoryServices;
 // See https://aka.ms/new-console-template for more information
 Console.WriteLine("Hello, World!");
+await LinqToLpadQuery.ExecuteAsync();
 /*var id = new System.DirectoryServices.Protocols.LdapDirectoryIdentifier("FADDIV", 50000);
 using var c = new System.DirectoryServices.Protocols.LdapConnection(id);
 c.Bind();
