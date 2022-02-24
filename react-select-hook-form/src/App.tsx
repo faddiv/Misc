@@ -4,6 +4,7 @@ import { useForm } from "react-hook-form";
 import Select from "./SelectExt/WrapperCreatable";
 import { Button, Form, Stack } from "react-bootstrap";
 import cl from "classnames";
+import { useState } from "react";
 
 interface MyModel {
   simpleSelect: DefaultOption | null;
@@ -11,6 +12,8 @@ interface MyModel {
 }
 
 function App() {
+  const [isMulti, setIsMulti] = useState(true);
+  //const selectRef = useRef<SimpleSelect<MyModel, true>>();
   const {
     register,
     handleSubmit,
@@ -46,7 +49,7 @@ function App() {
           <Select
             {...register("multiSelect", { required: true })}
             isClearable
-            isMulti
+            isMulti={isMulti}
             options={fewData}
             className={cl({ "is-invalid": !!errors.multiSelect })}
           />
@@ -60,7 +63,13 @@ function App() {
           <Button variant="secondary" type="button" onClick={() => setValue("multiSelect", [fewData[0]])}>
             Set First
           </Button>
-          <Button variant="secondary" type="button" onClick={() => setValue("multiSelect", [fewData[1]])}>
+          <Button
+            variant="secondary"
+            type="button"
+            onClick={() => {
+              setIsMulti((multi) => !multi);
+            }}
+          >
             Set Second
           </Button>
           <Button variant="secondary" type="button" onClick={() => setValue("multiSelect", [fewData[2], fewData[3]])}>

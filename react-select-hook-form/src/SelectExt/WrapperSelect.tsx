@@ -1,6 +1,6 @@
 import { ForwardedRef, forwardRef } from "react";
-import { GroupBase, Props } from "react-select";
-import { SimpleSelect, useSelectFormIntegration } from "./useSelectFormIntegration";
+import { GroupBase, Props, SelectInstance } from "react-select";
+import { useSelectFormIntegration } from "./useSelectFormIntegration";
 import OriginalSelect from "react-select";
 import { ChangeHandler } from "react-hook-form";
 
@@ -12,11 +12,11 @@ export type WrapperProps<Option = unknown, IsMulti extends boolean = false, Grou
 };
 
 function Select<Option = unknown, IsMulti extends boolean = false, Group extends GroupBase<Option> = GroupBase<Option>>(
-  { onChange, isMulti, name, ...props }: WrapperProps<Option, IsMulti, Group>,
-  ref: ForwardedRef<SimpleSelect<Option, IsMulti>>
+  { onChange, name, ...props }: WrapperProps<Option, IsMulti, Group>,
+  ref: ForwardedRef<SelectInstance<Option, IsMulti, Group>>
 ) {
-  const { selectRef, changeHandler } = useSelectFormIntegration<Option, IsMulti, Group>(ref, (isMulti || false) as IsMulti, name, onChange);
-  return <OriginalSelect ref={selectRef} name={name} isMulti={isMulti} onChange={changeHandler} {...props} />;
+  const { selectRef, changeHandler } = useSelectFormIntegration<Option, IsMulti, Group>(ref, name, onChange);
+  return <OriginalSelect ref={selectRef} name={name} onChange={changeHandler} {...props} />;
 }
 
 export default forwardRef(Select);
