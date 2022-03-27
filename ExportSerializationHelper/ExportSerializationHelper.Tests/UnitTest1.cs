@@ -1,11 +1,13 @@
 using Bogus;
 using CsvHelper;
 using CsvHelper.Configuration;
+using DocumentFormat.OpenXml.Packaging;
 using FluentAssertions;
 using Snapshooter.Xunit;
 using System;
 using System.Globalization;
 using System.IO;
+using System.Text;
 using Xunit;
 
 namespace ExportSerializationHelper.Tests
@@ -31,6 +33,12 @@ namespace ExportSerializationHelper.Tests
                 HasHeaderRecord = false
             });
 
+            foreach (var header in config.GetHeader())
+            {
+                csv.WriteField(header);
+            }
+            csv.NextRecord();
+
             foreach (var item in ExportSerializer.Serialize(data, config))
             {
                 foreach (var field in item.Data)
@@ -40,9 +48,18 @@ namespace ExportSerializationHelper.Tests
                 csv.NextRecord();
             }
             csv.Flush();
-            var result = stream.ToArray();
+            var result = writer.Encoding.GetString(stream.ToArray());
 
             result.Should().MatchSnapshot();
         }
+
+        [Fact]
+        public void Test2()
+        {
+            var ctl = new SamplesController();
+            var mem = ctl.CreateExcelFile();
+            File.WriteAllBytes("excel.xlsx", mem.ToArray());
+        }
+
     }
 }

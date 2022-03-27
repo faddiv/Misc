@@ -14,13 +14,6 @@ namespace ExportSerializationHelper
             {
                 if (item == null)
                     throw new ArgumentException("The item of the datasource can't be null");
-                if (index == 0)
-                {
-                    var itemType = item.GetType();
-                    var headerRecords = sourceReader.GetHeader();
-                    yield return new ExportedRow(index, null, headerRecords, headerRecords);
-                    index++;
-                }
                 var data = sourceReader.Read(item);
                 yield return new ExportedRow(index, item, data, sourceReader.GetHeader());
                 index++;

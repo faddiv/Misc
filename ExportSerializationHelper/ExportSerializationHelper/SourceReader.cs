@@ -45,7 +45,7 @@ namespace ExportSerializationHelper
             _members.Add(configuration);
         }
 
-        internal string[] GetHeader()
+        public string[] GetHeader()
         {
             EnsureInitialized();
             if(_header == null)
