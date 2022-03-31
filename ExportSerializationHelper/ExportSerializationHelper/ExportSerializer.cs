@@ -3,20 +3,43 @@ using System.Collections.Generic;
 
 namespace ExportSerializationHelper
 {
-    public class ExportSerializer
+    public static class ExportSerializer
     {
-        public static IEnumerable<ExportedRow> Serialize<TSourceReader, TModel>(IEnumerable<TModel> source, TSourceReader sourceReader)
+        public static IEnumerable<ExportedRow> RowSerializer<TSourceReader, TModel>(IEnumerable<TModel> source, TSourceReader sourceReader)
             where TSourceReader : SourceReader
         {
-            sourceReader.EnsureInitialized();
-            int index = 0;
+            int rowIndex = 0;
             foreach (var item in source)
             {
                 if (item == null)
                     throw new ArgumentException("The item of the datasource can't be null");
-                var data = sourceReader.Read(item);
-                yield return new ExportedRow(index, item, data, sourceReader.GetHeader());
-                index++;
+
+                object?[] data = new object?[sourceReader.CountFields];
+                for (int fieldIndex = 0; fieldIndex < sourceReader.CountFields; fieldIndex++)
+                {
+                    data[fieldIndex] = sourceReader.GetValue(item, fieldIndex);
+                }
+                yield return new ExportedRow(rowIndex, item, data);
+                rowIndex++;
+            }
+        }
+
+        public static IEnumerable<ExportedField> FieldSerializer<TSourceReader, TModel>(IEnumerable<TModel> source, TSourceReader sourceReader)
+            where TSourceReader : SourceReader
+        {
+            int rowIndex = 0;
+            int lastIndex = sourceReader.CountFields - 1;
+            foreach (var item in source)
+            {
+                if (item == null)
+                    throw new ArgumentException("The item of the datasource can't be null");
+
+                for (int fieldIndex = 0; fieldIndex < sourceReader.CountFields; fieldIndex++)
+                {
+                    var value = sourceReader.GetValue(item, fieldIndex);
+                    yield return new ExportedField(rowIndex, fieldIndex, item, value, fieldIndex == lastIndex);
+                }
+                rowIndex++;
             }
         }
     }

@@ -4,7 +4,7 @@ namespace ExportSerializationHelper
 {
     public abstract class SourceReader<TModel> : SourceReader where TModel : class
     {
-        public void MapDirect<TValue>(
+        public void Map<TValue>(
             Func<TModel, TValue> getter,
             Func<MemberConfigurator<TModel, TValue>, MemberConfigurator<TModel, TValue>> configuratorFunc = null)
         {

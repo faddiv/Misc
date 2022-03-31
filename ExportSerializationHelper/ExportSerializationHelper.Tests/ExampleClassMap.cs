@@ -1,14 +1,16 @@
-﻿namespace ExportSerializationHelper.Tests
+using System;
+
+namespace ExportSerializationHelper.Tests
 {
     public class ExampleClassMap : SourceReader<ExampleClass>
     {
 
         public ExampleClassMap()
         {
-            MapDirect(e => e.Id, cfg => cfg.Name("Identifier"));
-            MapDirect(e => e.TextValue, cfg => cfg.Name("Some Text"));
-            MapDirect(e => e.TimestampValue, cfg => cfg.Name("Timestamp"));
-            MapDirect(e => e.NullableDate, cfg => cfg.Name("Nullable"));
+            Map(e => e.Id, cfg => cfg.Name("Identifier"));
+            Map(e => e.TextValue, cfg => cfg.Name("Some Text"));
+            Map(e => e.TimestampValue, cfg => cfg.Name("Timestamp"));
+            Map(e => e.NullableDate, cfg => cfg.Name("Nullable"));
         }
     }
 }

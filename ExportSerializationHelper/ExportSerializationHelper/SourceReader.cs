@@ -1,7 +1,5 @@
-using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading;
 
 namespace ExportSerializationHelper
 {
@@ -20,26 +18,6 @@ namespace ExportSerializationHelper
 
         public int CountFields => _members.Count;
 
-        public void EnsureInitialized()
-        {
-            if (Volatile.Read(ref _initialized))
-            {
-                return;
-            }
-            lock (_lock)
-            {
-                if (!Volatile.Read(ref _initialized))
-                {
-                    InitializeCore();
-                    Volatile.Write(ref _initialized, true);
-                }
-            }
-        }
-
-        private void InitializeCore()
-        {
-        }
-
         protected internal void AddMember(MemberConfiguration configuration)
         {
             _members.Add(configuration);
@@ -47,23 +25,27 @@ namespace ExportSerializationHelper
 
         public string[] GetHeader()
         {
-            EnsureInitialized();
-            if(_header == null)
+            if (_header == null)
             {
                 _header = _members.Select(e => e.Name).ToArray();
             }
             return _header;
         }
 
-        internal object?[] Read(object item)
+        public IEnumerable<ExportedHeader> HeaderSerializer()
         {
-            var row = new object?[CountFields];
-            for (int i = 0; i < CountFields; i++)
+            var header = GetHeader();
+            for (int fieldIndex = 0; fieldIndex < CountFields; fieldIndex++)
             {
-                row[i] = _members[i].Getter(item);
+                yield return new ExportedHeader(fieldIndex, header[fieldIndex]);
             }
-            return row;
         }
+
+        internal object? GetValue(object source, int index)
+        {
+            return _members[index].Getter(source);
+        }
+
         public bool Initialized => _initialized;
     }
 }
