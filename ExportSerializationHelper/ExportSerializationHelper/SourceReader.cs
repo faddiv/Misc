@@ -5,21 +5,24 @@ namespace ExportSerializationHelper
 {
     public class SourceReader
     {
-        private bool _initialized;
-        private readonly object _lock;
         private readonly List<MemberConfiguration> _members;
         private string[]? _header;
 
         public SourceReader()
         {
             _members = new List<MemberConfiguration>();
-            _lock = new object();
         }
 
         public int CountFields => _members.Count;
 
+        public List<MemberConfiguration> Members => _members;
+
         protected internal void AddMember(MemberConfiguration configuration)
         {
+            if(_header != null)
+            {
+                _header = null;
+            }
             _members.Add(configuration);
         }
 
@@ -45,7 +48,5 @@ namespace ExportSerializationHelper
         {
             return _members[index].Getter(source);
         }
-
-        public bool Initialized => _initialized;
     }
 }

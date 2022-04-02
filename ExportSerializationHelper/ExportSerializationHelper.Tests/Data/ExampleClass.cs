@@ -1,6 +1,6 @@
-﻿using System;
+using System;
 
-namespace ExportSerializationHelper.Tests
+namespace ExportSerializationHelper.Tests.Data
 {
     public class ExampleClass
     {

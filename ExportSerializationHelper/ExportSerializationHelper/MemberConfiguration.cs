@@ -4,13 +4,25 @@ namespace ExportSerializationHelper
 {
     public class MemberConfiguration
     {
-        public MemberConfiguration(string name)
+        private string? _name;
+        public MemberConfiguration(Type valueType)
         {
-            Name = name;
+            ValueType = valueType;
         }
 
-        public string Name { get; internal set; }
+        public string Name
+        {
+            get => _name ?? "";
+            internal set => _name = value;
+        }
+
+        public Type ValueType { get; }
 
         public Func<object, object?> Getter { get; internal set; } = (object value) => value;
+
+        internal bool IsNameUnset()
+        {
+            return _name == null;
+        }
     }
 }

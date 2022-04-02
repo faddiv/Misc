@@ -35,8 +35,4 @@
     <ProjectReference Include="..\ExportSerializationHelper\ExportSerializationHelper.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Data\" />
-  </ItemGroup>
-
 </Project>

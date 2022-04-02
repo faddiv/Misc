@@ -1,5 +1,6 @@
 using CsvHelper;
 using CsvHelper.Configuration;
+using ExportSerializationHelper.Tests.Data;
 using FluentAssertions;
 using Snapshooter.Xunit;
 using System.Globalization;

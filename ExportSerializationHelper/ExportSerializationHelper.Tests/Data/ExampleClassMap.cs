@@ -1,6 +1,4 @@
-using System;
-
-namespace ExportSerializationHelper.Tests
+namespace ExportSerializationHelper.Tests.Data
 {
     public class ExampleClassMap : SourceReader<ExampleClass>
     {

@@ -2,7 +2,7 @@ using Bogus;
 using System;
 using System.Collections.Generic;
 
-namespace ExportSerializationHelper.Tests;
+namespace ExportSerializationHelper.Tests.Data;
 
 public class TestData
 {

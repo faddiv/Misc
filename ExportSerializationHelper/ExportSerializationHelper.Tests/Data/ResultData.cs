@@ -3,7 +3,7 @@ using FluentAssertions;
 using Snapshooter.Xunit;
 using System.Runtime.CompilerServices;
 
-namespace ExportSerializationHelper.Tests
+namespace ExportSerializationHelper.Tests.Data
 {
     public class ResultData
     {

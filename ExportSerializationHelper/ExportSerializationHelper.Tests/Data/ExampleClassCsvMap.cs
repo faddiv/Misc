@@ -1,6 +1,6 @@
 using CsvHelper.Configuration;
 
-namespace ExportSerializationHelper.Tests
+namespace ExportSerializationHelper.Tests.Data
 {
     public class ExampleClassCsvMap : ClassMap<ExampleClass>
     {
