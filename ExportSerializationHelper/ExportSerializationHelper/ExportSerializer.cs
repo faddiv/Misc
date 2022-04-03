@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Data;
 
 namespace ExportSerializationHelper
 {
@@ -41,6 +42,12 @@ namespace ExportSerializationHelper
                 }
                 rowIndex++;
             }
+        }
+
+        public static IDataReader DataReaderSerializer<TSourceReader, TModel>(this IEnumerable<TModel> source, TSourceReader reader)
+            where TSourceReader : SourceReader
+        {
+            return new ExportDataReader(reader, source);
         }
     }
 }

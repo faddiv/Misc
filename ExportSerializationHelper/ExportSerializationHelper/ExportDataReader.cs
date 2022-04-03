@@ -5,14 +5,14 @@ using System.Diagnostics.CodeAnalysis;
 
 namespace ExportSerializationHelper
 {
-    public class ExportRowReader : IDataReader
+    public class ExportDataReader : IDataReader
     {
         private readonly SourceReader _sourceReader;
         private readonly IEnumerable _source;
         private int _rowIndex;
         private IEnumerator? _activeEnumerator;
 
-        public ExportRowReader(SourceReader reader, IEnumerable source)
+        public ExportDataReader(SourceReader reader, IEnumerable source)
         {
             _sourceReader = reader ?? throw new ArgumentNullException(nameof(reader));
             _source = source ?? throw new ArgumentNullException(nameof(source));

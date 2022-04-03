@@ -55,7 +55,7 @@ public class ExportSerializer_RowSerializer
         worksheet.Cell(1, 1).InsertData(new[] { config.GetHeader() });
         worksheet.Cell(2, 1).InsertData(ExportSerializer.RowSerializer(data, config).Select(e => e.Data));
 
-        ResultData.TextExcel(worksheet);
+        ResultData.VerifyExcel(worksheet);
     }
-
+    /**/
 }

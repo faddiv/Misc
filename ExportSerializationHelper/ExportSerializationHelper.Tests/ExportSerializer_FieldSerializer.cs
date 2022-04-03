@@ -63,6 +63,6 @@ public class ExportSerializer_FieldSerializer
             worksheet.Cell(2 + item.RowIndex, 1 + item.FieldIndex).SetValue(item.Value);
         }
 
-        ResultData.TextExcel(worksheet);
+        ResultData.VerifyExcel(worksheet);
     }
 }
