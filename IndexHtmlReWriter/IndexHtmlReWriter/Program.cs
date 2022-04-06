@@ -27,7 +27,7 @@ app.UseEndpoints(endpoins =>
 
     endpoins.MapFallbackToFile("index.html", new StaticFileOptions
     {
-        FileProvider = new RewriterFileProvider(app.Environment.WebRootFileProvider)
+        FileProvider = new RewriterFileProvider(app.Environment.WebRootFileProvider, src => src.Replace("<base href=\"./\"/>", "<base href=\"/\"/>"))
     });
 });
 
