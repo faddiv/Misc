@@ -1,49 +1,35 @@
 using Microsoft.Extensions.FileProviders;
-using System.Text;
 
 namespace IndexHtmlReWriter
 {
     public class MemoryFileInfo : IFileInfo
     {
-        private readonly MemoryFileProvider _parent;
-        private readonly IFileInfo _baseFileInfo;
-        private byte[]? _rewrittedData;
+        private readonly byte[] _content;
 
         public MemoryFileInfo(
-            IFileInfo baseFileInfo,
-            MemoryFileProvider parent)
+            byte[] content, string name, DateTimeOffset lastModified)
         {
-            _baseFileInfo = baseFileInfo;
-            _parent = parent;
+            _content = content;
+            Name = name;
+            LastModified = lastModified;
         }
 
-        public bool Exists => _baseFileInfo.Exists;
+        public bool Exists => true;
 
-        public bool IsDirectory => _baseFileInfo.IsDirectory;
+        public bool IsDirectory => false;
 
-        public DateTimeOffset LastModified => _baseFileInfo.LastModified;
+        public DateTimeOffset LastModified { get; }
 
-        public long Length => GetRewritedData().Length;
+        public long Length => _content.Length;
 
-        public string Name => _baseFileInfo.Name;
+        public string Name { get; }
 
         public string? PhysicalPath => null;
 
         public Stream CreateReadStream()
         {
-            return new MemoryStream(GetRewritedData());
-        }
-
-        private byte[] GetRewritedData()
-        {
-            if (_rewrittedData is not null)
-                return _rewrittedData;
-            using var source = _baseFileInfo.CreateReadStream();
-            using var reader = new System.IO.StreamReader(source);
-            var text = reader.ReadToEnd();
-            var newText = _parent._rewriterCallback(text);
-            _rewrittedData = _parent._encoding.GetBytes(newText);
-            return _rewrittedData;
+            return new MemoryStream(_content, false);
         }
     }
+
 }

@@ -5,35 +5,33 @@ using System.Text.RegularExpressions;
 
 namespace IndexHtmlReWriter
 {
-    public class MemoryFileProvider : IFileProvider
+    public partial class MemoryFileProvider : IFileProvider
     {
-        private readonly IFileProvider _baseFileProvider;
-        private readonly Func<string, string> _rewriterCallback;
-        private readonly Encoding _encoding;
+        private readonly MemoryFileInfo _memoryFileInfo;
 
         public MemoryFileProvider(
-            IFileProvider baseFileProvider,
-            Func<string, string> rewriterCallback,
-            Encoding? encoding = null)
+            MemoryFileInfo memoryFileInfo)
         {
-            _baseFileProvider = baseFileProvider ?? throw new ArgumentNullException(nameof(baseFileProvider));
-            _rewriterCallback = rewriterCallback ?? throw new ArgumentNullException(nameof(rewriterCallback));
-            _encoding = encoding ?? Encoding.UTF8;
+            _memoryFileInfo = memoryFileInfo;
         }
         public IDirectoryContents GetDirectoryContents(string subpath)
         {
-            return _baseFileProvider.GetDirectoryContents(subpath);
+            throw new NotImplementedException();
         }
 
         public IFileInfo GetFileInfo(string subpath)
         {
-            return new RewriterFileInfo(_baseFileProvider.GetFileInfo(subpath), this);
+            if (subpath != _memoryFileInfo.Name)
+            {
+                return new NotFoundFileInfo(subpath);
+            }
+            return _memoryFileInfo;
         }
 
         public IChangeToken Watch(string filter)
         {
-            return _baseFileProvider.Watch(filter);
+            return NullChangeToken.Singleton;
         }
-
     }
+
 }
