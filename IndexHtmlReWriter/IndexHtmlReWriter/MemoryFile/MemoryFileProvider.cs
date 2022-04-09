@@ -1,4 +1,4 @@
-﻿using Microsoft.Extensions.FileProviders;
+using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Primitives;
 using System.Collections.Concurrent;
 
@@ -15,12 +15,13 @@ namespace IndexHtmlReWriter
 
         public MemoryFileInfo SetFile(string virtualPath, byte[] contents, DateTimeOffset lastModified)
         {
-            return _files.AddOrUpdate(virtualPath, (key, (byte[] contents, DateTimeOffset lastModified)) =>
+            return _files.AddOrUpdate(virtualPath,
+                (key, arg) =>
             {
-                return new MemoryFileInfo(contents, key, lastModified);
-            }, (key, _, (byte[] contents, DateTimeOffset lastModified)) =>
+                return new MemoryFileInfo(arg.contents, key, arg.lastModified);
+            }, (key, _, arg) =>
             {
-                return new MemoryFileInfo(contents, key, lastModified);
+                return new MemoryFileInfo(arg.contents, key, arg.lastModified);
             }, (contents, lastModified));
         }
 
