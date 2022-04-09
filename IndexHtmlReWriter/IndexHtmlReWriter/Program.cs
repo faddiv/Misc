@@ -33,7 +33,7 @@ app.UseEndpoints(endpoins =>
     var data = Encoding.UTF8.GetBytes(content);
     endpoins.MapFallbackToFile("index.html", new StaticFileOptions
     {
-        FileProvider = new MemoryFileProvider(new MemoryFileInfo(data, "/index.html", fileInfo.LastModified))
+        FileProvider = new SingleMemoryFileProvider(new MemoryFileInfo(data, "index.html", fileInfo.LastModified))
     });
 });
 

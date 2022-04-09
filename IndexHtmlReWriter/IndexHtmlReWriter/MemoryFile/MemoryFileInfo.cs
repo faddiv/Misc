@@ -1,4 +1,5 @@
 using Microsoft.Extensions.FileProviders;
+using Microsoft.Extensions.Primitives;
 
 namespace IndexHtmlReWriter
 {
@@ -11,6 +12,7 @@ namespace IndexHtmlReWriter
         {
             _content = content;
             Name = name;
+            VirtualPath = "/" + Name;
             LastModified = lastModified;
         }
 
@@ -23,6 +25,8 @@ namespace IndexHtmlReWriter
         public long Length => _content.Length;
 
         public string Name { get; }
+
+        public string VirtualPath { get; }
 
         public string? PhysicalPath => null;
 

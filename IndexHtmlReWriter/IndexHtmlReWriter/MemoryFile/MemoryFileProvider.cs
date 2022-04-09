@@ -1,31 +1,49 @@
-using Microsoft.Extensions.FileProviders;
+﻿using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Primitives;
-using System.Text;
-using System.Text.RegularExpressions;
+using System.Collections.Concurrent;
 
 namespace IndexHtmlReWriter
 {
-    public partial class MemoryFileProvider : IFileProvider
+    public class MemoryFileProvider : IFileProvider
     {
-        private readonly MemoryFileInfo _memoryFileInfo;
+        private readonly ConcurrentDictionary<string, MemoryFileInfo> _files;
 
-        public MemoryFileProvider(
-            MemoryFileInfo memoryFileInfo)
+        public MemoryFileProvider()
         {
-            _memoryFileInfo = memoryFileInfo;
+            _files = new ConcurrentDictionary<string, MemoryFileInfo>();
         }
+
+        public MemoryFileInfo SetFile(string virtualPath, byte[] contents, DateTimeOffset lastModified)
+        {
+            return _files.AddOrUpdate(virtualPath, (key, (byte[] contents, DateTimeOffset lastModified)) =>
+            {
+                return new MemoryFileInfo(contents, key, lastModified);
+            }, (key, _, (byte[] contents, DateTimeOffset lastModified)) =>
+            {
+                return new MemoryFileInfo(contents, key, lastModified);
+            }, (contents, lastModified));
+        }
+
         public IDirectoryContents GetDirectoryContents(string subpath)
         {
-            throw new NotImplementedException();
+            List<MemoryFileInfo> localFiles = new();
+            foreach (var item in _files)
+            {
+                if (item.Key.StartsWith(subpath))
+                {
+                    localFiles.Add(item.Value);
+                }
+            }
+            return new MemoryDirectoryContents(localFiles);
         }
 
         public IFileInfo GetFileInfo(string subpath)
         {
-            if (subpath != _memoryFileInfo.Name)
+            if (_files.TryGetValue(subpath, out var file))
             {
-                return new NotFoundFileInfo(subpath);
+                return file;
             }
-            return _memoryFileInfo;
+            return new NotFoundFileInfo(subpath);
         }
 
         public IChangeToken Watch(string filter)
@@ -33,5 +51,4 @@ namespace IndexHtmlReWriter
             return NullChangeToken.Singleton;
         }
     }
-
 }
