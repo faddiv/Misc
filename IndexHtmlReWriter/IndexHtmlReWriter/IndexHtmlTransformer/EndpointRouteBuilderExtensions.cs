@@ -45,5 +45,18 @@ namespace IndexHtmlReWriter.IndexHtmlTransformer
             options2.FileProvider = indexProvider;
             return endpoints.MapFallbackToFile("index.html", options2);
         }
+
+        public static IEndpointConventionBuilder MapFallbackToTransformedFile(this IEndpointRouteBuilder endpoints, string? pattern = null)
+        {
+            if (pattern == null)
+            {
+
+                return endpoints.MapFallbackToController("Index", "Fallback");
+            }
+            else
+            {
+                return endpoints.MapFallbackToController(pattern, "Index", "Fallback");
+            }
+        }
     }
 }

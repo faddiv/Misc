@@ -7,6 +7,7 @@
     <TypeScriptToolsVersion>Latest</TypeScriptToolsVersion>
     <IsPackable>false</IsPackable>
     <SpaRoot>ClientApp\</SpaRoot>
+    <SpaProxyServerUrl>https://localhost:44446</SpaProxyServerUrl>
     <DefaultItemExcludes>$(DefaultItemExcludes);$(SpaRoot)node_modules\**</DefaultItemExcludes>
     <ImplicitUsings>enable</ImplicitUsings>
   </PropertyGroup>
@@ -16,6 +17,10 @@
     <Content Remove="$(SpaRoot)**" />
     <None Remove="$(SpaRoot)**" />
     <None Include="$(SpaRoot)**" Exclude="$(SpaRoot)node_modules\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.SpaProxy" Version="6.0.4" />
   </ItemGroup>
 
   <Target Name="PublishRunWebpack" AfterTargets="ComputeFilesToPublish">
