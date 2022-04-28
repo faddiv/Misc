@@ -27,27 +27,7 @@ namespace IndexHtmlReWriter.IndexHtmlTransformer
         }
         public async Task<IActionResult> Index()
         {
-            var content = await _memoryCache.GetOrCreateAsync(_options.Value.Key, async (key) =>
-            {
-                LogFallbackFileWasntFoundInCache(key.Key, _options.Value.FallbackFile);
-                var fileProvider = _options.Value.FileProvider ?? _environment.WebRootFileProvider;
-                var fileInfo = fileProvider.GetFileInfo(_options.Value.FallbackFile);
-                if (!fileInfo.Exists)
-                {
-                    LogFallbackFileWasntFoundOnDisk(_options.Value.FallbackFile);
-                    return null;
-                }
-                using var stream = fileInfo.CreateReadStream();
-                using var streamReader = new StreamReader(stream);
-                var content = await streamReader.ReadToEndAsync();
-                var context = new FallbackFileTransformContext(content, HttpContext);
-                var transformers = HttpContext.RequestServices.GetServices<ICachedFallbackFileTransformer>();
-                foreach (var transformer in transformers)
-                {
-                    await transformer.TransformAsync(context);
-                }
-                return context.Content;
-            });
+            var content = await _memoryCache.GetOrCreateAsync(_options.Value.Key, GenerateContent);
             if (content == null)
             {
                 return NotFound();
@@ -59,6 +39,30 @@ namespace IndexHtmlReWriter.IndexHtmlTransformer
             }
             _options.Value.ContentTypeProvider.TryGetContentType(_options.Value.FallbackFile, out var contentType);
             return Content(context.Content, contentType ?? "text/html");
+        }
+
+        private async Task<string?> GenerateContent(ICacheEntry cacheEntry)
+        {
+            LogFallbackFileWasntFoundInCache(cacheEntry.Key, _options.Value.FallbackFile);
+            var fileProvider = _options.Value.FileProvider ?? _environment.WebRootFileProvider;
+            var fileInfo = fileProvider.GetFileInfo(_options.Value.FallbackFile);
+            if (!fileInfo.Exists)
+            {
+                LogFallbackFileWasntFoundOnDisk(_options.Value.FallbackFile);
+                return null;
+            }
+            using var stream = fileInfo.CreateReadStream();
+            using var streamReader = new StreamReader(stream);
+            var content = await streamReader.ReadToEndAsync();
+            var context = new FallbackFileTransformContext(content, HttpContext);
+            var transformers = HttpContext.RequestServices.GetServices<ICachedFallbackFileTransformer>();
+            foreach (var transformer in transformers)
+            {
+                await transformer.TransformAsync(context);
+            }
+            cacheEntry.SetSize(context.Content.Length * sizeof(char));
+            cacheEntry.SetPriority(CacheItemPriority.High);
+            return context.Content;
         }
 
         public IActionResult Authenticated()
