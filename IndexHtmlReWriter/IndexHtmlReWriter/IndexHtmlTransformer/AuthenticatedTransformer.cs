@@ -1,22 +1,24 @@
-﻿using System.Text.RegularExpressions;
+using System.Text.RegularExpressions;
 
 namespace IndexHtmlReWriter.IndexHtmlTransformer
 {
     public class AuthenticatedTransformer : IPerRequestFallbackFileTransformer
     {
         private static readonly Regex _regex = new(@"<body([^>]*)>", RegexOptions.Compiled | RegexOptions.IgnoreCase);
-        public ValueTask<string> TransformAsync(string content, HttpContext httpContext)
+
+        public bool PerRequestTransformer => true;
+
+        public Task TransformAsync(FallbackFileTransformContext context)
         {
-            var isAuthenticated = httpContext.User.Identity?.IsAuthenticated ?? false;
+            var isAuthenticated = context.HttpContext.User.Identity?.IsAuthenticated ?? false;
             if (isAuthenticated)
             {
-                var transformedContent = _regex.Replace(content, match =>
+                context.Content = _regex.Replace(context.Content, match =>
                 {
-                    return $"<body{match.ValueSpan} authenticated>";
+                    return $"<body{match.Groups[1].ValueSpan} authenticated>";
                 });
-                return ValueTask.FromResult(transformedContent);
             }
-            return ValueTask.FromResult(content);
+            return Task.CompletedTask;
         }
     }
 }

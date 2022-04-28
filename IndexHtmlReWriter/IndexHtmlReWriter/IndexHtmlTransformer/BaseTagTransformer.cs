@@ -5,14 +5,14 @@ namespace IndexHtmlReWriter.IndexHtmlTransformer
     public class BaseTagTransformer : ICachedFallbackFileTransformer
     {
         private static readonly Regex _regex = new(@"<base([^>]*)>", RegexOptions.Compiled | RegexOptions.IgnoreCase);
-        public ValueTask<string> TransformAsync(string content, HttpContext httpContext)
+
+        public bool PerRequestTransformer => false;
+
+        public Task TransformAsync(FallbackFileTransformContext context)
         {
-            var pathBase = httpContext.Request.PathBase;
-            if(!pathBase.HasValue)
-            {
-                pathBase = "/";
-            }
-            var transformedContent = _regex.Replace(content, match =>
+            var pathBase = context.HttpContext.Request.PathBase;
+            pathBase = pathBase.Add("/");
+            context.Content = _regex.Replace(context.Content, match =>
             {
                 var value = match.Groups[1].ValueSpan;
                 if (value.EndsWith("/"))
@@ -52,7 +52,7 @@ namespace IndexHtmlReWriter.IndexHtmlTransformer
                 }
                 return $"<base {string.Join(" ", parts)} />";
             });
-            return ValueTask.FromResult(transformedContent);
+            return Task.CompletedTask;
         }
     }
 }

@@ -6,23 +6,20 @@ namespace IndexHtmlReWriter.IndexHtmlTransformer
 {
     public partial class FallbackController : Controller
     {
-        private readonly IEnumerable<ICachedFallbackFileTransformer> _cachedTransformers;
-        private readonly IEnumerable<IPerRequestFallbackFileTransformer> _perRequestTransformers;
+        private readonly IEnumerable<IPerRequestFallbackFileTransformer> _transformers;
         private readonly IOptions<FallbackOptions> _options;
         private readonly IWebHostEnvironment _environment;
         private readonly IMemoryCache _memoryCache;
         private readonly ILogger<FallbackController> _logger;
 
         public FallbackController(
-            IEnumerable<ICachedFallbackFileTransformer> cachedTransformers,
-            IEnumerable<IPerRequestFallbackFileTransformer> perRequestTransformers,
+            IEnumerable<IPerRequestFallbackFileTransformer> transformers,
             IOptions<FallbackOptions> options,
             IWebHostEnvironment environment,
             IMemoryCache memoryCache,
             ILogger<FallbackController> logger)
         {
-            _cachedTransformers = cachedTransformers;
-            _perRequestTransformers = perRequestTransformers;
+            _transformers = transformers;
             _options = options;
             _environment = environment;
             _memoryCache = memoryCache;
@@ -43,22 +40,25 @@ namespace IndexHtmlReWriter.IndexHtmlTransformer
                 using var stream = fileInfo.CreateReadStream();
                 using var streamReader = new StreamReader(stream);
                 var content = await streamReader.ReadToEndAsync();
-                foreach (var transformer in _cachedTransformers)
+                var context = new FallbackFileTransformContext(content, HttpContext);
+                var transformers = HttpContext.RequestServices.GetServices<ICachedFallbackFileTransformer>();
+                foreach (var transformer in transformers)
                 {
-                    content = await transformer.TransformAsync(content, HttpContext);
+                    await transformer.TransformAsync(context);
                 }
-                return content;
+                return context.Content;
             });
             if (content == null)
             {
                 return NotFound();
             }
-            foreach (var transformer in _perRequestTransformers)
+            var context = new FallbackFileTransformContext(content, HttpContext);
+            foreach (var transformer in _transformers)
             {
-                content = await transformer.TransformAsync(content, HttpContext);
+                await transformer.TransformAsync(context);
             }
             _options.Value.ContentTypeProvider.TryGetContentType(_options.Value.FallbackFile, out var contentType);
-            return Content(content, contentType ?? "text/html");
+            return Content(context.Content, contentType ?? "text/html");
         }
 
         public IActionResult Authenticated()
@@ -78,8 +78,8 @@ namespace IndexHtmlReWriter.IndexHtmlTransformer
         private partial void LogFallbackFileWasntFoundInCache(object key, string fallbackFile);
 
         [LoggerMessage(
-    Level = LogLevel.Error,
-    Message = "Fallback file wasn't found by file provider. Can't load and transform anything. {fallbackFile}")]
+            Level = LogLevel.Error,
+            Message = "Fallback file wasn't found by file provider. Can't load and transform anything. {fallbackFile}")]
         private partial void LogFallbackFileWasntFoundOnDisk(string fallbackFile);
         #endregion
     }
