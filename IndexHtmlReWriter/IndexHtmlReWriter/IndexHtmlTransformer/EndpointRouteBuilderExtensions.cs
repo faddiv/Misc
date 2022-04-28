@@ -1,3 +1,5 @@
+using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.Options;
 using System.Text;
 
 namespace IndexHtmlReWriter.IndexHtmlTransformer
@@ -51,12 +53,13 @@ namespace IndexHtmlReWriter.IndexHtmlTransformer
             if (pattern == null)
             {
 
-                return endpoints.MapFallbackToController("Index", "Fallback");
+                return endpoints.MapFallback(FallbackApi.FallbackResult);
             }
             else
             {
-                return endpoints.MapFallbackToController(pattern, "Index", "Fallback");
+                return endpoints.MapFallback(pattern, FallbackApi.FallbackResult);
             }
         }
+
     }
 }
