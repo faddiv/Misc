@@ -14,6 +14,11 @@ public class FulfillOrderConsumer : IConsumer<FulfillOrder>
     }
     public async Task Consume(ConsumeContext<FulfillOrder> context)
     {
+        if (string.IsNullOrEmpty(context.Message.ItemNumber) ||
+            context.Message.ItemNumber.Length < 5)
+        {
+            throw new ApplicationException("Invalid item number");
+        }
         _logger.LogInformation("Creating Activity courier");
         var id = Guid.NewGuid();
         var builder = new RoutingSlipBuilder(id);
@@ -34,15 +39,26 @@ public class FulfillOrderConsumer : IConsumer<FulfillOrder>
             Amount = context.Message.Quantity * 10
         });
         builder.AddVariable("orderId", context.Message.OrderId);
+
         await builder.AddSubscription(new Uri("exchange:order-state"), //context.SourceAddress,
-            MassTransit.Courier.Contracts.RoutingSlipEvents.Faulted,
+            MassTransit.Courier.Contracts.RoutingSlipEvents.Faulted |
+            MassTransit.Courier.Contracts.RoutingSlipEvents.Supplemental,
             MassTransit.Courier.Contracts.RoutingSlipEventContents.None, x => x.Send(new OrderFulfillmentFaulted
             {
                 OrderId = context.Message.OrderId,
                 Timestamp = DateTime.Now
             }));
 
+        await builder.AddSubscription(new Uri("exchange:order-state"), //context.SourceAddress,
+            MassTransit.Courier.Contracts.RoutingSlipEvents.Completed |
+            MassTransit.Courier.Contracts.RoutingSlipEvents.Supplemental,
+            MassTransit.Courier.Contracts.RoutingSlipEventContents.None, x => x.Send(new OrderFulfillmentCompleted
+            {
+                OrderId = context.Message.OrderId,
+                Timestamp = DateTime.Now
+            }));
         var routingSlip = builder.Build();
+
         _logger.LogInformation("Executing Activity courier {Uri}", new Uri("queue:allocate-inventory_execute"));
         await context.Execute(routingSlip);
     }

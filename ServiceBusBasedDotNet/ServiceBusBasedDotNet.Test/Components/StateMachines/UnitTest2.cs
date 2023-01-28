@@ -122,7 +122,7 @@ public class Submitting_an_order
                 CustomerNumber = "1234",
                 Timestamp = DateTime.Now
             });
-            await saga.Exists(correlationId, stateMachine.Submitted);
+            await saga.Exists(correlationId, stateMachine.Completed);
 
             var client = harness.GetRequestClient<CheckOrder>();
             var response = await client.GetResponse<OrderStatus>(new CheckOrder
@@ -130,7 +130,7 @@ public class Submitting_an_order
                 OrderId = correlationId
             });
             response.Should().NotBeNull();
-            response.Message.State.Should().Be(stateMachine.Submitted.Name);
+            response.Message.State.Should().Be(stateMachine.Completed.Name);
         }
         finally
         {
@@ -171,7 +171,7 @@ public class Submitting_an_order
                 CustomerNumber = "1234",
                 Timestamp = DateTime.Now
             });
-            await sagaHarness.Exists(correlationId, stateMachine.Submitted);
+            await sagaHarness.Exists(correlationId, stateMachine.Completed);
             await harness.Bus.Publish(new CustomerAccountClosed
             {
                 CustomerId = Guid.NewGuid(),

@@ -71,4 +71,11 @@ orderGroup.MapGet("/get-order-state/{correlationId}", WebApis.GetOrderState);
 
 orderGroup.MapDelete("/order/close-customer-account/{customerNumber}", WebApis.DeleteCustomer);
 
-await app.RunAsync();
+try
+{
+    await app.RunAsync();
+}
+catch (Exception ex)
+{
+    app.Logger.LogError(ex, "Run app failed");
+}

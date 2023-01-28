@@ -9,20 +9,22 @@ public class OrderStateMachine : MassTransitStateMachine<OrderState>
     private readonly ILogger<OrderStateMachine> _logger;
 
     public State Received { get; private set; }
-    public State Submitted { get; private set; }
+    public State Completed { get; private set; }
     public State Cancelled { get; private set; }
     public State Faulted { get; private set; }
 
-    public Event<SubmitOrder> SubmitOrder2 { get; private set; }
+    public Event<SubmitOrder> SubmitOrder { get; private set; }
     public Event<OrderSubmitted> OrderSubmitted { get; private set; }
     public Event<CheckOrder> CheckOrder { get; private set; }
     public Event<CustomerAccountClosed> CustomerAccountClosed { get; private set; }
-    public Event<OrderFulfillmentFaulted> OrderFulfillmentFaulted { get; set; }
+    public Event<OrderFulfillmentFaulted> OrderFulfillmentFaulted { get; private set; }
+    public Event<OrderFulfillmentCompleted> OrderFulfillmentCompleted { get; private set; }
+    public Event<Fault<FulfillOrder>> FaultFulfillOrder { get; private set; }
 
     public OrderStateMachine(ILogger<OrderStateMachine> logger)
     {
         _logger = logger;
-        Event(() => SubmitOrder2);
+        Event(() => SubmitOrder);
         Event(() => OrderSubmitted);
         Event(() => CheckOrder, cfg =>
         {
@@ -39,47 +41,49 @@ public class OrderStateMachine : MassTransitStateMachine<OrderState>
                 });
             });
         });
-        Event(() => CustomerAccountClosed, x => x.CorrelateBy((saga, ctx) => saga.CustomerNumber == ctx.Message.CustomerNumber));
+        Event(() => CustomerAccountClosed,
+            x => x.CorrelateBy((saga, ctx) => saga.CustomerNumber == ctx.Message.CustomerNumber));
         Event(() => OrderFulfillmentFaulted, x => x.CorrelateById(c => c.Message.OrderId));
+        Event(() => OrderFulfillmentCompleted, x => x.CorrelateById(c => c.Message.OrderId));
+        Event(() => FaultFulfillOrder, x => x.CorrelateById(c => c.Message.Message.OrderId));
 
         InstanceState(x => x.CurrentState);
 
         Initially(
-            When(SubmitOrder2)
+            When(SubmitOrder)
                 .Then(ctx =>
                 {
                     ctx.Saga.CustomerNumber = ctx.Message.CustomerNumber;
+                    ctx.Saga.CardNumber = ctx.Message.CardNumber;
+                    ctx.Saga.ItemNumber = ctx.Message.ItemNumber;
                 })
                 .Then(Logger)
                 .TransitionTo(Received)
-            );
+        );
 
         During(Received,
-            When(OrderSubmitted)
+            When(OrderFulfillmentCompleted)
                 .Then(Logger)
-                .TransitionTo(Submitted),
-            Ignore(SubmitOrder2),
+                .TransitionTo(Completed),
+            Ignore(SubmitOrder),
             When(OrderFulfillmentFaulted)
-                .Then(c =>
-                {
-                    _logger.LogInformation("Order faulted happened.");
-                })
+                .Then(c => { _logger.LogInformation("Order faulted happened"); })
+                .TransitionTo(Faulted),
+            When(FaultFulfillOrder)
+                .Then(c => { _logger.LogInformation("FulfillOrder threw an exception"); })
                 .TransitionTo(Faulted));
 
         DuringAny(
             When(CheckOrder)
-            .Activity(x => x.OfType<CheckOrderActivity>())//.Respond(() => new OrderStatus())
-            );
+                .Activity(x => x.OfType<CheckOrderActivity>()) //.Respond(() => new OrderStatus())
+        );
 
-        During(Submitted,
+        During(Completed,
             Ignore(OrderSubmitted),
             When(CustomerAccountClosed)
                 .TransitionTo(Cancelled),
             When(OrderFulfillmentFaulted)
-                .Then(c =>
-                {
-                    _logger.LogInformation("Order faulted happened.");
-                })
+                .Then(c => { _logger.LogInformation("Order faulted happened"); })
                 .TransitionTo(Faulted));
     }
 

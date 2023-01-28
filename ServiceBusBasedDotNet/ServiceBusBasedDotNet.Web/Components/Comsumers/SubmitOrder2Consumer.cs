@@ -40,12 +40,6 @@ public class SubmitOrder2Consumer : IConsumer<SubmitOrder>
                 Quantity = submitOrder.Quantity,
                 ItemNumber = submitOrder.ItemNumber,
             });
-            await context.Publish(new OrderSubmitted
-            {
-                CustomerNumber = submitOrder.CustomerNumber,
-                OrderId = submitOrder.OrderId,
-                Timestamp = submitOrder.Timestamp
-            });
         }
     }
 }
