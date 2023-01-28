@@ -1,0 +1,21 @@
+version: '3.4'
+
+services:
+  rabbitmq:
+    image: masstransit/rabbitmq
+    container_name: rabbitmq
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+
+  servicebusbaseddotnet.web:
+    image: ${DOCKER_REGISTRY-}servicebusbaseddotnetweb
+    depends_on:
+      - rabbitmq
+    build:
+      context: .
+      dockerfile: ServiceBusBasedDotNet.Web/Dockerfile
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=https://+:443;http://+:80
+      - ConnectionStrings__rabbitmq=amqp://guest:guest@rabbitmq:5672
