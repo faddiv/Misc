@@ -19,6 +19,13 @@ public class FulfillOrderConsumer : IConsumer<FulfillOrder>
         {
             throw new ApplicationException("Invalid item number");
         }
+        if (context.Message.ItemNumber.StartsWith("rnd"))
+        {
+            if(Random.Shared.Next(4) > 0)
+            {
+                throw new HttpRequestException("Http exception happens randomly.");
+            }
+        }
         _logger.LogInformation("Creating Activity courier");
         var id = Guid.NewGuid();
         var builder = new RoutingSlipBuilder(id);
@@ -61,5 +68,19 @@ public class FulfillOrderConsumer : IConsumer<FulfillOrder>
 
         _logger.LogInformation("Executing Activity courier {Uri}", new Uri("queue:allocate-inventory_execute"));
         await context.Execute(routingSlip);
+    }
+}
+public class FulfillOrderConsumerDefinition : ConsumerDefinition<FulfillOrderConsumer>
+{
+    protected override void ConfigureConsumer(IReceiveEndpointConfigurator endpointConfigurator, IConsumerConfigurator<FulfillOrderConsumer> consumerConfigurator)
+    {
+        endpointConfigurator.UseMessageRetry(r =>
+        {
+            r.Ignore<ApplicationException>();
+            r.Interval(5, 1000);
+        });
+
+        //Faulted messages thrown away instead to put in error pipeline.
+        //endpointConfigurator.DiscardFaultedMessages(); 
     }
 }
