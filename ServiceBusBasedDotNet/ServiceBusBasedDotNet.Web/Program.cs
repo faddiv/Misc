@@ -1,9 +1,13 @@
 using MassTransit;
+using MassTransit.Courier.Contracts;
+using MassTransit.Internals;
+using MassTransit.MessageData;
+using MassTransit.MessageData.Configuration;
 using ServiceBusBasedDotNet.Web;
+using ServiceBusBasedDotNet.Web.Components.BatchConsumers;
 using ServiceBusBasedDotNet.Web.MessageContracts;
 using System.Reflection;
 
-const string OrderTopic = "OrderTopic";
 var builder = WebApplication.CreateBuilder(args);
 var services = builder.Services;
 
@@ -16,6 +20,7 @@ services.AddMassTransit(cfg =>
     // By default, sagas are in-memory, but should be changed to a durable
     // saga repository.
     cfg.SetInMemorySagaRepositoryProvider();
+    
 
     var entryAssembly = typeof(WebApis).Assembly;
 
@@ -24,7 +29,12 @@ services.AddMassTransit(cfg =>
     cfg.AddSagaStateMachines(entryAssembly);
     cfg.AddSagas(entryAssembly);
     cfg.AddActivities(entryAssembly);
-    cfg.AddRequestClient<SubmitOrderBasic>(); //Not needed.
+    var messageData = new InMemoryMessageDataRepository();
+    cfg.AddSingleton<IMessageDataRepository>(messageData);
+    //cfg.AddRequestClient<SubmitOrderBasic>(); //Not needed.
+    MessageDataDefaults.AlwaysWriteToRepository = true;
+    MessageDataDefaults.ExtraTimeToLive = TimeSpan.FromMinutes(1);
+
 
     cfg.UsingRabbitMq((context, rcfg) =>
     {
@@ -32,6 +42,10 @@ services.AddMassTransit(cfg =>
         rcfg.Host(configuration.GetConnectionString("rabbitmq"));
         rcfg.UseDelayedMessageScheduler();
         rcfg.ConfigureEndpoints(context);
+        rcfg.UseMessageData(selector =>
+        {
+            return messageData;
+        });
     });
     /*cfg.UsingInMemory((context, cfg) =>
     {

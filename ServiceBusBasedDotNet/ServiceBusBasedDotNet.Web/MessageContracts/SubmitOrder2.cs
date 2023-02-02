@@ -10,6 +10,7 @@ public class SubmitOrder : CorrelatedBy<Guid>
     public string CardNumber { get; set; }
     public int Quantity { get; set; }
     public string ItemNumber { get; set; }
+    public MessageData<string> Notes { get; set; }
 
     Guid CorrelatedBy<Guid>.CorrelationId => OrderId;
 }

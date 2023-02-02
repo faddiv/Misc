@@ -1,4 +1,4 @@
-﻿using MassTransit;
+using MassTransit;
 using MassTransit.Courier.Contracts;
 using System.Text.Json;
 

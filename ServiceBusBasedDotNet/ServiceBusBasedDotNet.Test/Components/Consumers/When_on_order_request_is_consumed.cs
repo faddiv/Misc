@@ -16,11 +16,11 @@ public class When_on_order_request_is_consumed
             .AddMassTransitTestHarness(cfg =>
             {
                 cfg.AddLogging();
-                cfg.AddConsumer<SubmitOrder2Consumer>();
+                cfg.AddConsumer<SubmitOrderConsumer>();
             })
             .BuildServiceProvider();
         var harness = provider.GetRequiredService<ITestHarness>();
-        var consumer = harness.GetConsumerHarness<SubmitOrder2Consumer>();
+        var consumer = harness.GetConsumerHarness<SubmitOrderConsumer>();
 
         await harness.Start();
         try
@@ -47,11 +47,11 @@ public class When_on_order_request_is_consumed
             .AddMassTransitTestHarness(cfg =>
             {
                 cfg.AddLogging();
-                cfg.AddConsumer<SubmitOrder2Consumer>();
+                cfg.AddConsumer<SubmitOrderConsumer>();
             })
             .BuildServiceProvider();
         var harness = provider.GetRequiredService<ITestHarness>();
-        var consumer = harness.GetConsumerEndpoint<SubmitOrder2Consumer>();
+        var consumer = harness.GetConsumerEndpoint<SubmitOrderConsumer>();
 
         await harness.Start();
         try
@@ -78,11 +78,11 @@ public class When_on_order_request_is_consumed
             .AddMassTransitTestHarness(cfg =>
             {
                 cfg.AddLogging();
-                cfg.AddConsumer<SubmitOrder2Consumer>();
+                cfg.AddConsumer<SubmitOrderConsumer>();
             })
             .BuildServiceProvider();
         var harness = provider.GetRequiredService<ITestHarness>();
-        var consumer = harness.GetConsumerEndpoint<SubmitOrder2Consumer>();
+        var consumer = harness.GetConsumerEndpoint<SubmitOrderConsumer>();
 
         await harness.Start();
         try
@@ -108,11 +108,11 @@ public class When_on_order_request_is_consumed
             .AddMassTransitTestHarness(cfg =>
             {
                 cfg.AddLogging();
-                cfg.AddConsumer<SubmitOrderConsumer>();
+                cfg.AddConsumer<SubmitOrderBasicConsumer>();
             })
             .BuildServiceProvider();
         var harness = provider.GetRequiredService<ITestHarness>();
-        var consumer = harness.GetConsumerEndpoint<SubmitOrderConsumer>();
+        var consumer = harness.GetConsumerEndpoint<SubmitOrderBasicConsumer>();
 
         await harness.Start();
         try
@@ -144,7 +144,7 @@ public class When_on_order_request_is_consumed
         var loggerFactory = LoggerFactory.Create(e => { });
         var harness = new InMemoryTestHarness();
         var consumer = harness.Consumer(() =>
-            new SubmitOrderConsumer(loggerFactory.CreateLogger<SubmitOrderConsumer>()));
+            new SubmitOrderBasicConsumer(loggerFactory.CreateLogger<SubmitOrderBasicConsumer>()));
 
         await harness.Start();
         try

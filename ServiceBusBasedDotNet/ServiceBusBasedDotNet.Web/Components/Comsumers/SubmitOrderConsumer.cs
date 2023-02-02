@@ -3,7 +3,7 @@ using ServiceBusBasedDotNet.Web.MessageContracts;
 
 namespace ServiceBusBasedDotNet.Web.Components.Consumers;
 
-public class SubmitOrderConsumer : IConsumer<SubmitOrderBasic>
+public class SubmitOrderConsumer : IConsumer<SubmitOrder>
 {
     private readonly ILogger<SubmitOrderConsumer> _logger;
 
@@ -11,11 +11,11 @@ public class SubmitOrderConsumer : IConsumer<SubmitOrderBasic>
     {
         _logger = logger;
     }
-    public async Task Consume(ConsumeContext<SubmitOrderBasic> context)
+    public async Task Consume(ConsumeContext<SubmitOrder> context)
     {
-        _logger.LogInformation("Consume started");
+        _logger.LogInformation("OrderSubmittedConsumer started");
         var submitOrder = context.Message;
-        await Task.Delay(100);
+        //await Task.Delay(100);
         if (string.IsNullOrEmpty(submitOrder.CustomerNumber))
         {
             _logger.LogInformation("ERROR");
@@ -24,29 +24,26 @@ public class SubmitOrderConsumer : IConsumer<SubmitOrderBasic>
         else if (submitOrder.CustomerNumber == "asdf")
         {
             _logger.LogInformation("Order Refused");
-            if (context.ResponseAddress != null)
+            await context.Publish(new OrderRejected
             {
-                await context.RespondAsync(new OrderRejected
-                {
-                    Reason = $"Banned: {submitOrder.CustomerNumber}",
-                    OrderId = submitOrder.OrderId,
-                    Timestamp = submitOrder.Timestamp
-                });
-            }
+                Reason = $"{submitOrder.CustomerNumber} cant submit order",
+                OrderId = submitOrder.OrderId,
+                Timestamp = submitOrder.Timestamp
+            });
         }
         else
         {
-            _logger.LogInformation("Order Accepted");
-            if (context.ResponseAddress != null)
+            if (context.Message.Notes.HasValue)
             {
-                await context.RespondAsync(new OrderAccepted
-                {
-                    CustomerNumber = submitOrder.CustomerNumber,
-                    OrderId = submitOrder.OrderId,
-                    Timestamp = submitOrder.Timestamp
-                });
+                _logger.LogInformation("Big note: {Note}", await context.Message.Notes.Value);
             }
-            _logger.LogInformation("Response finished");
+            await context.Publish(new FulfillOrder
+            {
+                OrderId = submitOrder.OrderId,
+                CardNumber = submitOrder.CardNumber,
+                Quantity = submitOrder.Quantity,
+                ItemNumber = submitOrder.ItemNumber,
+            });
         }
     }
 }

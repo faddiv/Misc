@@ -94,9 +94,11 @@ internal class WebApis
     public static async Task<IResult> SubmitOrder(
         [FromServices] ILogger<WebApis> logger,
         [FromServices] IPublishEndpoint endpoint,
+        [FromServices] IMessageDataRepository messageDataRepository,
         string customerNumber = "asdf123",
         string cardNumber = "456-852",
-        string itemNumber = "2315",
+        string itemNumber = "231554",
+        string loremIpsum = "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Suspendisse condimentum convallis maximus. Nulla est mauris, faucibus eget vestibulum quis, imperdiet vitae dolor. Sed posuere, mauris et dignissim vehicula, neque mauris facilisis purus, a vestibulum mi sapien vel justo. In nisi turpis, gravida sit amet imperdiet non, faucibus vel est. Nam dictum commodo enim at dignissim. Praesent lacinia vel eros et blandit. Vivamus ornare cursus est.",
         int quantity = 1)
     {
         Guid correlationId = Guid.NewGuid();
@@ -107,7 +109,8 @@ internal class WebApis
             Timestamp = DateTime.Now,
             CardNumber = cardNumber,
             ItemNumber = itemNumber,
-            Quantity = quantity
+            Quantity = quantity,
+            Notes = await messageDataRepository.PutString(loremIpsum)
         });
 
         return Results.Ok(new { correlationId });

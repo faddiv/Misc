@@ -1,4 +1,5 @@
 using MassTransit;
+using MassTransit.Configuration;
 using ServiceBusBasedDotNet.Web.Components.CourierActivities;
 using ServiceBusBasedDotNet.Web.MessageContracts;
 
