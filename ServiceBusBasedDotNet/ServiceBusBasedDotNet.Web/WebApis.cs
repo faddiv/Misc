@@ -138,4 +138,17 @@ internal class WebApis
         });
         return Results.Ok();
     }
+
+    public static async Task<IResult> CreateLongShot(
+        [FromServices] IPublishEndpoint publishEndpoint,
+        int seconds = 10,
+        bool shouldFail = true)
+    {
+        await publishEndpoint.Publish(new LongShotJob
+        {
+            Seconds = seconds,
+            ShouldFail = shouldFail
+        });
+        return Results.Ok();
+    }
 }

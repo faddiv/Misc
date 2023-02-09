@@ -1,4 +1,5 @@
 using MassTransit;
+using ServiceBusBasedDotNet.Web.Components.StateMachines;
 using ServiceBusBasedDotNet.Web.MessageContracts;
 
 namespace ServiceBusBasedDotNet.Web.Components.Consumers;
@@ -45,5 +46,18 @@ public class SubmitOrderConsumer : IConsumer<SubmitOrder>
                 ItemNumber = submitOrder.ItemNumber,
             });
         }
+    }
+}
+public class SubmitOrderConsumerDefinition : ConsumerDefinition<SubmitOrderConsumer>
+{
+    protected override void ConfigureConsumer(IReceiveEndpointConfigurator endpointConfigurator, IConsumerConfigurator<SubmitOrderConsumer> consumerConfigurator)
+    {
+        endpointConfigurator.ConnectConsumerConfigurationObserver(new LoggingConsumeConext4FilterObserver(endpointConfigurator));
+        endpointConfigurator.UseFilter(new LoggingConsumeConextFilter());
+        consumerConfigurator.UseFilter(new LoggingConsumeConext2Filter<SubmitOrderConsumer>());
+        consumerConfigurator.ConsumerMessage<SubmitOrder>(m =>
+        {
+            m.UseFilter(new LoggingConsumeConext3Filter<SubmitOrderConsumer, SubmitOrder>());
+        });
     }
 }

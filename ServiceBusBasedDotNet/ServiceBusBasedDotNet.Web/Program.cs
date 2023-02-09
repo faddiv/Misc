@@ -1,12 +1,9 @@
 using MassTransit;
-using MassTransit.Courier.Contracts;
 using MassTransit.Internals;
 using MassTransit.MessageData;
-using MassTransit.MessageData.Configuration;
+using Microsoft.AspNetCore.Mvc;
 using ServiceBusBasedDotNet.Web;
-using ServiceBusBasedDotNet.Web.Components.BatchConsumers;
-using ServiceBusBasedDotNet.Web.MessageContracts;
-using System.Reflection;
+using ServiceBusBasedDotNet.Web.Components.Comsumers;
 
 var builder = WebApplication.CreateBuilder(args);
 var services = builder.Services;
@@ -25,12 +22,16 @@ services.AddMassTransit(cfg =>
     var entryAssembly = typeof(WebApis).Assembly;
 
     cfg.AddMediator();
+    cfg.AddDelayedMessageScheduler();
     cfg.AddConsumers(entryAssembly);
     cfg.AddSagaStateMachines(entryAssembly);
     cfg.AddSagas(entryAssembly);
     cfg.AddActivities(entryAssembly);
     var messageData = new InMemoryMessageDataRepository();
     cfg.AddSingleton<IMessageDataRepository>(messageData);
+    cfg.AddSagaRepository<JobSaga>().InMemoryRepository();
+    cfg.AddSagaRepository<JobAttemptSaga>().InMemoryRepository();
+    cfg.AddSagaRepository<JobTypeSaga>().InMemoryRepository();
     //cfg.AddRequestClient<SubmitOrderBasic>(); //Not needed.
     MessageDataDefaults.AlwaysWriteToRepository = true;
     MessageDataDefaults.ExtraTimeToLive = TimeSpan.FromMinutes(1);
@@ -41,6 +42,16 @@ services.AddMassTransit(cfg =>
         var configuration = context.GetRequiredService<IConfiguration>();
         rcfg.Host(configuration.GetConnectionString("rabbitmq"));
         rcfg.UseDelayedMessageScheduler();
+        rcfg.ServiceInstance(instance =>
+        {
+            instance.ConfigureJobServiceEndpoints(js =>
+            {
+                js.SagaPartitionCount = 1;
+                js.FinalizeCompleted = true;
+                js.ConfigureSagaRepositories(context);
+            });
+            instance.ConfigureEndpoints(context);
+        });
         rcfg.ConfigureEndpoints(context);
         rcfg.UseMessageData(selector =>
         {
@@ -73,7 +84,12 @@ etcGroup.MapGet("/weatherforecast", WebApis.GetWeather);
 etcGroup.MapPost("/post-order", WebApis.PostOrder);
 etcGroup.MapPost("/send-order", WebApis.SendOrder);
 etcGroup.MapPost("/publish-order", WebApis.PublishOrder);
-
+etcGroup.MapPost("/probe-bus", ([FromServices]IBusControl busControl) =>
+{
+    var result = busControl.GetProbeResult();
+    return Results.Ok(result);
+});
+etcGroup.MapPost("/long-shot-job", WebApis.CreateLongShot);
 var orderGroup = app.MapGroup("/order")
     //.WithGroupName("Order")
     .WithTags("Order")
