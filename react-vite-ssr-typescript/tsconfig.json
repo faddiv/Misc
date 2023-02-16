@@ -17,7 +17,7 @@
     "noEmit": true,
     "jsx": "react-jsx"
   },
-  "include": ["src", "renderer", "components", "pages"],
+  "include": ["src", "renderer", "components", "pages", "setupTests.ts"],
   "references": [{ "path": "./tsconfig.node.json" }],
   "ts-node": {
     "transpileOnly": true,

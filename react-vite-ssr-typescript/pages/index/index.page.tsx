@@ -4,7 +4,7 @@ import { useState } from "react";
 import { Button } from "react-bootstrap";
 import { PageContextClient } from "../../renderer/types";
 
-export function Page({ data }: any) {
+export function Page({ data }: { data: string }) {
   const [count, setCount] = useState(0);
   return (
     <div className={css.app}>
