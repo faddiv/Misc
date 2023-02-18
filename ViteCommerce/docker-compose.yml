@@ -1,0 +1,16 @@
+version: '3.4'
+
+services:
+  vitecommerce-ui:
+    image: ${DOCKER_REGISTRY-}vitecommerce-ui
+    container_name: vitecommerce-ui
+    build:
+      context: ./ViteCommerce.UI
+      dockerfile: Dockerfile
+
+  vitecommerce-api:
+    image: ${DOCKER_REGISTRY-}vitecommerce-api
+    container_name: vitecommerce-api
+    build:
+      context: .
+      dockerfile: ViteCommerce.Api/Dockerfile

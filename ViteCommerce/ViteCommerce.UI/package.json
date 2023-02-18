@@ -1,0 +1,41 @@
+{
+  "name": "vite-commerce",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "start": "ts-node ./server/index.ts",
+    "build": "tsc && vite build",
+    "test": "vitest --ui",
+    "coverage": "vitest run --coverage",
+    "clean": "echo no operation",
+    "docker": "npm install && vite"
+  },
+  "dependencies": {
+    "bootstrap": "^5.2.3",
+    "classnames": "^2.3.2",
+    "react": "^18.2.0",
+    "react-bootstrap": "^2.7.1",
+    "react-dom": "^18.2.0"
+  },
+  "devDependencies": {
+    "@testing-library/jest-dom": "^5.16.5",
+    "@testing-library/react": "^13.4.0",
+    "@types/express": "^4.17.17",
+    "@types/node": "^18.13.0",
+    "@types/react": "^18.0.27",
+    "@types/react-dom": "^18.0.10",
+    "@vitejs/plugin-react-swc": "^3.0.0",
+    "@vitest/ui": "^0.28.4",
+    "dotenv": "^16.0.3",
+    "express": "^4.18.2",
+    "jsdom": "^21.1.0",
+    "sass": "^1.58.0",
+    "serve-static": "^1.15.0",
+    "ts-node": "^10.9.1",
+    "typescript": "^4.9.3",
+    "vite": "^4.1.0",
+    "vite-plugin-ssr": "^0.4.80",
+    "vitest": "^0.28.4"
+  }
+}

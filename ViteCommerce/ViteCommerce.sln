@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.4.33213.308
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ViteCommerce.Api", "ViteCommerce.Api\ViteCommerce.Api.csproj", "{CEEA3EE7-233E-481E-A61F-0D89DEFF3F9A}"
+EndProject
+Project("{E53339B2-1760-4266-BCC7-CA923CBCF16C}") = "docker-compose", "docker-compose.dcproj", "{E8344B82-9C5E-45AB-8416-DD47B02F9C59}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{CEEA3EE7-233E-481E-A61F-0D89DEFF3F9A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CEEA3EE7-233E-481E-A61F-0D89DEFF3F9A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CEEA3EE7-233E-481E-A61F-0D89DEFF3F9A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CEEA3EE7-233E-481E-A61F-0D89DEFF3F9A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E8344B82-9C5E-45AB-8416-DD47B02F9C59}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E8344B82-9C5E-45AB-8416-DD47B02F9C59}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E8344B82-9C5E-45AB-8416-DD47B02F9C59}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E8344B82-9C5E-45AB-8416-DD47B02F9C59}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {2DA4A917-BB3A-45B3-B637-1551858AB0D2}
+	EndGlobalSection
+EndGlobal
