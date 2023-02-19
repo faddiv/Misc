@@ -9,6 +9,10 @@ services:
     build:
       context: ./ViteCommerce.UI
       dockerfile: Dockerfile
+    environment:
+      - NODE_ENV=development
+    ports:
+      - "3000:3000"
 
   vitecommerce-api:
     image: ${DOCKER_REGISTRY-}vitecommerce-api
@@ -16,3 +20,13 @@ services:
     build:
       context: .
       dockerfile: ViteCommerce.Api/Dockerfile
+    environment:
+      - ASPNETCORE_URLS=https://+:443;http://+:80
+      - ASPNETCORE_ENVIRONMENT=Development
+    ports:
+      - "5000:80"
+      - "5001:443"
+    volumes:
+      - ~/.vsdbg:/remote_debugger:rw
+      - ${APPDATA}/Microsoft/UserSecrets:/root/.microsoft/usersecrets:ro
+      - ${APPDATA}/ASP.NET/Https:/root/.aspnet/https:ro

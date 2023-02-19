@@ -1,14 +1,12 @@
 FROM node:lts-alpine
 
-VOLUME [ "/usr/src/app" ]
 WORKDIR /usr/src/app
 
-# COPY ["package.json", "package-lock.json", "./"]
-RUN ls -l
+COPY ["package.json", "package-lock.json", "./"]
 
-# RUN npm install
+RUN npm install
 
-# COPY . .
+COPY . .
 
 EXPOSE 3000
 
@@ -16,5 +14,4 @@ EXPOSE 3000
 
 # USER node
 
-# ENTRYPOINT [ "/bin/sh" ]
 ENTRYPOINT ["npm", "run", "docker"]
