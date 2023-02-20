@@ -18,12 +18,12 @@
     "jsx": "react-jsx"
   },
   "include": ["src", "server"],
-  "references": [{ "path": "./tsconfig.node.json" }],
   "ts-node": {
     "transpileOnly": true,
     "esm": true,
     "compilerOptions": {
-      "moduleResolution": "Node16"
+      "moduleResolution": "node16",
+      "sourceMap": true
     }
   }
 }

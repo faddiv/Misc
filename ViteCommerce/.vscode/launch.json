@@ -2,6 +2,17 @@
     "version": "0.2.0",
     "configurations": [
       {
+        "name": "Docker Node Attach",
+        "port": 9229,
+        "request": "attach",
+        "skipFiles": [
+          "<node_internals>/**"
+        ],
+        "type": "node",
+        "localRoot": "${workspaceRoot}/ViteCommerce.UI",
+        "remoteRoot": "/usr/src/app"
+      },
+      {
         "name": "Docker .NET Core Attach (Preview)",
         "type": "docker",
         "request": "attach",
