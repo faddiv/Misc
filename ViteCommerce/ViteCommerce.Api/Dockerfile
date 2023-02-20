@@ -10,15 +10,18 @@ EXPOSE 443
 # RUN adduser -u 5678 --disabled-password --gecos "" appuser && chown -R appuser /app
 # USER appuser
 
-FROM mcr.microsoft.com/dotnet/sdk:7.0 AS build
+FROM mcr.microsoft.com/dotnet/sdk:7.0 AS project
 WORKDIR /src
 COPY ["ViteCommerce.Api/ViteCommerce.Api.csproj", "ViteCommerce.Api/"]
 RUN dotnet restore "ViteCommerce.Api/ViteCommerce.Api.csproj"
 COPY . .
 WORKDIR "/src/ViteCommerce.Api"
-RUN dotnet build "ViteCommerce.Api.csproj" -c Release -o /app/build
 
-FROM build AS publish
+FROM project AS build
+RUN dotnet build "ViteCommerce.Api.csproj" -c Debug -o /app/build
+WORKDIR /app/build
+
+FROM project AS publish
 RUN dotnet publish "ViteCommerce.Api.csproj" -c Release -o /app/publish /p:UseAppHost=false
 
 FROM base AS final

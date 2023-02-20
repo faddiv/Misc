@@ -20,9 +20,16 @@ services:
     build:
       context: .
       dockerfile: ViteCommerce.Api/Dockerfile
+      target: build
+    entrypoint: dotnet ViteCommerce.Api.dll
+
     environment:
       - ASPNETCORE_URLS=https://+:443;http://+:80
       - ASPNETCORE_ENVIRONMENT=Development
+      - DOTNET_USE_POLLING_FILE_WATCHER=1
+      - ASPNETCORE_LOGGING__CONSOLE__DISABLECOLORS=true
+      - NUGET_FALLBACK_PACKAGES=/root/.nuget/fallbackpackages
+
     ports:
       - "5000:80"
       - "5001:443"

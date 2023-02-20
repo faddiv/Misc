@@ -9,6 +9,8 @@ services:
     build:
       context: ./ViteCommerce.UI
       dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
 
   vitecommerce-api:
     image: ${DOCKER_REGISTRY-}vitecommerce-api

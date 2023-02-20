@@ -1,28 +1,16 @@
 {
     "version": "0.2.0",
     "configurations": [
-        {
-            "name": ".NET Core Launch (web)",
-            "type": "coreclr",
-            "request": "launch",
-            "preLaunchTask": "build",
-            "program": "${workspaceFolder}/ViteCommerce.Api/bin/Debug/net7.0/ViteCommerce.Api.dll",
-            "args": [],
-            "cwd": "${workspaceFolder}/ViteCommerce.Api",
-            "stopAtEntry": false,
-            "serverReadyAction": {
-                "action": "openExternally",
-                "pattern": "\\bNow listening on:\\s+(https?://\\S+)"
-            },
-            "env": {
-                "ASPNETCORE_ENVIRONMENT": "Development"
-            }
-        },
-        {
-            "name": ".NET Core Attach",
-            "type": "coreclr",
-            "request": "attach"
-        },
+      {
+        "name": "Docker .NET Core Attach (Preview)",
+        "type": "docker",
+        "request": "attach",
+        "platform": "netCore",
+        "containerName": "vitecommerce-api",
+        "sourceFileMap": {
+          "/src": "${workspaceFolder}"
+        }
+      },
         {
             "name": "Docker .NET Core Launch",
             "type": "docker",
