@@ -1,35 +1,43 @@
 {
-    "version": "0.2.0",
-    "configurations": [
-      {
-        "name": "Docker Node Attach",
-        "port": 9229,
-        "request": "attach",
-        "skipFiles": [
-          "<node_internals>/**"
-        ],
-        "type": "node",
-        "localRoot": "${workspaceRoot}/ViteCommerce.UI",
-        "remoteRoot": "/usr/src/app"
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Start Docker-Compose",
+      "type": "docker",
+      "request": "launch",
+      "preLaunchTask": "docker-compose: debug",
+      "platform": "netCore",
+      "containerName": "vitecommerce-api",
+      "netCore": {
+        "appProject": "${workspaceFolder}/ViteCommerce.Api/ViteCommerce.Api.csproj",
+        "enableDebugging": true
       },
-      {
-        "name": "Docker .NET Core Attach (Preview)",
-        "type": "docker",
-        "request": "attach",
-        "platform": "netCore",
-        "containerName": "vitecommerce-api",
-        "sourceFileMap": {
-          "/src": "${workspaceFolder}"
-        }
-      },
-        {
-            "name": "Docker .NET Core Launch",
-            "type": "docker",
-            "request": "launch",
-            "preLaunchTask": "docker-run: debug",
-            "netCore": {
-                "appProject": "${workspaceFolder}/ViteCommerce.Api/ViteCommerce.Api.csproj"
-            }
-        }
-    ]
+      "removeContainerAfterDebug": false,
+      "dockerServerReadyAction": {
+        "uriFormat": "https://localhost:5001/swagger/index.html",
+        "pattern": "https://localhost:5001/swagger/index.html"
+      }
+    },
+    {
+      "name": "Docker Node Attach",
+      "port": 9229,
+      "request": "attach",
+      "skipFiles": [
+        "<node_internals>/**"
+      ],
+      "type": "node",
+      "localRoot": "${workspaceRoot}/ViteCommerce.UI",
+      "remoteRoot": "/usr/src/app"
+    },
+    {
+      "name": ".NET Core Attach",
+      "type": "docker",
+      "request": "attach",
+      "platform": "netCore",
+      "containerName": "vitecommerce-api",
+      "sourceFileMap": {
+        "/src": "${workspaceFolder}"
+      }
+    }
+  ]
 }

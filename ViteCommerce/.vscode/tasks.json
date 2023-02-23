@@ -1,97 +1,18 @@
 {
-    "version": "2.0.0",
-    "tasks": [
-        {
-            "label": "build",
-            "command": "dotnet",
-            "type": "process",
-            "args": [
-                "build",
-                "${workspaceFolder}/ViteCommerce.Api/ViteCommerce.Api.csproj",
-                "/property:GenerateFullPaths=true",
-                "/consoleloggerparameters:NoSummary"
-            ],
-            "problemMatcher": "$msCompile"
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "type": "docker-compose",
+      "label": "docker-compose: debug",
+      "dockerCompose": {
+        "up": {
+          "detached": true,
+          "build": true
         },
-        {
-            "label": "publish",
-            "command": "dotnet",
-            "type": "process",
-            "args": [
-                "publish",
-                "${workspaceFolder}/ViteCommerce.Api/ViteCommerce.Api.csproj",
-                "/property:GenerateFullPaths=true",
-                "/consoleloggerparameters:NoSummary"
-            ],
-            "problemMatcher": "$msCompile"
-        },
-        {
-            "label": "watch",
-            "command": "dotnet",
-            "type": "process",
-            "args": [
-                "watch",
-                "run",
-                "--project",
-                "${workspaceFolder}/ViteCommerce.Api/ViteCommerce.Api.csproj"
-            ],
-            "problemMatcher": "$msCompile"
-        },
-        {
-            "type": "docker-build",
-            "label": "docker-build: debug",
-            "dependsOn": [
-                "build"
-            ],
-            "dockerBuild": {
-                "tag": "vitecommerce:dev",
-                "target": "base",
-                "dockerfile": "${workspaceFolder}/ViteCommerce.Api/Dockerfile",
-                "context": "${workspaceFolder}",
-                "pull": true
-            },
-            "netCore": {
-                "appProject": "${workspaceFolder}/ViteCommerce.Api/ViteCommerce.Api.csproj"
-            }
-        },
-        {
-            "type": "docker-build",
-            "label": "docker-build: release",
-            "dependsOn": [
-                "build"
-            ],
-            "dockerBuild": {
-                "tag": "vitecommerce:latest",
-                "dockerfile": "${workspaceFolder}/ViteCommerce.Api/Dockerfile",
-                "context": "${workspaceFolder}",
-                "pull": true
-            },
-            "netCore": {
-                "appProject": "${workspaceFolder}/ViteCommerce.Api/ViteCommerce.Api.csproj"
-            }
-        },
-        {
-            "type": "docker-run",
-            "label": "docker-run: debug",
-            "dependsOn": [
-                "docker-build: debug"
-            ],
-            "dockerRun": {},
-            "netCore": {
-                "appProject": "${workspaceFolder}/ViteCommerce.Api/ViteCommerce.Api.csproj",
-                "enableDebugging": true
-            }
-        },
-        {
-            "type": "docker-run",
-            "label": "docker-run: release",
-            "dependsOn": [
-                "docker-build: release"
-            ],
-            "dockerRun": {},
-            "netCore": {
-                "appProject": "${workspaceFolder}/ViteCommerce.Api/ViteCommerce.Api.csproj"
-            }
-        }
-    ]
+        "files": [
+          "${workspaceFolder}/docker-compose.debug.yml"
+        ]
+      }
+    }
+  ]
 }

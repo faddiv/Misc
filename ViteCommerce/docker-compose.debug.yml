@@ -9,7 +9,7 @@ services:
     build:
       context: ./ViteCommerce.UI
       dockerfile: Dockerfile
-    entrypoint: node --inspect=0.0.0.0:9229 --experimental-loader ts-node/esm ./server/index.ts
+    entrypoint: node --inspect=0.0.0.0:9229 ./server/index.js
 
     environment:
       - NODE_ENV=development
