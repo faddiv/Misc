@@ -4,10 +4,10 @@
 	"name": "Existing Dockerfile",
 	"build": {
 		// Sets the run context to one level up instead of the .devcontainer folder.
-		"context": "..",
+		"context": "../ViteCommerce.UI",
 		// Update the 'dockerFile' property if you aren't using the standard 'Dockerfile' filename.
-		"dockerfile": "../ViteCommerce.Api/Dockerfile"
-	}
+		"dockerfile": "../ViteCommerce.UI/Dockerfile"
+	},
 
 	// Features to add to the dev container. More info: https://containers.dev/features.
 	// "features": {},
@@ -23,4 +23,6 @@
 
 	// Uncomment to connect as an existing user other than the container default. More info: https://aka.ms/dev-containers-non-root.
 	// "remoteUser": "devcontainer"
+
+	"appPort": 3000
 }

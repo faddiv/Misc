@@ -5,6 +5,12 @@ import type { PageContextBuiltInClient } from 'vite-plugin-ssr/client' // When u
 type Page = (pageProps: PageProps) => React.ReactElement
 export type PageProps = {}
 
+export type PageContextServerResult<T> = {
+  pageContext: {
+    pageProps: T;
+  }
+}
+
 export type PageContextCustom = {
   Page: Page
   pageProps?: PageProps
