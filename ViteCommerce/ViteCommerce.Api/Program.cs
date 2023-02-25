@@ -17,8 +17,13 @@ builder.Services.ConfigureHttpJsonOptions(cfg =>
 {
     //cfg.SerializerOptions.Converters.Add(new DateOnlyJsonConverter());
 });
+builder.Services.AddCors();
 
 var app = builder.Build();
+
+app.UseCors(opt => {
+    opt.SetIsOriginAllowed(origin => origin.Contains("localhost"));
+});
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())

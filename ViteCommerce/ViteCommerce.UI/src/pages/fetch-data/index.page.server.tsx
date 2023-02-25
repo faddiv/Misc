@@ -12,7 +12,7 @@ export async function onBeforeRender(
   pageContext: PageContextServer
 ): Promise<PageContextServerResult<FetchDataProps>> {
   try {
-    const response = await fetch("http://vitecommerce-api/weatherforecast");
+    const response = await fetch("https://localhost:5001/weatherforecast");
     if (response.ok) {
       const data = await response.json();
       return {

@@ -14,4 +14,4 @@ EXPOSE 3000
 
 # USER node
 
-ENTRYPOINT ["npm", "run", "docker"]
+ENTRYPOINT ["node","--inspect=0.0.0.0:9229","./server/index.js"]

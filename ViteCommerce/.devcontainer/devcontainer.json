@@ -9,6 +9,8 @@
 		"dockerfile": "../ViteCommerce.UI/Dockerfile"
 	},
 
+  "workspaceFolder": "/usr/src/app",
+
 	// Features to add to the dev container. More info: https://containers.dev/features.
 	// "features": {},
 
