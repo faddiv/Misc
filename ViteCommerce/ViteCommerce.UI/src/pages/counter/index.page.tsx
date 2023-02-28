@@ -1,4 +1,3 @@
-import css from "./index.module.scss";
 import { useCallback, useState } from "react";
 
 export { Page }

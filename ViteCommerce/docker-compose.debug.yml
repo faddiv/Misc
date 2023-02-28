@@ -19,6 +19,7 @@ services:
       - DOTNET_USE_POLLING_FILE_WATCHER=1
       - ASPNETCORE_LOGGING__CONSOLE__DISABLECOLORS=true
       - NUGET_FALLBACK_PACKAGES=/root/.nuget/fallbackpackages
+      - ConnectionStrings__DefaultConnection=Data Source=/app/data/app_database.db;
 
     ports:
       - "5000:80"
@@ -27,3 +28,4 @@ services:
       - ~/.vsdbg:/remote_debugger:rw
       - ${APPDATA}/Microsoft/UserSecrets:/root/.microsoft/usersecrets:ro
       - ${APPDATA}/ASP.NET/Https:/root/.aspnet/https:ro
+      - ./container_data:/app/data:rw

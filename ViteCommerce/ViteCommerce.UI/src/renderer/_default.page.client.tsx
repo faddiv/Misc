@@ -3,6 +3,8 @@ import "./index.scss";
 import { PageContextClient } from "./types";
 import { Layout } from "../components/layoutElements/Layout";
 
+
+
 export async function render(pageContext: PageContextClient) {
   const { Page, pageProps, isHydration } = pageContext;
   renderRoot(

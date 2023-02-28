@@ -3,18 +3,38 @@
 version: '3.4'
 
 services:
-  vitecommerce-ui:
-    image: ${DOCKER_REGISTRY-}vitecommerce-ui
-    container_name: vitecommerce-ui
-    build:
-      context: ./ViteCommerce.UI
-      dockerfile: Dockerfile
-    ports:
-      - "3000:3000"
-
+  #vitecommerce-ui:
+  #  image: ${DOCKER_REGISTRY-}vitecommerce-ui
+  #  container_name: vitecommerce-ui
+  #  build:
+  #    context: ./ViteCommerce.UI
+  #    dockerfile: Dockerfile
+  #  ports:
+  #    - "3000:3000"
+  
   vitecommerce-api:
     image: ${DOCKER_REGISTRY-}vitecommerce-api
     container_name: vitecommerce-api
     build:
       context: .
       dockerfile: ViteCommerce.Api/Dockerfile
+      target: build
+    entrypoint: dotnet ViteCommerce.Api.dll
+
+    environment:
+      - ASPNETCORE_URLS=https://+:443;http://+:80
+      - ASPNETCORE_ENVIRONMENT=Development
+      - DOTNET_USE_POLLING_FILE_WATCHER=1
+      - ASPNETCORE_LOGGING__CONSOLE__DISABLECOLORS=true
+      - NUGET_FALLBACK_PACKAGES=/root/.nuget/fallbackpackages
+      - ConnectionStrings__DefaultConnection=Data Source=/app_data/app_database.db;
+      - AppDataLocation=/app_data
+
+    ports:
+      - "5000:80"
+      - "5001:443"
+    volumes:
+      - ~/.vsdbg:/remote_debugger:rw
+      - ${APPDATA}/Microsoft/UserSecrets:/root/.microsoft/usersecrets:ro
+      - ${APPDATA}/ASP.NET/Https:/root/.aspnet/https:ro
+      - ./container_data:/app_data:rw
