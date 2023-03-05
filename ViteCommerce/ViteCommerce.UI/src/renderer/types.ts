@@ -1,6 +1,7 @@
 import type { PageContextBuiltIn } from 'vite-plugin-ssr'
 // import type { PageContextBuiltInClient } from 'vite-plugin-ssr/client/router' // When using Client Routing
 import type { PageContextBuiltInClient } from 'vite-plugin-ssr/client' // When using Server Routing
+import { Session } from "next-auth";
 
 type Page = (pageProps: PageProps) => React.ReactElement
 export type PageProps = {}
@@ -12,9 +13,10 @@ export type PageContextServerResult<T> = {
 }
 
 export type PageContextCustom = {
-  Page: Page
-  pageProps?: PageProps
-  urlPathname: string
+  Page: Page,
+  pageProps?: PageProps,
+  urlPathname: string,
+  session: Session,
   exports: {
     documentProps?: {
       title?: string

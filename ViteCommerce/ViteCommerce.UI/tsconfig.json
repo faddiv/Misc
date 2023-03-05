@@ -2,8 +2,8 @@
   "compilerOptions": {
     "strict": true,
     "module": "ESNext",
+    "moduleResolution": "node16",
     "target": "ESNext",
-    "moduleResolution": "Node",
     "lib": ["DOM", "DOM.Iterable", "ESNext"],
     "types": ["vite/client"],
     "useDefineForClassFields": true,
@@ -17,13 +17,14 @@
     "noEmit": true,
     "jsx": "react-jsx"
   },
-  "include": ["src", "server"],
+  "include": ["src", "server", "server.ts"],
   "ts-node": {
     "transpileOnly": true,
-    "esm": true,
     "compilerOptions": {
+      "module": "CommonJS",
       "moduleResolution": "node16",
-      "sourceMap": true
+      "sourceMap": true,
+      "esModuleInterop": true,
     }
   }
 }

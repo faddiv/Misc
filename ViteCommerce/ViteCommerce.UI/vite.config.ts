@@ -10,6 +10,9 @@ export default defineConfig({
       prerender: true,
     }),
   ],
+  define: {
+    "process.env": process.env
+  },
   css: {
     modules: {
       localsConvention: "camelCase",

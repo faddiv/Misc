@@ -1,20 +1,18 @@
 import express from "express";
 //import compression from 'compression'
 import { renderPage } from "vite-plugin-ssr";
-import { root } from "./root.js";
-const isProduction = process.env.NODE_ENV === "production";
-if(!isProduction) {
-  const dotenv = await import("dotenv");
-  dotenv.config();
-  /*dotenv.config({
-    path: `${root}/.env`
-  })*/
-}
-const port = process.env.PORT;
+import { createNextAuthMiddleware } from "./server/auth/auth";
+import { createNextAuthOptions } from "./server/auth/auth.options";
 
-console.log("node.env", process.env);
-console.log("Production mode", isProduction);
-console.log("app root", root);
+/*import * as dotenv from 'dotenv' // see https://github.com/motdotla/dotenv#how-do-i-use-dotenv-with-import
+dotenv.config();*/
+const port = process.env.PORT;
+const isProduction = process.env.NODE_ENV === "production";
+const root = __dirname;
+
+//console.log("node.env", process.env);
+console.log("Production mode", process.env.NODE_ENV);
+console.log("app root", __dirname);
 console.log("app port", port);
 
 startServer();
@@ -23,6 +21,7 @@ async function startServer() {
   const app = express();
 
   //app.use(compression())
+  app.use(createNextAuthMiddleware(createNextAuthOptions()));
 
   if (isProduction) {
     //const sirv = (await import('sirv')).default
@@ -40,6 +39,9 @@ async function startServer() {
   app.get("*", async (req, res, next) => {
     const pageContextInit = {
       urlOriginal: req.originalUrl,
+      session: res.locals.session,
+      csrfToken: res.locals.csrfToken,
+      callbackUrl: res.locals.callbackUrl
     };
     const pageContext = await renderPage(pageContextInit);
     const { httpResponse } = pageContext;

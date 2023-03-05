@@ -9,6 +9,7 @@ export { render };
 export const passToClient: (keyof PageContextCustom)[] = [
   "pageProps",
   "urlPathname",
+  "session"
 ];
 
 async function render(pageContext: PageContextServer) {
