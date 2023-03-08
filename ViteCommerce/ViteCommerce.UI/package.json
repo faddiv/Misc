@@ -3,7 +3,7 @@
   "private": true,
   "version": "0.0.0",
   "scripts": {
-    "server": "node -r ts-node/register -r dotenv/config --inspect=0.0.0.0:9229 ./server-entry.ts dotenv_config_debug=true",
+    "server": "node -r ts-node/register -r dotenv/config --inspect=0.0.0.0:9229 ./server-entry.ts dotenv_config_debug=true dotenv_config_path=./.env.local",
     "build": "tsc && vite build",
     "test": "vitest --ui",
     "coverage": "vitest run --coverage",
