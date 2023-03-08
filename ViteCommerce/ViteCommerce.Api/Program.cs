@@ -1,48 +1,18 @@
 using Database;
 using Microsoft.AspNetCore.ApiAuthorization.IdentityServer;
 using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authentication.OAuth;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.IdentityModel.Tokens;
-using Microsoft.OpenApi.Models;
+using ViteCommerce.Api.Configurations;
 
 var builder = WebApplication.CreateBuilder(args);
-
+var configuration = builder.Configuration;
 // Add services to the container.
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen((cfg) =>
-{
-    cfg.MapType<DateOnly>(() => new OpenApiSchema
-    {
-        Type = "string",
-        Format = "date"
-    });
-    cfg.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
-    {
-        In = ParameterLocation.Header,
-        Description = "Please enter a valid token",
-        Name = "Authorization",
-        Type = SecuritySchemeType.Http,
-        BearerFormat = "JWT",
-        Scheme = "Bearer"
-    });
-    cfg.AddSecurityRequirement(new OpenApiSecurityRequirement()
-    {
-        {
-            new OpenApiSecurityScheme
-            {
-                Reference = new OpenApiReference
-                {
-                    Type = ReferenceType.SecurityScheme,
-                    Id = "Bearer"
-                }
-            },
-            new string[] {}
-        }
-});
-});
+builder.Services.AddApiConfig(builder.Configuration);
 builder.Services.ConfigureHttpJsonOptions(cfg =>
 {
     //cfg.SerializerOptions.Converters.Add(new DateOnlyJsonConverter());
@@ -62,7 +32,12 @@ builder.Services.AddDefaultIdentity<IdentityUser>(options =>
 .AddEntityFrameworkStores<AppDbContext>();
 
 
-builder.Services.AddAuthentication()
+builder.Services.AddAuthentication(opt =>
+{
+    opt.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+    opt.DefaultForbidScheme = JwtBearerDefaults.AuthenticationScheme;
+    opt.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
+})
         .AddCookie(options =>
         {
             options.LoginPath = "/Account/Unauthorized/";
@@ -70,22 +45,24 @@ builder.Services.AddAuthentication()
         })
         .AddJwtBearer(options =>
         {
-            options.Audience = "http://localhost:3000/";
-            options.Authority = "https://localhost:5001/";
+            options.Audience = configuration["Authentication:Google:ClientId"];
+            options.Authority = "https://accounts.google.com";
         });
 
-builder.Services
+/*builder.Services
     .AddIdentityServer()
-    .AddApiAuthorization<IdentityUser, AppDbContext>();
+    .AddApiAuthorization<IdentityUser, AppDbContext>();*/
 
-builder.Services.AddAuthentication()
-    .AddIdentityServerJwt();
+/*builder.Services.AddAuthentication()
+    .AddIdentityServerJwt();*/
 
 var app = builder.Build();
 
 app.UseCors(opt =>
 {
-    opt.SetIsOriginAllowed(origin => origin.Contains("localhost"));
+    opt.AllowAnyHeader();
+    opt.AllowAnyMethod();
+    opt.AllowAnyOrigin();
 });
 
 // Configure the HTTP request pipeline.
@@ -99,7 +76,7 @@ if (app.Environment.IsDevelopment())
 app.UseStaticFiles();
 
 app.UseAuthentication();
-app.UseIdentityServer();
+//app.UseIdentityServer();
 app.UseAuthorization();
 
 var summaries = new[]
@@ -107,7 +84,7 @@ var summaries = new[]
     "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
 };
 
-app.MapGet("/_configuration/{clientId}", (
+/*app.MapGet("/_configuration/{clientId}", (
     [FromRoute] string clientId,
     [FromServices] IClientRequestParametersProvider clientRequestParametersProvider,
     HttpContext context) =>
@@ -116,7 +93,7 @@ app.MapGet("/_configuration/{clientId}", (
     return Results.Ok(parameters);
 })
 .WithName("GetClientParameters")
-.WithOpenApi();
+.WithOpenApi();*/
 
 app.MapGet("/weatherforecast", () =>
 {

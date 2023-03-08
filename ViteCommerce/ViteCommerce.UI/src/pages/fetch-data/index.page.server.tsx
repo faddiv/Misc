@@ -1,36 +1,31 @@
-import css from "./index.module.scss";
-import reactLogo from "../../assets/logo.svg";
-import { useState } from "react";
-import { Button } from "react-bootstrap";
-import {
+import type {
   PageContextServer,
   PageContextServerResult,
 } from "../../renderer/types";
 import { FetchDataProps } from "./FetchDataProps";
+import { fetchWeatherforecast } from "./WeatherApiClient";
 
 export async function onBeforeRender(
   pageContext: PageContextServer
 ): Promise<PageContextServerResult<FetchDataProps>> {
   try {
-    const response = await fetch("https://localhost:5001/weatherforecast");
-    if (response.ok) {
-      const data = await response.json();
+    if (!pageContext.session) {
       return {
         pageContext: {
           pageProps: {
-            data,
-          },
-        },
-      };
-    } else {
-      return {
-        pageContext: {
-          pageProps: {
-            error: response.statusText,
+            error: "Please login",
           },
         },
       };
     }
+    const data = await fetchWeatherforecast(pageContext.session);
+    return {
+      pageContext: {
+        pageProps: {
+          data,
+        },
+      },
+    };
   } catch (error) {
     console.log("Server fetch failed", error);
     return {

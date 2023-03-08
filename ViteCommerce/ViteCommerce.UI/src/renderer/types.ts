@@ -16,7 +16,7 @@ export type PageContextCustom = {
   Page: Page,
   pageProps?: PageProps,
   urlPathname: string,
-  session: Session,
+  session: Session | null,
   exports: {
     documentProps?: {
       title?: string

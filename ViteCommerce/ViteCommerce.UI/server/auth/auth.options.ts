@@ -17,6 +17,20 @@ export function createNextAuthOptions() {
       maxAge: 24 * 60 * 60,
     },
     providers: [],
+    callbacks: {
+      jwt({ token, account, profile }) {
+        //console.log("jwt callback:", token, account, profile);
+        if (account) {
+          token.id_token = account.id_token;
+        }
+        return token;
+      },
+      session({ session, token }) {
+        //console.log("session callback:", session, token);
+        session.id_token = token.id_token as string | undefined;
+        return session;
+      },
+    },
   };
 
   if (process.env.GOOGLE_CLINET_ID && process.env.GOOGLE_CLINET_SECRET) {
@@ -24,6 +38,7 @@ export function createNextAuthOptions() {
       Google({
         clientId: process.env.GOOGLE_CLINET_ID,
         clientSecret: process.env.GOOGLE_CLINET_SECRET,
+        idToken: true
       })
     );
   }
