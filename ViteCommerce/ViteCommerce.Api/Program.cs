@@ -1,11 +1,15 @@
 using Database;
+using Duende.IdentityServer.EntityFramework.Entities;
+using Duende.IdentityServer.Extensions;
 using Microsoft.AspNetCore.ApiAuthorization.IdentityServer;
 using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.Google;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authentication.OAuth;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.Security.Claims;
 using ViteCommerce.Api.Configurations;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -38,15 +42,10 @@ builder.Services.AddAuthentication(opt =>
     opt.DefaultForbidScheme = JwtBearerDefaults.AuthenticationScheme;
     opt.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
 })
-        .AddCookie(options =>
+        .AddJwtBearer(opt =>
         {
-            options.LoginPath = "/Account/Unauthorized/";
-            options.AccessDeniedPath = "/Account/Forbidden/";
-        })
-        .AddJwtBearer(options =>
-        {
-            options.Audience = configuration["Authentication:Google:ClientId"];
-            options.Authority = "https://accounts.google.com";
+            opt.Audience = configuration["Authentication:Google:ClientId"];
+            opt.Authority = "https://accounts.google.com";
         });
 
 /*builder.Services

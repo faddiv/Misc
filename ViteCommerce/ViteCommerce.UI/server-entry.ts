@@ -1,4 +1,6 @@
 import express from "express";
+import { createProxyMiddleware } from "http-proxy-middleware";
+import { getToken } from "next-auth/jwt";
 //import compression from 'compression'
 import { renderPage } from "vite-plugin-ssr";
 import { createNextAuthMiddleware } from "./server/auth/auth";
@@ -23,6 +25,20 @@ async function startServer() {
   //app.use(compression())
   app.use(createNextAuthMiddleware(createNextAuthOptions()));
 
+  const apiProxy = createProxyMiddleware({
+    target: "http://localhost:5000", // target host with the same base path
+    changeOrigin: true, // needed for virtual hosted sites
+    secure: false,
+    async onProxyReq(proxyReq, req, res, options) {
+      const token = res.locals.token;
+      if(token) {
+        console.log("token provided",token );
+        proxyReq.setHeader("Authorization", `Bearer ${token.id_token}`);
+      }
+    }
+  });
+  app.use("/api", apiProxy);
+
   if (isProduction) {
     //const sirv = (await import('sirv')).default
     //app.use(sirv(`${root}/dist/client`))
@@ -31,17 +47,20 @@ async function startServer() {
     const viteServer = await vite.createServer({
       root,
       server: { middlewareMode: true },
-      appType: "custom"
+      appType: "custom",
     });
     app.use(viteServer.middlewares);
   }
 
   app.get("*", async (req, res, next) => {
+    console.log("Base url:", req.baseUrl);
     const pageContextInit = {
       urlOriginal: req.originalUrl,
       session: res.locals.session,
+      token: res.locals.token?.id_token,
       csrfToken: res.locals.csrfToken,
-      callbackUrl: res.locals.callbackUrl
+      callbackUrl: res.locals.callbackUrl,
+      baseUrl: req.baseUrl
     };
     const pageContext = await renderPage(pageContextInit);
     const { httpResponse } = pageContext;

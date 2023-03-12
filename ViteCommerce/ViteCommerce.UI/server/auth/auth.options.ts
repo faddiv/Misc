@@ -25,9 +25,11 @@ export function createNextAuthOptions() {
         }
         return token;
       },
-      session({ session, token }) {
-        //console.log("session callback:", session, token);
-        session.id_token = token.id_token as string | undefined;
+      session({ session, token, user }) {
+        //console.log("session callback:", session, token, user);
+        //session.sub = token.sub;
+        //session.id_token = token.id_token as string | undefined;
+        //session.access_token = token.access_token as string | undefined;
         return session;
       },
     },
@@ -38,7 +40,6 @@ export function createNextAuthOptions() {
       Google({
         clientId: process.env.GOOGLE_CLINET_ID,
         clientSecret: process.env.GOOGLE_CLINET_SECRET,
-        idToken: true
       })
     );
   }

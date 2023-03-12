@@ -5,6 +5,7 @@ import { Router } from "express";
 import type { RequestHandler } from "express";
 import bodyParser from "body-parser";
 import cookieParser from "cookie-parser";
+import { getToken } from "next-auth/jwt";
 const { json, urlencoded } = bodyParser;
 
 function createRequestHandler(options: AuthOptions): RequestHandler<any,any, any, {nextauth: undefined | string[]}> {
@@ -24,7 +25,9 @@ function createRequestHandler(options: AuthOptions): RequestHandler<any,any, any
 function createSessionHandler(options: AuthOptions): RequestHandler<any,any, any, {nextauth: undefined | string[]}>  {
   return async (req, res, next) => {
     const session: Session | null = await getServerSession(req as unknown as NextApiRequest, res as unknown as NextApiResponse, options);
+    const token = await getToken({ req });
     res.locals.session = session;
+    res.locals.token = token;
     next();
   }
 }

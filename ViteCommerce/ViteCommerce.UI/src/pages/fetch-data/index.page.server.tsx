@@ -3,22 +3,14 @@ import type {
   PageContextServerResult,
 } from "../../renderer/types";
 import { FetchDataProps } from "./FetchDataProps";
-import { fetchWeatherforecast } from "./WeatherApiClient";
+import { fetchWeatherforecastServer } from "./WeatherApiClient";
 
 export async function onBeforeRender(
   pageContext: PageContextServer
 ): Promise<PageContextServerResult<FetchDataProps>> {
+
   try {
-    if (!pageContext.session) {
-      return {
-        pageContext: {
-          pageProps: {
-            error: "Please login",
-          },
-        },
-      };
-    }
-    const data = await fetchWeatherforecast(pageContext.session);
+    const data = await fetchWeatherforecastServer(pageContext);
     return {
       pageContext: {
         pageProps: {

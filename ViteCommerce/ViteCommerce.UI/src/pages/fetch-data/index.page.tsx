@@ -4,6 +4,7 @@ import { FetchDataProps } from "./FetchDataProps";
 import { fetchWeatherforecast } from "./WeatherApiClient";
 import { useSession } from "next-auth/react";
 import { WeatherForecast } from "../../components/weatherForecast";
+import { usePageContext } from "../../renderer/usePageContext";
 
 export function Page({ data, error }: FetchDataProps) {
   const [forecasts, setForecasts] = useState<{
@@ -11,16 +12,16 @@ export function Page({ data, error }: FetchDataProps) {
     loading: boolean;
     error: string | undefined;
   }>({ data, loading: false, error });
-  const session = useSession();
+  const pageContext = usePageContext();
   const refresh = useCallback(async () => {
-    if (!session.data) return;
+    //if (!session.data) return;
     setForecasts((prev) => ({
       data: prev.data,
       loading: true,
       error: undefined,
     }));
     try {
-      const data = await fetchWeatherforecast(session.data);
+      const data = await fetchWeatherforecast(pageContext);
       setForecasts({
         data,
         loading: false,
