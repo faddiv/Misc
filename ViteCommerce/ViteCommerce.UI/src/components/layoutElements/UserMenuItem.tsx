@@ -3,7 +3,6 @@ import { Button, Nav } from "react-bootstrap";
 import { signIn, signOut, useSession } from "next-auth/react";
 
 export const UserMenuItem: FunctionComponent = () => {
-  console.log("UserMenuItem rendered");
   var session = useSession();
   const googleSignin = useCallback(() => {
     console.log("signin clicked");

@@ -1,4 +1,3 @@
-import type { Session } from "next-auth";
 import { PageContext, PageContextServer } from "../../renderer/types";
 import { fetch } from "./serverFetch";
 
@@ -13,7 +12,7 @@ export async function fetchWeatherforecast(pageContext: PageContext) {
 }
 
 export async function fetchWeatherforecastServer(pageContext: PageContextServer) {
-  console.log("Calling fetch", pageContext.token);
+  //console.log("Current Token", pageContext.token);
   const response = await fetch("/api/weatherforecast", {
     headers: {
       Authorization: `Bearer ${pageContext.token}`,

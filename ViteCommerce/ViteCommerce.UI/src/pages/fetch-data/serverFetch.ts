@@ -10,6 +10,7 @@ let fetchExt: typeof fetch = import.meta.env.SSR
         url = new URL(input.url, env.API_URL);
         init = Object.assign({}, input, { url: undefined });
       }
+      //console.log("Utl to call:", url.toString());
       return fetch(url, init);
     }
   : fetch;
