@@ -6,6 +6,7 @@ import type { RequestHandler } from "express";
 import bodyParser from "body-parser";
 import cookieParser from "cookie-parser";
 import { getToken } from "next-auth/jwt";
+import type { ResLocals } from "./locals";
 const { json, urlencoded } = bodyParser;
 
 function createRequestHandler(
@@ -26,7 +27,7 @@ function createRequestHandler(
 
 function createSessionHandler(
   options: AuthOptions
-): RequestHandler<any, any, any, { nextauth: undefined | string[] }> {
+): RequestHandler<any, any, any, any, ResLocals> {
   return async (req, res, next) => {
     const [session, token] = await Promise.all([
       getServerSession(
@@ -36,7 +37,7 @@ function createSessionHandler(
       ),
       getToken({ req }),
     ]);
-    res.locals.session = session;
+    res.locals.session = session || undefined;
     res.locals.token = token;
     next();
   };
