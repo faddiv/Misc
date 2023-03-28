@@ -5,13 +5,11 @@ import { Router } from "express";
 import type { RequestHandler } from "express";
 import bodyParser from "body-parser";
 import cookieParser from "cookie-parser";
-import { getToken } from "next-auth/jwt";
 import type { ResLocals } from "./locals";
+import { tokenStorage } from "./tokenStorage";
 const { json, urlencoded } = bodyParser;
 
-function createRequestHandler(
-  options: AuthOptions
-): RequestHandler<any, any, any, { nextauth: undefined | string[] }> {
+function createRequestHandler(options: AuthOptions): RequestHandler<any, any, any, { nextauth: undefined | string[] }> {
   return (req, res, _) => {
     const nextauth = req.path.split("/");
     nextauth.splice(0, 3);
@@ -25,20 +23,13 @@ function createRequestHandler(
   };
 }
 
-function createSessionHandler(
-  options: AuthOptions
-): RequestHandler<any, any, any, any, ResLocals> {
+function createSessionHandler(options: AuthOptions): RequestHandler<any, any, any, any, ResLocals> {
   return async (req, res, next) => {
-    const [session, token] = await Promise.all([
-      getServerSession(
-        req as unknown as NextApiRequest,
-        res as unknown as NextApiResponse,
-        options
-      ),
-      getToken({ req }),
-    ]);
+    const session = await getServerSession(req as unknown as NextApiRequest, res as unknown as NextApiResponse, options);
     res.locals.session = session || undefined;
-    res.locals.token = token;
+    if(session && session.session_id) {
+      res.locals.token = await tokenStorage.getToken(session.session_id);
+    }
     next();
   };
 }

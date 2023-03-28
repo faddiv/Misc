@@ -1,12 +1,12 @@
 import ReactDOMServer from "react-dom/server";
 import { escapeInject, dangerouslySkipEscape } from "vite-plugin-ssr";
 import logoUrl from "../assets/logo.svg";
-import type { PageContextCustom, PageContextServer } from "./types";
+import type { PageContextClient, PageContextServer } from "./types";
 import { Layout } from "../components/layoutElements/Layout";
 
 export { render };
 // See https://vite-plugin-ssr.com/data-fetching
-export const passToClient: (keyof PageContextCustom)[] = [
+export const passToClient: (keyof PageContextClient)[] = [
   "pageProps",
   "urlPathname",
   "session"

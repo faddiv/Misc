@@ -12,7 +12,6 @@ export async function fetchWeatherforecast(pageContext: PageContext) {
 }
 
 export async function fetchWeatherforecastServer(pageContext: PageContextServer) {
-  //console.log("Current Token", pageContext.token);
   const response = await fetch("/api/weatherforecast", {
     headers: {
       Authorization: `Bearer ${pageContext.token}`,

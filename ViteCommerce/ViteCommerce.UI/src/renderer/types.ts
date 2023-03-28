@@ -13,10 +13,14 @@ export type PageContextServerResult<T> = {
 };
 
 export interface PageContextInit {
-  session: Session | null;
+  session?: Session;
 }
 export interface PageContextInitServer extends PageContextInit {
   token?: string;
+  /** @deprecated */
+  url?: string;
+  /** The URL of the HTTP request */
+  urlOriginal?: string;
 }
 
 export interface PageContextClient2 extends PageContextInit {

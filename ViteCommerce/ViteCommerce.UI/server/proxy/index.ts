@@ -13,8 +13,7 @@ export function addProxy(app: Express) {
     onProxyReq(proxyReq, _req, res: Response<any, ResLocals>, _options) {
       const token = res.locals.token;
       if (token) {
-        //console.log("token provided", token);
-        proxyReq.setHeader("Authorization", `Bearer ${token.id_token}`);
+        proxyReq.setHeader("Authorization", `Bearer ${token}`);
       }
     },
   });

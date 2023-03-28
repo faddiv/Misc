@@ -1,16 +1,14 @@
 import type { Express, Response } from "express-serve-static-core";
 import { renderPage } from "vite-plugin-ssr";
+import { PageContextInitServer } from "../../src/renderer/types";
 import { ResLocals } from "../auth/locals";
 
 export function addViteSsr(app: Express) {
   app.get("*", async (req, res: Response<any, ResLocals>, next) => {
-    const pageContextInit = {
-      urlOriginal: req.originalUrl,
+    const pageContextInit: PageContextInitServer = {
       session: res.locals.session,
-      token: res.locals.token?.id_token,
-      csrfToken: res.locals.csrfToken,
-      callbackUrl: res.locals.callbackUrl,
-      baseUrl: req.baseUrl,
+      token: res.locals.token,
+      urlOriginal: req.originalUrl
     };
     const pageContext = await renderPage(pageContextInit);
 

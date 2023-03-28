@@ -1,8 +1,7 @@
 import Google from "next-auth/providers/google";
 import Duende from "next-auth/providers/duende-identity-server6";
 import type { AuthOptions } from "next-auth";
-//const Google = GoogleModule.default;
-//const Duende = DuendeModule.default;
+import { tokenStorage } from "./tokenStorage";
 
 export function createNextAuthOptions() {
   if (!process.env.NEXTAUTH_SECRET) {
@@ -10,7 +9,7 @@ export function createNextAuthOptions() {
   }
 
   const nextAuthOptions: AuthOptions = {
-    debug: true,
+    //debug: true,
     secret: process.env.NEXTAUTH_SECRET,
     session: {
       strategy: "jwt",
@@ -18,21 +17,17 @@ export function createNextAuthOptions() {
     },
     providers: [],
     callbacks: {
-      jwt({ token, account, profile }) {
-        //console.log("jwt callback:", token, account, profile);
-        if (account) {
-          token.id_token = account.id_token;
+      async jwt({ token, account }) {
+        if (account && account.id_token) {
+          token.session_id = await tokenStorage.saveToken(account.id_token);
         }
         return token;
       },
       session({ session, token, user }) {
-        //console.log("session callback:", session, token, user);
-        //session.sub = token.sub;
-        //session.id_token = token.id_token as string | undefined;
-        //session.access_token = token.access_token as string | undefined;
+        session.session_id = token?.session_id;
         return session;
-      },
-    },
+      }
+    }
   };
 
   if (process.env.GOOGLE_CLINET_ID && process.env.GOOGLE_CLINET_SECRET) {
