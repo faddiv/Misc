@@ -22,6 +22,7 @@ export default defineConfig({
   resolve: {
     alias: [
       {
+        // This handles ~node references in scss.
         find: /^~.+/,
         replacement: ((val: string) => {
           return val.replace(/^~/, "");

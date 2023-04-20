@@ -1,13 +1,12 @@
 import NextAuth, { getServerSession } from "next-auth/next";
-import type { AuthOptions, Session } from "next-auth";
+import type { AuthOptions } from "next-auth";
 import type { NextApiRequest, NextApiResponse } from "./next-interfaces";
 import { Router } from "express";
 import type { RequestHandler } from "express";
-import bodyParser from "body-parser";
+import  { json, urlencoded } from "body-parser";
 import cookieParser from "cookie-parser";
 import type { ResLocals } from "./locals";
-import { tokenStorage } from "./tokenStorage";
-const { json, urlencoded } = bodyParser;
+import { getToken } from "next-auth/jwt";
 
 function createRequestHandler(options: AuthOptions): RequestHandler<any, any, any, { nextauth: undefined | string[] }> {
   return (req, res, _) => {
@@ -27,9 +26,11 @@ function createSessionHandler(options: AuthOptions): RequestHandler<any, any, an
   return async (req, res, next) => {
     const session = await getServerSession(req as unknown as NextApiRequest, res as unknown as NextApiResponse, options);
     res.locals.session = session || undefined;
-    if(session && session.session_id) {
-      res.locals.token = await tokenStorage.getToken(session.session_id);
-    }
+    res.locals.token = await getToken({
+      req,
+      raw:true
+    });
+    //console.log("Got raw token", res.locals.token);
     next();
   };
 }

@@ -1,8 +1,7 @@
 import { useCallback, useState } from "react";
-import { Button, Col, Row, Stack } from "react-bootstrap";
+import { Button, Stack } from "react-bootstrap";
 import { FetchDataProps } from "./FetchDataProps";
 import { fetchWeatherforecast } from "./WeatherApiClient";
-import { useSession } from "next-auth/react";
 import { WeatherForecast } from "../../components/weatherForecast";
 import { usePageContext } from "../../renderer/usePageContext";
 

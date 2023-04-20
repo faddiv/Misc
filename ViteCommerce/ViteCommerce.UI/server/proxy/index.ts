@@ -13,7 +13,10 @@ export function addProxy(app: Express) {
     onProxyReq(proxyReq, _req, res: Response<any, ResLocals>, _options) {
       const token = res.locals.token;
       if (token) {
+        // console.log("Proxy call with token");
         proxyReq.setHeader("Authorization", `Bearer ${token}`);
+      } else {
+        // console.log("No token provided");
       }
     },
   });

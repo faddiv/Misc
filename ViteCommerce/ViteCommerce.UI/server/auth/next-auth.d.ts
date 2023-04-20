@@ -3,12 +3,12 @@ import type { Session } from "next-auth";
 
 declare module "next-auth" {
   interface Session {
-    session_id?: string;
+    // Add session data here
   }
 }
 
 declare module "next-auth/jwt" {
   interface JWT {
-    session_id?: string;
+    // add jwt data here
   }
 }

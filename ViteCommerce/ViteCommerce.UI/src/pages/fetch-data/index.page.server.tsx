@@ -1,10 +1,10 @@
 import type { PageContextServer, PageContextServerResult } from "../../renderer/types";
 import { FetchDataProps } from "./FetchDataProps";
-import { fetchWeatherforecastServer } from "./WeatherApiClient";
+import { fetchWeatherforecast } from "./WeatherApiClient";
 
 export async function onBeforeRender(pageContext: PageContextServer): Promise<PageContextServerResult<FetchDataProps>> {
   try {
-    const data = await fetchWeatherforecastServer(pageContext);
+    const data = await fetchWeatherforecast(pageContext);
     return {
       pageContext: {
         pageProps: {

@@ -1,7 +1,14 @@
 import Google from "next-auth/providers/google";
 import Duende from "next-auth/providers/duende-identity-server6";
 import type { AuthOptions } from "next-auth";
-import { tokenStorage } from "./tokenStorage";
+import { SignJWT, decodeJwt } from "jose";
+import hkdf from "@panva/hkdf";
+
+async function getDerivedEncryptionKey(secret: string) {
+  return await hkdf("sha256", secret, "", "NextAuth.js Generated Encryption Key", 32);
+}
+const now = () => (Date.now() / 1000) | 0;
+const DEFAULT_MAX_AGE = 30 * 24 * 60 * 60;
 
 export function createNextAuthOptions() {
   if (!process.env.NEXTAUTH_SECRET) {
@@ -16,18 +23,60 @@ export function createNextAuthOptions() {
       maxAge: 24 * 60 * 60,
     },
     providers: [],
+    jwt: {
+      async encode({ secret, maxAge, token }) {
+        if (token) {
+          // jwe with dir is not supported by asp.net. Create jwt instead.
+          const encryptionSecret = await getDerivedEncryptionKey(secret as string);
+          const enc = await new SignJWT(token)
+            .setProtectedHeader({
+              alg: "HS256",
+              enc: "dir"
+            })
+            .setIssuedAt()
+            .setExpirationTime(now() + (maxAge || DEFAULT_MAX_AGE))
+            .setAudience(process.env.NEXTAUTH_AUDIENCE || "localhost")
+            .setIssuer("http://localhost:3000")
+            //.setJti("jtiValue")
+            .sign(encryptionSecret);
+          //console.log("encoded token:", enc);
+          return enc;
+        } else {
+          return "";
+        }
+      },
+      async decode(params) {
+        const { token, secret } = params;
+        if (!token) return null;
+        const payload = await decodeJwt(token);
+        //console.log("decoded payload:", payload);
+        return payload;
+      },
+    },
     callbacks: {
       async jwt({ token, account }) {
-        if (account && account.id_token) {
-          token.session_id = await tokenStorage.saveToken(account.id_token);
+        if (account) {
+          //console.log("token:", token, "account:", account);
+          // add data here into the jwt.
+          switch (account.provider) {
+            case "duende-identityserver6":
+              // get data from here
+              break;
+            case "google":
+              // get data from here
+              break;
+            default:
+              break;
+          }
         }
         return token;
       },
       session({ session, token, user }) {
-        session.session_id = token?.session_id;
+        // add data to session here. This usable on client side.
+        //console.log("session:", session, "token:", token);
         return session;
-      }
-    }
+      },
+    },
   };
 
   if (process.env.GOOGLE_CLINET_ID && process.env.GOOGLE_CLINET_SECRET) {
@@ -37,6 +86,7 @@ export function createNextAuthOptions() {
         clientSecret: process.env.GOOGLE_CLINET_SECRET,
       })
     );
+    console.log("Google provider added.");
   }
 
   if (process.env.DUENDE_CLINET_ID && process.env.DUENDE_ISSUER) {
@@ -47,11 +97,16 @@ export function createNextAuthOptions() {
         issuer: process.env.DUENDE_ISSUER,
         authorization: {
           params: {
-            scope: "ViteCommerce.ApiAPI openid profile",
+            scope: "openid profile",
           },
         },
       })
     );
+    if (process.env.DUENDE_CLINET_SECRET) {
+      console.log("Duende provider added with secret.");
+    } else {
+      console.log("Duende provider added without secret.");
+    }
   }
   return nextAuthOptions;
 }
