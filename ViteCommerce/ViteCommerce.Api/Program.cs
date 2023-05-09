@@ -1,11 +1,12 @@
 using Database;
+using Mediator;
 using Microsoft.AspNetCore.ApiAuthorization.IdentityServer;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Logging;
 using ViteCommerce.Api;
+using ViteCommerce.Api.Apis;
+using ViteCommerce.Api.Application;
 using ViteCommerce.Api.Configurations;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -26,67 +27,20 @@ var connectionString =
     builder.Configuration.GetConnectionString("DefaultConnection")
     ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
 
-builder.Services.AddDbContext<AppDbContext>(options =>
+builder.Services.AddDbContext<UserDbContext>(options =>
     {
         options.UseSqlite(connectionString);
     });
 
-builder.Services.AddDefaultIdentity<IdentityUser>(options =>
-{
-    options.SignIn.RequireConfirmedAccount = false;
-})
-    .AddEntityFrameworkStores<AppDbContext>();
-
-builder.Services
-    .AddIdentityServer(options =>
-    {
-        options.Events.RaiseErrorEvents = true;
-        options.Events.RaiseInformationEvents = true;
-        options.Events.RaiseFailureEvents = true;
-        options.Events.RaiseSuccessEvents = true;
-
-        // see https://docs.duendesoftware.com/identityserver/v6/fundamentals/resources/api_scopes
-        options.EmitStaticAudienceClaim = true;
-        options.UserInteraction.LoginUrl = "/Identity/Account/Login";
-        options.UserInteraction.LoginReturnUrlParameter = "ReturnUrl";
-    })
-    .AddApiAuthorization<IdentityUser, AppDbContext>();
-
-builder.Services
-    .AddAuthentication(opt =>
-    {
-        opt.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-        opt.DefaultForbidScheme = JwtBearerDefaults.AuthenticationScheme;
-        opt.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
-    })
-    .AddJwtBearer(JwtBearerDefaults.AuthenticationScheme, opt =>
-    {
-        opt.RequireHttpsMetadata = false;
-        opt.TokenValidationParameters.ValidAudience =
-            configuration.GetValue<string>("Authentication:BFF:Audience") ?? "localhost";
-        opt.TokenValidationParameters.ValidIssuer = "http://localhost:3000";
-        var ssk = Utilities.GetKeyFromConfig(
-            configuration.GetValue<string>("Authentication:BFF:Secret") ?? "Default123");
-        opt.TokenValidationParameters.TokenDecryptionKey = ssk;
-        opt.TokenValidationParameters.IssuerSigningKey = ssk;
-        opt.TokenValidationParameters.ValidateAudience = true;
-        opt.TokenValidationParameters.ValidateIssuer = true;
-        opt.TokenValidationParameters.ValidateLifetime = true;
-        opt.TokenValidationParameters.ValidateIssuerSigningKey = true;
-        opt.Events ??= new JwtBearerEvents();
-        opt.Events.OnMessageReceived = ctx =>
-        {
-            return Task.CompletedTask;
-        };
-    })
-    ;
-
-builder.Services.AddControllersWithViews();
-builder.Services.AddRazorPages();
+builder.Services.AddIdentityServerConfig(configuration);
+builder.Services.AddAuthenticationConfig(configuration);
 
 #if DEBUG
 IdentityModelEventSource.ShowPII = true;
 #endif
+
+builder.Services.AddDatabaseServices(configuration);
+builder.Services.AddMediatorWithPipelines();
 
 var app = builder.Build();
 app.Logger.LogInformation("System.Security.Cryptography.AesGcm.IsSupported: {IsSupported}", System.Security.Cryptography.AesGcm.IsSupported);
@@ -111,11 +65,6 @@ app.UseRouting();
 app.UseIdentityServer();
 app.UseAuthorization();
 
-var summaries = new[]
-{
-    "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
-};
-
 app.MapControllerRoute(
     name: "default",
     pattern: "{controller}/{action=Index}/{id?}");
@@ -132,28 +81,22 @@ app.MapGet("/_configuration/{clientId}", (
 .WithName("GetClientParameters")
 .WithOpenApi();
 
-app.MapGet("/api/weatherforecast", (
+app.MapGet("/api/weatherforecast", async (
     HttpContext ctx,
+    [FromServices] IMediator mediator,
     [FromServices] ILoggerFactory logger) =>
 {
     logger.CreateLogger("/api/weatherforecast").LogInformation("User: {User}", ctx.User);
-    var forecast = Enumerable.Range(1, 5).Select(index =>
-        new WeatherForecast
-        (
-            DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
-            Random.Shared.Next(-20, 55),
-            summaries[Random.Shared.Next(summaries.Length)]
-        ))
-        .ToArray();
-    return forecast;
+    return await mediator.Send(new GetWeatherForecastRequest());
 })
 .WithName("GetWeatherForecast")
 .RequireAuthorization()
 .WithOpenApi();
+ProductApi.Register(app);
 
 await using (var scope = app.Services.CreateAsyncScope())
 {
-    var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+    var db = scope.ServiceProvider.GetRequiredService<UserDbContext>();
     await db.Database.MigrateAsync();
 }
 

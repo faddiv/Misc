@@ -3,6 +3,22 @@
 version: '3.4'
 
 services:
+  rabbitmq:
+    image: masstransit/rabbitmq
+    container_name: rabbitmq
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+
+  mongodb:
+    image: mongo
+    container_name: mongodb
+    command: mongod --directoryperdb
+    ports:
+      - "27017:27017"
+    volumes:
+      - "d:/Databases/MongoDB:/data/db"
+
   #vitecommerce-ui:
   #  image: ${DOCKER_REGISTRY-}vitecommerce-ui
   #  container_name: vitecommerce-ui
@@ -15,6 +31,9 @@ services:
   vitecommerce-api:
     image: ${DOCKER_REGISTRY-}vitecommerce-api
     container_name: vitecommerce-api
+    depends_on:
+      - rabbitmq
+      - mongodb
     build:
       context: .
       dockerfile: ViteCommerce.Api/Dockerfile
@@ -29,6 +48,9 @@ services:
       - NUGET_FALLBACK_PACKAGES=/root/.nuget/fallbackpackages
       - ConnectionStrings__DefaultConnection=Data Source=/app_data/app_database.db;
       - AppDataLocation=/app_data
+      - ConnectionStrings__rabbitmq=amqp://guest:guest@rabbitmq:5672
+      - ConnectionStrings__MongoDB=mongodb://mongodb:27017
+
 
     ports:
       - "5000:80"

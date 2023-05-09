@@ -28,6 +28,7 @@ export function createNextAuthOptions() {
         if (token) {
           // jwe with dir is not supported by asp.net. Create jwt instead.
           const encryptionSecret = await getDerivedEncryptionKey(secret as string);
+          console.log("token:", token);
           const enc = await new SignJWT(token)
             .setProtectedHeader({
               alg: "HS256",
@@ -46,9 +47,9 @@ export function createNextAuthOptions() {
         }
       },
       async decode(params) {
-        const { token, secret } = params;
+        const { token } = params;
         if (!token) return null;
-        const payload = await decodeJwt(token);
+        const payload = decodeJwt(token);
         //console.log("decoded payload:", payload);
         return payload;
       },

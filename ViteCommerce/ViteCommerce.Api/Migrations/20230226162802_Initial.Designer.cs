@@ -10,7 +10,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace ViteCommerce.Api.Migrations
 {
-    [DbContext(typeof(AppDbContext))]
+    [DbContext(typeof(UserDbContext))]
     [Migration("20230226162802_Initial")]
     partial class Initial
     {
