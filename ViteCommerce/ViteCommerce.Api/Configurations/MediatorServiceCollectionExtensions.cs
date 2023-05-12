@@ -10,6 +10,7 @@ public static class MediatorServiceCollectionExtensions
             opt.ServiceLifetime = ServiceLifetime.Transient;
         });
         //services.AddPipeline(typeof(PipelineBehaviors.DbContextBehavior<,>));
+        services.AddPipeline(typeof(PipelineBehaviors.ValidationBehavior<,>));
     }
 
     private static void AddPipeline(this IServiceCollection services, Type type)

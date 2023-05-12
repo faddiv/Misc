@@ -20,7 +20,7 @@ public class GetProductsRequestHandler : IQueryHandler<GetProductsRequest, GetPr
     {
         var session = await _unitOfWork.GetSessionAsync();
         var result = await _db.Products.AsQueryable(session)
-            .ToListAsync();
+            .ToListAsync(cancellationToken: cancellationToken);
         return new GetProductsResponse
         {
             Data = result
