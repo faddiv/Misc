@@ -1,4 +1,4 @@
-﻿namespace ViteCommerce.Api.Application.ProductGroup.GetProduct;
+namespace ViteCommerce.Api.Application.ProductGroup.GetProduct;
 
 public class GetProductResponse
 {

@@ -1,6 +1,7 @@
 using FluentValidation.Results;
 using Mediator;
 using Microsoft.AspNetCore.Mvc;
+using ViteCommerce.Api.Application.ProductGroup.DeleteProduct;
 using ViteCommerce.Api.Application.ProductGroup.GetProduct;
 using ViteCommerce.Api.Application.ProductGroup.GetProducts;
 using ViteCommerce.Api.Application.ProductGroup.PostProduct;
@@ -18,32 +19,31 @@ namespace ViteCommerce.Api.Application.ProductGroup
                 .WithTags("Product")
                 .WithOpenApi();
 
-            group.MapGet("/", GetProducts)
-            .WithName("GetProducts");
+            group.MapGet("/", GetProducts);
 
             group.MapPost("/", CreateProduct)
-            .WithName("CreateProduct")
             .Produces(StatusCodes.Status201Created, typeof(PostProductResponse))
             .Produces(StatusCodes.Status400BadRequest, typeof(List<ValidationError>));
 
             group.MapGet("/{id}", GetProduct)
-            .WithName("GetProduct")
             .Produces(StatusCodes.Status201Created, typeof(GetProductResponse))
+            .Produces(StatusCodes.Status404NotFound);
+
+            group.MapDelete("/{id}", DeleteProduct)
+            .Produces(StatusCodes.Status200OK)
             .Produces(StatusCodes.Status404NotFound);
 
         }
 
         private static async Task<GetProductsResponse> GetProducts(
-                [FromServices] IMediator mediator,
-                [FromServices] ILoggerFactory logger)
+                [FromServices] IMediator mediator)
         {
             return await mediator.Send(new GetProductsQuery());
         }
 
         private static async Task<IResult> GetProduct(
             [FromQuery] string id,
-            [FromServices] IMediator mediator,
-            [FromServices] ILoggerFactory logger)
+            [FromServices] IMediator mediator)
         {
             return await mediator.Send(new GetProductQuery(id))
                 .ToOk();
@@ -51,11 +51,18 @@ namespace ViteCommerce.Api.Application.ProductGroup
 
         private static async Task<IResult> CreateProduct(
                 [FromBody] PostProductCommand model,
-                [FromServices] IMediator mediator,
-                [FromServices] ILoggerFactory logger)
+                [FromServices] IMediator mediator)
         {
             return await mediator.Send(model)
                 .ToCreated(r => $"/api/product/{r.Id}");
+        }
+
+        private static async Task<IResult> DeleteProduct(
+                [FromQuery] string id,
+                [FromServices] IMediator mediator)
+        {
+            return await mediator.Send(new DeleteProductCommand(id))
+                .ToOk();
         }
     }
 }
