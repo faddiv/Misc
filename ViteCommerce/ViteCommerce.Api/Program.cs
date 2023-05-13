@@ -5,13 +5,10 @@ using Microsoft.AspNetCore.ApiAuthorization.IdentityServer;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Logging;
-using ViteCommerce.Api;
 using ViteCommerce.Api.Application;
 using ViteCommerce.Api.Application.ProductGroup;
 using ViteCommerce.Api.Application.ProductGroup.PostProduct;
-using ViteCommerce.Api.Common;
 using ViteCommerce.Api.Configurations;
-using ViteCommerce.Api.PipelineBehaviors;
 
 var builder = WebApplication.CreateBuilder(args);
 var configuration = builder.Configuration;
@@ -46,8 +43,7 @@ IdentityModelEventSource.ShowPII = true;
 builder.Services.AddDatabaseServices(configuration);
 builder.Services.AddMediatorWithPipelines();
 builder.Services.AddScoped<IValidator<PostProductCommand>, PostProductCommandValidator>();
-IPipelineBehavior<PostProductCommand, InvalidOr<PostProductResponse>>
-    t = new ValidationBehavior<PostProductCommand, InvalidOr<PostProductResponse>>(new PostProductCommandValidator[0]);
+
 var app = builder.Build();
 app.Logger.LogInformation("System.Security.Cryptography.AesGcm.IsSupported: {IsSupported}", System.Security.Cryptography.AesGcm.IsSupported);
 app.UseCors(opt =>

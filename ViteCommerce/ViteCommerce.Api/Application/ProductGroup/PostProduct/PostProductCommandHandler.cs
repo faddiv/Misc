@@ -1,7 +1,7 @@
 using Database;
 using Mediator;
-using ViteCommerce.Api.Common;
 using ViteCommerce.Api.Common.Mappers;
+using ViteCommerce.Api.Common.ValidationResults;
 
 namespace ViteCommerce.Api.Application.ProductGroup.PostProduct;
 

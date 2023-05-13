@@ -1,12 +1,7 @@
-using MongoDB.Bson;
-using MongoDB.Bson.Serialization.Attributes;
+﻿namespace ViteCommerce.Api.Application.ProductGroup.GetProduct;
 
-namespace Catalog.API.Entities;
-
-public class Product
+public class GetProductResponse
 {
-    [BsonId]
-    [BsonRepresentation(BsonType.ObjectId)]
     public string Id { get; set; } = "";
 
     public string Name { get; set; } = "";

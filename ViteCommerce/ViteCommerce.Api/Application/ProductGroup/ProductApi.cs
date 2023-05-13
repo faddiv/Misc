@@ -1,9 +1,10 @@
 using FluentValidation.Results;
 using Mediator;
 using Microsoft.AspNetCore.Mvc;
+using ViteCommerce.Api.Application.ProductGroup.GetProduct;
 using ViteCommerce.Api.Application.ProductGroup.GetProducts;
 using ViteCommerce.Api.Application.ProductGroup.PostProduct;
-using ViteCommerce.Api.Common;
+using ViteCommerce.Api.Common.ValidationResults;
 
 namespace ViteCommerce.Api.Application.ProductGroup
 {
@@ -23,14 +24,29 @@ namespace ViteCommerce.Api.Application.ProductGroup
             group.MapPost("/", CreateProduct)
             .WithName("CreateProduct")
             .Produces(StatusCodes.Status201Created, typeof(PostProductResponse))
-            .Produces(StatusCodes.Status400BadRequest, typeof(ValidationResult));
+            .Produces(StatusCodes.Status400BadRequest, typeof(List<ValidationError>));
+
+            group.MapGet("/{id}", GetProduct)
+            .WithName("GetProduct")
+            .Produces(StatusCodes.Status201Created, typeof(GetProductResponse))
+            .Produces(StatusCodes.Status404NotFound);
+
         }
 
         private static async Task<GetProductsResponse> GetProducts(
                 [FromServices] IMediator mediator,
                 [FromServices] ILoggerFactory logger)
         {
-            return await mediator.Send(new GetProductsRequest());
+            return await mediator.Send(new GetProductsQuery());
+        }
+
+        private static async Task<IResult> GetProduct(
+            [FromQuery] string id,
+            [FromServices] IMediator mediator,
+            [FromServices] ILoggerFactory logger)
+        {
+            return await mediator.Send(new GetProductQuery(id))
+                .ToOk();
         }
 
         private static async Task<IResult> CreateProduct(
@@ -39,9 +55,7 @@ namespace ViteCommerce.Api.Application.ProductGroup
                 [FromServices] ILoggerFactory logger)
         {
             return await mediator.Send(model)
-                .MatchAsync(
-                    r => Results.Created($"/api/product/{r.Id}", r),
-                    value => Results.BadRequest(value));
+                .ToCreated(r => $"/api/product/{r.Id}");
         }
     }
 }

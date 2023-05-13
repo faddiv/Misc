@@ -3,6 +3,7 @@ using FluentValidation;
 using Mediator;
 using OneOf;
 using ViteCommerce.Api.Common;
+using ViteCommerce.Api.Common.ValidationResults;
 
 namespace ViteCommerce.Api.PipelineBehaviors;
 
@@ -24,13 +25,13 @@ public class DbContextBehavior<TMessage, TResponse> : IPipelineBehavior<TMessage
 
 public class ValidationBehavior<TMessage, TResponse> : IPipelineBehavior<TMessage, TResponse>
      where TMessage : notnull, IMessage
-    where TResponse : IOneOf
+    where TResponse : IInvalidOr<TResponse>
 {
-    private readonly IEnumerable<IValidator<TMessage>> _validators;
+    private readonly IValidator<TMessage>? _validator;
 
-    public ValidationBehavior(IEnumerable<IValidator<TMessage>> validators)
+    public ValidationBehavior(IValidator<TMessage>? validators)
     {
-        _validators = validators;
+        _validator = validators;
     }
     public async ValueTask<TResponse> Handle(
         TMessage message,
@@ -38,12 +39,12 @@ public class ValidationBehavior<TMessage, TResponse> : IPipelineBehavior<TMessag
         MessageHandlerDelegate<TMessage, TResponse> next)
     {
         var context = new ValidationContext<TMessage>(message);
-        foreach (var validator in _validators)
+        if(_validator is not null)
         {
-            var result = await validator.ValidateAsync(context).ConfigureAwait(false);
+            var result = await _validator.ValidateAsync(context).ConfigureAwait(false);
             if(!result.IsValid)
             {
-                return (dynamic)result;
+                return TResponse.Create(result);
             }
         }
         return await next(message, cancellationToken);
