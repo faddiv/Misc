@@ -1,4 +1,3 @@
-using FluentValidation.Results;
 using Mediator;
 using Microsoft.AspNetCore.Mvc;
 using ViteCommerce.Api.Application.ProductGroup.DeleteProduct;
@@ -6,6 +5,7 @@ using ViteCommerce.Api.Application.ProductGroup.GetProduct;
 using ViteCommerce.Api.Application.ProductGroup.GetProducts;
 using ViteCommerce.Api.Application.ProductGroup.PostProduct;
 using ViteCommerce.Api.Common.ValidationResults;
+using ViteCommerce.Api.Entities;
 
 namespace ViteCommerce.Api.Application.ProductGroup
 {
@@ -15,30 +15,31 @@ namespace ViteCommerce.Api.Application.ProductGroup
         {
 
             var group = app.MapGroup("/api/product")
-                //.WithGroupName("Product")
                 .WithTags("Product")
                 .WithOpenApi();
 
-            group.MapGet("/", GetProducts);
+            group.MapGet("/", GetProducts)
+            .Produces(StatusCodes.Status200OK, typeof(GetProductsResponse));
 
             group.MapPost("/", CreateProduct)
-            .Produces(StatusCodes.Status201Created, typeof(PostProductResponse))
+            .Produces(StatusCodes.Status201Created, typeof(Product))
             .Produces(StatusCodes.Status400BadRequest, typeof(List<ValidationError>));
 
             group.MapGet("/{id}", GetProduct)
-            .Produces(StatusCodes.Status201Created, typeof(GetProductResponse))
+            .Produces(StatusCodes.Status200OK, typeof(Product))
             .Produces(StatusCodes.Status404NotFound);
 
             group.MapDelete("/{id}", DeleteProduct)
-            .Produces(StatusCodes.Status200OK)
+            .Produces(StatusCodes.Status204NoContent)
             .Produces(StatusCodes.Status404NotFound);
 
         }
 
-        private static async Task<GetProductsResponse> GetProducts(
+        private static async Task<IResult> GetProducts(
                 [FromServices] IMediator mediator)
         {
-            return await mediator.Send(new GetProductsQuery());
+            return await mediator.Send(new GetProductsQuery())
+                .ToOkResult();
         }
 
         private static async Task<IResult> GetProduct(
@@ -46,7 +47,7 @@ namespace ViteCommerce.Api.Application.ProductGroup
             [FromServices] IMediator mediator)
         {
             return await mediator.Send(new GetProductQuery(id))
-                .ToOk();
+                .ToOkResult();
         }
 
         private static async Task<IResult> CreateProduct(
@@ -54,7 +55,7 @@ namespace ViteCommerce.Api.Application.ProductGroup
                 [FromServices] IMediator mediator)
         {
             return await mediator.Send(model)
-                .ToCreated(r => $"/api/product/{r.Id}");
+                .ToCreatedResult<Product>(r => $"/api/product/{r.Id}");
         }
 
         private static async Task<IResult> DeleteProduct(
@@ -62,7 +63,7 @@ namespace ViteCommerce.Api.Application.ProductGroup
                 [FromServices] IMediator mediator)
         {
             return await mediator.Send(new DeleteProductCommand(id))
-                .ToOk();
+                .ToOkResult();
         }
     }
 }

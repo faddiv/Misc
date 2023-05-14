@@ -1,7 +1,5 @@
-
-using Catalog.API.Entities;
-using Microsoft.AspNetCore.Http;
 using MongoDB.Driver;
+using ViteCommerce.Api.Entities;
 
 namespace Database;
 

@@ -9,4 +9,4 @@ public record PostProductCommand(
     string? Description,
     string? ImageFile,
     decimal? Price
-    ) : ICommand<InvalidOr<PostProductResponse>>;
+    ) : ICommand<IDomainResponse>;

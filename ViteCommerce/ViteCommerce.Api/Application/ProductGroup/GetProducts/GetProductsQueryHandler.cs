@@ -1,10 +1,11 @@
 using Database;
 using Mediator;
 using MongoDB.Driver;
+using ViteCommerce.Api.Common.ValidationResults;
 
 namespace ViteCommerce.Api.Application.ProductGroup.GetProducts;
 
-public class GetProductsQueryHandler : IQueryHandler<GetProductsQuery, GetProductsResponse>
+public class GetProductsQueryHandler : IQueryHandler<GetProductsQuery, IDomainResponse>
 {
     private readonly IApplicationDbContext _db;
     private readonly IUnitOfWork _unitOfWork;
@@ -15,7 +16,7 @@ public class GetProductsQueryHandler : IQueryHandler<GetProductsQuery, GetProduc
         _unitOfWork = unitOfWork;
     }
 
-    public async ValueTask<GetProductsResponse> Handle(GetProductsQuery request, CancellationToken cancellationToken)
+    public async ValueTask<IDomainResponse> Handle(GetProductsQuery request, CancellationToken cancellationToken)
     {
         var session = await _unitOfWork.GetSessionAsync();
         var result = await _db.Products.AsQueryable(session)

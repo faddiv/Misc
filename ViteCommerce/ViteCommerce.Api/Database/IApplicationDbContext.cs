@@ -1,5 +1,5 @@
-﻿using Catalog.API.Entities;
 using MongoDB.Driver;
+using ViteCommerce.Api.Entities;
 
 namespace Database
 {

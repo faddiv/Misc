@@ -5,4 +5,4 @@ namespace ViteCommerce.Api.Application.ProductGroup.GetProduct;
 
 public record GetProductQuery(
     string Id
-    ) : IQuery<NotFoundOr<GetProductResponse>>;
+    ) : IQuery<IDomainResponse>;
