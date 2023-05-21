@@ -5,4 +5,4 @@ namespace ViteCommerce.Api.Application.ProductGroup.DeleteProduct;
 
 public record DeleteProductCommand(
     string Id
-    ) : ICommand<IDomainResponse>;
+    ) : ICommand<SelfContainedDomainResponse<object>>;

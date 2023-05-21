@@ -4,15 +4,30 @@ namespace ViteCommerce.Api.Common.ValidationResults;
 
 public static class DomainResponses
 {
-    public static IDomainResponse NotFound => NotFoundDomainResponse.Instance;
+    public static SelfContainedDomainResponse<T> NotFound<T>() => new SelfContainedDomainResponse<T>(DomainResponseStatus.NotFound);
 
-    public static IDomainResponse Ok => OkDomainResponse.Instance;
+    public static SelfContainedDomainResponse<T> Ok<T>() => new SelfContainedDomainResponse<T>(DomainResponseStatus.NoContent);
 
-    public static IDomainResponse ValidationFailed(ValidationResult validationResult)
-        => new ValidationFailedDomainResponse(validationResult);
+    public static SelfContainedDomainResponse<T> ValidationFailed<T>(ValidationResult validationResult)
+        => SelfContainedDomainResponse<T>.ValidationFailed(validationResult);
 
-    public static IDomainResponse Wrap(object? value)
+    public static SelfContainedDomainResponse<T> Wrap<T>(T? value)
         => value is not null
-            ? new DomainResponseWrapper(value)
-            : NotFound;
+            ? new SelfContainedDomainResponse<T>(value)
+            : NotFound<T>();
+}
+
+public static class DomainResponses2
+{
+    public static DomainResponseBase<T> NotFound<T>() => NotFoundDomainResponse<T>.Instance;
+
+    public static DomainResponseBase<T> Ok<T>() => OkDomainResponse<T>.Instance;
+
+    public static DomainResponseBase<T> ValidationFailed<T>(ValidationResult validationResult)
+        => DomainResponseBase<T>.ValidationFailed(validationResult);
+
+    public static DomainResponseBase<T> Wrap<T>(T? value)
+        => value is not null
+            ? new DomainResponse<T>(value)
+            : NotFound<T>();
 }

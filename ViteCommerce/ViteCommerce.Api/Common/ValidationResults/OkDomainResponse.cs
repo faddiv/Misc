@@ -1,6 +1,7 @@
 namespace ViteCommerce.Api.Common.ValidationResults;
 
-public class OkDomainResponse : IDomainResponse {
-    public static readonly OkDomainResponse Instance = new();
+public sealed class OkDomainResponse<T> : DomainResponseBase<T>
+{
+    public static readonly OkDomainResponse<T> Instance = new();
     private OkDomainResponse() { }
 }

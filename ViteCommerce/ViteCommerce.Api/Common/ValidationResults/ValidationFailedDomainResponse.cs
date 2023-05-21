@@ -1,22 +1,12 @@
-using FluentValidation.Results;
-
 namespace ViteCommerce.Api.Common.ValidationResults;
 
-public class ValidationFailedDomainResponse : IDomainResponse
+public sealed class ValidationFailedDomainResponse<T> : DomainResponseBase<T>
 {
-    public ValidationFailedDomainResponse(ValidationResult value)
+    public ValidationFailedDomainResponse(IReadOnlyList<ValidationError>? errors)
     {
-        ArgumentNullException.ThrowIfNull(value);
-        if (value.IsValid)
-            throw new ArgumentException("ValidationResult should have errors.");
-
-        Errors = value.Errors.ConvertAll(e => new ValidationError
-        {
-            ErrorCode = e.ErrorCode,
-            Message = e.ErrorMessage,
-            Property = e.PropertyName
-        }).AsReadOnly();
+        Errors = errors;
     }
 
-    public IReadOnlyList<ValidationError> Errors { get; }
+    public IReadOnlyList<ValidationError>? Errors { get; }
+
 }

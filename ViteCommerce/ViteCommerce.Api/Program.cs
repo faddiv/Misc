@@ -8,7 +8,12 @@ using Microsoft.IdentityModel.Logging;
 using ViteCommerce.Api.Application;
 using ViteCommerce.Api.Application.ProductGroup;
 using ViteCommerce.Api.Application.ProductGroup.PostProduct;
+using ViteCommerce.Api.Application.SelfContained;
+using ViteCommerce.Api.Application.Subbclassing;
+using ViteCommerce.Api.Common.ValidationResults;
 using ViteCommerce.Api.Configurations;
+using ViteCommerce.Api.Entities;
+using ViteCommerce.Api.PipelineBehaviors;
 
 var builder = WebApplication.CreateBuilder(args);
 var configuration = builder.Configuration;
@@ -43,6 +48,8 @@ IdentityModelEventSource.ShowPII = true;
 builder.Services.AddDatabaseServices(configuration);
 builder.Services.AddMediatorWithPipelines();
 builder.Services.AddScoped<IValidator<PostProductCommand>, PostProductCommandValidator>();
+builder.Services.AddScoped<IValidator<ValidatedGet>, ValidatedGetValidator>();
+builder.Services.AddScoped<IValidator<ValidatedGet2>, ValidatedGetValidator2>();
 
 var app = builder.Build();
 app.Logger.LogInformation("System.Security.Cryptography.AesGcm.IsSupported: {IsSupported}", System.Security.Cryptography.AesGcm.IsSupported);
@@ -95,6 +102,8 @@ app.MapGet("/api/weatherforecast", async (
 .RequireAuthorization()
 .WithOpenApi();
 ProductApi.Register(app);
+SelfContainedApi.Register(app);
+SubbclassingApi.Register(app);
 
 await using (var scope = app.Services.CreateAsyncScope())
 {
@@ -103,3 +112,5 @@ await using (var scope = app.Services.CreateAsyncScope())
 }
 
 app.Run();
+
+IPipelineBehavior<PostProductCommand, SelfContainedDomainResponse<Product>> xc = new ValidationBehavior<PostProductCommand, SelfContainedDomainResponse<Product>>(null);

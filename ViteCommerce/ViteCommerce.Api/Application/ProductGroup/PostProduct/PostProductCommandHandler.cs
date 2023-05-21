@@ -2,10 +2,12 @@ using Database;
 using Mediator;
 using ViteCommerce.Api.Common.Mappers;
 using ViteCommerce.Api.Common.ValidationResults;
+using ViteCommerce.Api.Entities;
 
 namespace ViteCommerce.Api.Application.ProductGroup.PostProduct;
 
-public class PostProductCommandHandler : ICommandHandler<PostProductCommand, IDomainResponse>
+public class PostProductCommandHandler :
+    ICommandHandler<PostProductCommand, SelfContainedDomainResponse<Product>>
 {
     private readonly IApplicationDbContext _db;
     private readonly IUnitOfWork _unitOfWork;
@@ -16,7 +18,7 @@ public class PostProductCommandHandler : ICommandHandler<PostProductCommand, IDo
         _unitOfWork = unitOfWork;
     }
 
-    public async ValueTask<IDomainResponse> Handle(
+    public async ValueTask<SelfContainedDomainResponse<Product>> Handle(
         PostProductCommand command, CancellationToken cancellationToken)
     {
         var session = await _unitOfWork.GetSessionAsync();

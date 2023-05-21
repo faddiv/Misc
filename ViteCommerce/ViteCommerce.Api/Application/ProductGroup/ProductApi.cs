@@ -55,7 +55,7 @@ namespace ViteCommerce.Api.Application.ProductGroup
                 [FromServices] IMediator mediator)
         {
             return await mediator.Send(model)
-                .ToCreatedResult<Product>(r => $"/api/product/{r.Id}");
+                .ToCreatedResult(r => $"/api/product/{r.Id}");
         }
 
         private static async Task<IResult> DeleteProduct(

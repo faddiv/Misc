@@ -6,22 +6,13 @@ namespace ViteCommerce.Api.PipelineBehaviors;
 
 public class ValidationBehavior<TMessage, TResponse> : IPipelineBehavior<TMessage, TResponse>
      where TMessage : notnull, IMessage
-    where TResponse : IDomainResponse
+    where TResponse : IDomainResponse<TResponse>
 {
     private readonly IValidator<TMessage>? _validator;
 
-    public ValidationBehavior(IValidator<TMessage>? validators = null)
+    public ValidationBehavior(IValidator<TMessage>? validator = null)
     {
-        _validator = validators;
-        if (_validator is null)
-            return;
-
-        var type = typeof(TResponse);
-        if (type != typeof(IDomainResponse))
-        {
-            throw new ArgumentException($"The response type for {typeof(TMessage).Name} " +
-                $"should be {nameof(IDomainResponse)} but found {typeof(TResponse).Name}.");
-        }
+        _validator = validator;
     }
     public async ValueTask<TResponse> Handle(
         TMessage message,
@@ -35,7 +26,8 @@ public class ValidationBehavior<TMessage, TResponse> : IPipelineBehavior<TMessag
         var result = await _validator.ValidateAsync(context, cancellationToken);
         if (result.IsValid)
             return await next(message, cancellationToken);
-
-        return (TResponse)DomainResponses.ValidationFailed(result);
+        
+        TResponse domainResponse = TResponse.ValidationFailed(result);
+        return domainResponse;
     }
 }
