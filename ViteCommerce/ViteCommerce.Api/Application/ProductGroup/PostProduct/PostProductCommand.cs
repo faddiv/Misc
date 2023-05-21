@@ -1,5 +1,5 @@
-using Mediator;
-using ViteCommerce.Api.Common.ValidationResults;
+using MediatR;
+using ViteCommerce.Api.Entities;
 
 namespace ViteCommerce.Api.Application.ProductGroup.PostProduct;
 
@@ -9,4 +9,4 @@ public record PostProductCommand(
     string? Description,
     string? ImageFile,
     decimal? Price
-    ) : ICommand<IDomainResponse>;
+    ) : IRequest<DomainResponseBase<Product>>;

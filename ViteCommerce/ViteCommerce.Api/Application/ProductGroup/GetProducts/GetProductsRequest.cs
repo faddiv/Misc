@@ -1,6 +1,5 @@
-using Mediator;
-using ViteCommerce.Api.Common.ValidationResults;
+using MediatR;
 
 namespace ViteCommerce.Api.Application.ProductGroup.GetProducts;
 
-public record GetProductsQuery : IQuery<IDomainResponse>;
+public record class GetProductsRequest : IRequest<DomainResponseBase<GetProductsResponse>>;

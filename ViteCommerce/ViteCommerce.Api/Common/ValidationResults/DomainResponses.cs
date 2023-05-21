@@ -4,15 +4,15 @@ namespace ViteCommerce.Api.Common.ValidationResults;
 
 public static class DomainResponses
 {
-    public static IDomainResponse NotFound => NotFoundDomainResponse.Instance;
+    public static DomainResponseBase<T> NotFound<T>() => NotFoundDomainResponse<T>.Instance;
 
-    public static IDomainResponse Ok => OkDomainResponse.Instance;
+    public static DomainResponseBase<T> Ok<T>() => EmptyDomainResponse<T>.Instance;
 
-    public static IDomainResponse ValidationFailed(ValidationResult validationResult)
-        => new ValidationFailedDomainResponse(validationResult);
+    public static DomainResponseBase<T> ValidationFailed<T>(ValidationResult validationResult)
+        => DomainResponseBase<T>.ValidationFailed(validationResult);
 
-    public static IDomainResponse Wrap(object? value)
+    public static DomainResponseBase<T> Wrap<T>(T? value)
         => value is not null
-            ? new DomainResponseWrapper(value)
-            : NotFound;
+            ? new OkDomainResponse<T>(value)
+            : NotFound<T>();
 }

@@ -1,21 +1,17 @@
+using ViteCommerce.Api.PipelineBehaviors;
+
 namespace ViteCommerce.Api.Configurations;
 
 public static class MediatorServiceCollectionExtensions
 {
     public static void AddMediatorWithPipelines(this IServiceCollection services)
     {
-        services.AddMediator(opt =>
+        services.AddMediatR(opt =>
         {
-            opt.Namespace = "GeneratedCode";
-            opt.ServiceLifetime = ServiceLifetime.Transient;
+            opt.RegisterServicesFromAssembly(typeof(MediatorServiceCollectionExtensions).Assembly);
+
+            //opt.AddOpenBehavior(typeof(DbContextBehavior<,>));
+            opt.AddOpenBehavior(typeof(ValidationBehavior<,>));
         });
-        //services.AddPipeline(typeof(PipelineBehaviors.DbContextBehavior<,>));
-        services.AddPipeline(typeof(PipelineBehaviors.ValidationBehavior<,>));
-    }
-
-    private static void AddPipeline(this IServiceCollection services, Type type)
-    {
-
-        services.AddScoped(typeof(Mediator.IPipelineBehavior<,>), type);
     }
 }

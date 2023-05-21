@@ -1,7 +1,7 @@
 namespace ViteCommerce.Api.Common.ValidationResults;
 
-public class NotFoundDomainResponse : IDomainResponse
+public sealed class NotFoundDomainResponse<T> : DomainResponseBase<T>
 {
-    public static readonly NotFoundDomainResponse Instance = new();
-    private NotFoundDomainResponse() { }
+    public static readonly NotFoundDomainResponse<T> Instance = new();
+    private NotFoundDomainResponse() : base() { }
 }

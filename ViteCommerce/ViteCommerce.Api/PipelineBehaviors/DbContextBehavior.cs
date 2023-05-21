@@ -1,10 +1,11 @@
 using Database;
-using Mediator;
+using Duende.IdentityServer.Models;
+using MediatR;
 
 namespace ViteCommerce.Api.PipelineBehaviors;
 
 public class DbContextBehavior<TMessage, TResponse> : IPipelineBehavior<TMessage, TResponse>
-     where TMessage : notnull, IMessage
+     where TMessage : notnull
 {
     private readonly IUnitOfWork _unitOfWork;
 
@@ -12,9 +13,10 @@ public class DbContextBehavior<TMessage, TResponse> : IPipelineBehavior<TMessage
     {
         _unitOfWork = unitOfWork;
     }
-    public async ValueTask<TResponse> Handle(TMessage message, CancellationToken cancellationToken, MessageHandlerDelegate<TMessage, TResponse> next)
+
+    public async Task<TResponse> Handle(TMessage request, RequestHandlerDelegate<TResponse> next, CancellationToken cancellationToken)
     {
         await _unitOfWork.GetSessionAsync();
-        return await next(message, cancellationToken);
+        return await next();
     }
 }

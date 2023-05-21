@@ -1,4 +1,4 @@
-using Mediator;
+using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using ViteCommerce.Api.Application.ProductGroup.DeleteProduct;
 using ViteCommerce.Api.Application.ProductGroup.GetProduct;
@@ -38,7 +38,7 @@ namespace ViteCommerce.Api.Application.ProductGroup
         private static async Task<IResult> GetProducts(
                 [FromServices] IMediator mediator)
         {
-            return await mediator.Send(new GetProductsQuery())
+            return await mediator.Send(new GetProductsRequest())
                 .ToOkResult();
         }
 
@@ -55,7 +55,7 @@ namespace ViteCommerce.Api.Application.ProductGroup
                 [FromServices] IMediator mediator)
         {
             return await mediator.Send(model)
-                .ToCreatedResult<Product>(r => $"/api/product/{r.Id}");
+                .ToCreatedResult(r => $"/api/product/{r.Id}");
         }
 
         private static async Task<IResult> DeleteProduct(

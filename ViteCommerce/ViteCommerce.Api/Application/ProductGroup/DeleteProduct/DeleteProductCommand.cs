@@ -1,8 +1,7 @@
-using Mediator;
-using ViteCommerce.Api.Common.ValidationResults;
+using MediatR;
 
 namespace ViteCommerce.Api.Application.ProductGroup.DeleteProduct;
 
 public record DeleteProductCommand(
     string Id
-    ) : ICommand<IDomainResponse>;
+    ) : IRequest<DomainResponseBase<object>>;

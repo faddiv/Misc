@@ -2,54 +2,42 @@ namespace ViteCommerce.Api.Common.ValidationResults;
 
 public static class DomainResponseExtensions
 {
-    public static async ValueTask<IResult> ToOkResult(this ValueTask<IDomainResponse> task)
+    public static async Task<IResult> ToCreatedResult<TDomainResponse>(
+        this Task<DomainResponseBase<TDomainResponse>> task, Func<TDomainResponse, string> createResourceUrl)
     {
         var domainResult = await task;
-        if (domainResult is DomainResponseWrapper response2)
+        switch (domainResult)
         {
-            return Results.Ok(response2.Value);
-        }
-        else if (domainResult is ValidationFailedDomainResponse response)
-        {
-            return Results.BadRequest(response.Errors);
-        }
-        else if (domainResult is NotFoundDomainResponse)
-        {
-            return Results.NotFound();
-        }
-        else if (domainResult is OkDomainResponse)
-        {
-            return Results.NoContent();
-        }
-        else
-        {
-            return Results.Ok(domainResult);
+            case ValidationFailedDomainResponse<TDomainResponse> response:
+                return Results.BadRequest(response.Errors);
+            case NotFoundDomainResponse<TDomainResponse>:
+                return Results.NotFound();
+            case EmptyDomainResponse<TDomainResponse>:
+                return Results.Ok();
+            case OkDomainResponse<TDomainResponse> response2:
+                return Results.Created(createResourceUrl(response2.Value), response2.Value);
+            default:
+                throw new ArgumentException($"Can't convert to IResult: {domainResult.GetType()}"); ;
         }
     }
 
-    public static async ValueTask<IResult> ToCreatedResult<TDomainResponse>(this ValueTask<IDomainResponse> task,
-        Func<TDomainResponse, string> createResourceUrl)
+    public static async Task<IResult> ToOkResult<TDomainResponse>(
+        this Task<DomainResponseBase<TDomainResponse>> task)
     {
         var domainResult = await task;
-        if (domainResult is DomainResponseWrapper response2)
+        switch (domainResult)
         {
-            return Results.Created(createResourceUrl((TDomainResponse)response2.Value), response2.Value);
-        }
-        else if (domainResult is ValidationFailedDomainResponse response)
-        {
-            return Results.BadRequest(response.Errors);
-        }
-        else if (domainResult is NotFoundDomainResponse)
-        {
-            return Results.NotFound();
-        }
-        else if (domainResult is OkDomainResponse)
-        {
-            return Results.Ok();
-        }
-        else
-        {
-            return Results.Created(createResourceUrl((TDomainResponse)domainResult), domainResult);
+            case ValidationFailedDomainResponse<TDomainResponse> response:
+                return Results.BadRequest(response.Errors);
+            case NotFoundDomainResponse<TDomainResponse>:
+                return Results.NotFound();
+            case EmptyDomainResponse<TDomainResponse>:
+                return Results.NoContent();
+            case OkDomainResponse<TDomainResponse> response2:
+                return Results.Ok(response2.Value);
+            default:
+                return Results.Ok(domainResult);
         }
     }
+
 }

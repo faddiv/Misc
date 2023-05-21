@@ -1,10 +1,9 @@
 using Database;
 using FluentValidation;
-using Mediator;
+using MediatR;
 using Microsoft.AspNetCore.ApiAuthorization.IdentityServer;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.IdentityModel.Logging;
 using ViteCommerce.Api.Application;
 using ViteCommerce.Api.Application.ProductGroup;
 using ViteCommerce.Api.Application.ProductGroup.PostProduct;
@@ -37,7 +36,7 @@ builder.Services.AddIdentityServerConfig(configuration);
 builder.Services.AddAuthenticationConfig(configuration);
 
 #if DEBUG
-IdentityModelEventSource.ShowPII = true;
+Microsoft.IdentityModel.Logging.IdentityModelEventSource.ShowPII = true;
 #endif
 
 builder.Services.AddDatabaseServices(configuration);
