@@ -76,4 +76,41 @@ public static class DomainResponseExtensions
                 throw new ArgumentException($"Can't convert to IResult: {domainResult.GetType()}"); ;
         }
     }
+    public static async Task<IResult> ToOkResult<TDomainResponse>(this Task<SelfContainedDomainResponse<TDomainResponse>> task)
+    {
+        var domainResult = await task;
+        switch (domainResult.StatusCode)
+        {
+            case DomainResponseStatus.Ok:
+                return Results.Ok(domainResult.Value);
+            case DomainResponseStatus.Failed:
+                return Results.BadRequest(domainResult.Errors);
+            case DomainResponseStatus.NoContent:
+                return Results.NoContent();
+            case DomainResponseStatus.NotFound:
+                return Results.NotFound();
+            default:
+                throw new ArgumentException($"Unknown result: {domainResult.StatusCode}");
+        }
+    }
+
+    public static async Task<IResult> ToOkResult<TDomainResponse>(
+        this Task<DomainResponseBase<TDomainResponse>> task)
+    {
+        var domainResult = await task;
+        switch (domainResult)
+        {
+            case ValidationFailedDomainResponse<TDomainResponse> response:
+                return Results.BadRequest(response.Errors);
+            case NotFoundDomainResponse<TDomainResponse>:
+                return Results.NotFound();
+            case OkDomainResponse<TDomainResponse>:
+                return Results.NoContent();
+            case DomainResponse<TDomainResponse> response2:
+                return Results.Ok(response2.Value);
+            default:
+                return Results.Ok(domainResult);
+        }
+    }
+
 }

@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using ViteCommerce.Api.Common;
 using ViteCommerce.Api.Common.ValidationResults;
 
-namespace ViteCommerce.Api.Application.Subbclassing;
+namespace ViteCommerce.Api.Application.Subclassing;
 
 public static class SubclassingApi
 {
@@ -63,7 +63,7 @@ public class ValidatedGetHandler : ICommandHandler<ValidatedGet2, DomainResponse
 {
     public async ValueTask<DomainResponseBase<ValidatedGetResponse2>> Handle(ValidatedGet2 command, CancellationToken cancellationToken)
     {
-        await Task.Delay(Contants.Delay).ConfigureAwait(false);
+        //await Task.Delay(Contants.Delay).ConfigureAwait(false);
         if (command.Id == "NoContent")
         {
             return DomainResponses2.Ok<ValidatedGetResponse2>();
@@ -83,7 +83,7 @@ public class UnvalidatedGetHandler : ICommandHandler<UnvalidatedGet2, SelfContai
 {
     public async ValueTask<SelfContainedDomainResponse<UnvalidatedGetResponse2>> Handle(UnvalidatedGet2 command, CancellationToken cancellationToken)
     {
-        await Task.Delay(Contants.Delay).ConfigureAwait(false);
+        //await Task.Delay(Contants.Delay).ConfigureAwait(false);
         if (command.Id == "NoContent")
         {
             return DomainResponses.Ok<UnvalidatedGetResponse2>();

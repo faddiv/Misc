@@ -3,4 +3,7 @@ using BenchmarkDotNet.Running;
 using ViteCommerce.Benchmarks;
 
 Console.WriteLine("Hello, World!");
-BenchmarkRunner.Run<BenchmarkForDomainResponses>();
+//BenchmarkRunner.Run<BenchmarkForDomainResponses>();
+//BenchmarkRunner.Run<BenchmarkForMediators>();
+//BenchmarkRunner.Run<AsyncOperationBenchmark>();
+BenchmarkRunner.Run<BenchmarkForPipelines>();

@@ -1,17 +1,11 @@
 using BenchmarkDotNet.Attributes;
 using FluentValidation;
-using GeneratedCode;
 using Mediator;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using ViteCommerce.Api.Configurations;
-using ViteCommerce.Api.Application.ProductGroup.PostProduct;
 using ViteCommerce.Api.Application.SelfContained;
-using ViteCommerce.Api.Application.Subbclassing;
+using ViteCommerce.Api.Application.Subclassing;
+using ViteCommerce.Api.Configurations;
 
 namespace ViteCommerce.Benchmarks;
 
