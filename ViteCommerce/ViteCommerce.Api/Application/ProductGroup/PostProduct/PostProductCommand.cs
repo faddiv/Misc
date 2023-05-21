@@ -9,4 +9,4 @@ public record PostProductCommand(
     string? Description,
     string? ImageFile,
     decimal? Price
-    ) : IRequest<DomainResponseBase<Product>>;
+    ) : IRequest<DomainResponse<Product>>;

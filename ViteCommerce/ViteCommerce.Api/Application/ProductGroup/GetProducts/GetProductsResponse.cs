@@ -1,4 +1,4 @@
-using ViteCommerce.Api.Common.ValidationResults;
+using ViteCommerce.Api.Common.DomainAbstractions;
 using ViteCommerce.Api.Entities;
 
 namespace ViteCommerce.Api.Application.ProductGroup.GetProducts;

@@ -1,12 +1,12 @@
 using Database;
 using MediatR;
 using ViteCommerce.Api.Common.Mappers;
-using ViteCommerce.Api.Common.ValidationResults;
+using ViteCommerce.Api.Common.DomainAbstractions;
 using ViteCommerce.Api.Entities;
 
 namespace ViteCommerce.Api.Application.ProductGroup.PostProduct;
 
-public class PostProductCommandHandler : IRequestHandler<PostProductCommand, DomainResponseBase<Product>>
+public class PostProductCommandHandler : IRequestHandler<PostProductCommand, DomainResponse<Product>>
 {
     private readonly IApplicationDbContext _db;
     private readonly IUnitOfWork _unitOfWork;
@@ -17,11 +17,11 @@ public class PostProductCommandHandler : IRequestHandler<PostProductCommand, Dom
         _unitOfWork = unitOfWork;
     }
 
-    public async Task<DomainResponseBase<Product>> Handle(PostProductCommand request, CancellationToken cancellationToken)
+    public async Task<DomainResponse<Product>> Handle(PostProductCommand request, CancellationToken cancellationToken)
     {
         var session = await _unitOfWork.GetSessionAsync();
         var product = request.ToProduct();
         await _db.Products.InsertOneAsync(session, product, cancellationToken: cancellationToken);
-        return DomainResponses.Wrap(product);
+        return DomainResponses.OkOrNotFound(product);
     }
 }

@@ -4,7 +4,7 @@ using ViteCommerce.Api.Application.ProductGroup.DeleteProduct;
 using ViteCommerce.Api.Application.ProductGroup.GetProduct;
 using ViteCommerce.Api.Application.ProductGroup.GetProducts;
 using ViteCommerce.Api.Application.ProductGroup.PostProduct;
-using ViteCommerce.Api.Common.ValidationResults;
+using ViteCommerce.Api.Common.DomainAbstractions;
 using ViteCommerce.Api.Entities;
 
 namespace ViteCommerce.Api.Application.ProductGroup

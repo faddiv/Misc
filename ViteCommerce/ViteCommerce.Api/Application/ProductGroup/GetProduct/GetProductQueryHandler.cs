@@ -2,12 +2,12 @@ using Database;
 using MediatR;
 using MongoDB.Driver;
 using MongoDB.Driver.Linq;
-using ViteCommerce.Api.Common.ValidationResults;
+using ViteCommerce.Api.Common.DomainAbstractions;
 using ViteCommerce.Api.Entities;
 
 namespace ViteCommerce.Api.Application.ProductGroup.GetProduct;
 
-public class GetProductQueryHandler : IRequestHandler<GetProductQuery, DomainResponseBase<Product>>
+public class GetProductQueryHandler : IRequestHandler<GetProductQuery, DomainResponse<Product>>
 {
     private readonly IApplicationDbContext _db;
 
@@ -16,9 +16,9 @@ public class GetProductQueryHandler : IRequestHandler<GetProductQuery, DomainRes
         _db = db;
     }
 
-    public async Task<DomainResponseBase<Product>> Handle(GetProductQuery request, CancellationToken cancellationToken)
+    public async Task<DomainResponse<Product>> Handle(GetProductQuery request, CancellationToken cancellationToken)
     {
         var result = await _db.Products.AsQueryable().FirstOrDefaultAsync(e => e.Id == request.Id, cancellationToken: cancellationToken);
-        return DomainResponses.Wrap(result);
+        return DomainResponses.OkOrNotFound(result);
     }
 }

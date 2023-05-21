@@ -1,15 +1,15 @@
 using MediatR;
-using ViteCommerce.Api.Common.ValidationResults;
+using ViteCommerce.Api.Common.DomainAbstractions;
 
-namespace ViteCommerce.Api.Application;
+namespace ViteCommerce.Api.Application.GetWeatherForecast;
 
-public class GetWeatherForecastRequestHandler : IRequestHandler<GetWeatherForecastRequest, DomainResponseBase<WeatherForecast[]>>
+public class GetWeatherForecastRequestHandler : IRequestHandler<GetWeatherForecastRequest, DomainResponse<WeatherForecast[]>>
 {
     static readonly string[] summaries = new[]
     {
         "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
     };
-    public Task<DomainResponseBase<WeatherForecast[]>> Handle(GetWeatherForecastRequest request, CancellationToken cancellationToken)
+    public Task<DomainResponse<WeatherForecast[]>> Handle(GetWeatherForecastRequest request, CancellationToken cancellationToken)
     {
         var forecast = Enumerable.Range(1, 5).Select(index =>
         new WeatherForecast
@@ -19,6 +19,6 @@ public class GetWeatherForecastRequestHandler : IRequestHandler<GetWeatherForeca
             summaries[Random.Shared.Next(summaries.Length)]
         ))
         .ToArray();
-        return Task.FromResult(DomainResponses.Wrap(forecast));
+        return Task.FromResult(DomainResponses.OkOrNotFound(forecast));
     }
 }

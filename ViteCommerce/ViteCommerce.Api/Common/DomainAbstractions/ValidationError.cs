@@ -1,7 +1,6 @@
 using FluentValidation.Results;
-using System.Collections.ObjectModel;
 
-namespace ViteCommerce.Api.Common.ValidationResults;
+namespace ViteCommerce.Api.Common.DomainAbstractions;
 
 public class ValidationError
 {
@@ -11,7 +10,7 @@ public class ValidationError
 
     public static IReadOnlyList<ValidationError> Convert(ValidationResult value)
     {
-        ArgumentNullException.ThrowIfNull(value);
+        ArgumentNullException.ThrowIfNull(value, nameof(value));
         if (value.IsValid)
             throw new ArgumentException("ValidationResult should have errors.");
 

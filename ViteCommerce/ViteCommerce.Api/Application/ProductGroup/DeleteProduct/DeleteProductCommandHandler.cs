@@ -1,12 +1,12 @@
 using Database;
 using MediatR;
 using MongoDB.Driver;
-using ViteCommerce.Api.Common.ValidationResults;
+using ViteCommerce.Api.Common.DomainAbstractions;
 using ViteCommerce.Api.Entities;
 
 namespace ViteCommerce.Api.Application.ProductGroup.DeleteProduct;
 
-public class DeleteProductCommandHandler : IRequestHandler<DeleteProductCommand, DomainResponseBase<object>>
+public class DeleteProductCommandHandler : IRequestHandler<DeleteProductCommand, DomainResponse<object>>
 {
     private readonly IApplicationDbContext _db;
     private readonly IUnitOfWork _unitOfWork;
@@ -17,7 +17,7 @@ public class DeleteProductCommandHandler : IRequestHandler<DeleteProductCommand,
         _unitOfWork = unitOfWork;
     }
 
-    public async Task<DomainResponseBase<object>> Handle(DeleteProductCommand request, CancellationToken cancellationToken)
+    public async Task<DomainResponse<object>> Handle(DeleteProductCommand request, CancellationToken cancellationToken)
     {
         var session = await _unitOfWork.GetSessionAsync();
         var builder = new FilterDefinitionBuilder<Product>().Eq(e => e.Id, request.Id);

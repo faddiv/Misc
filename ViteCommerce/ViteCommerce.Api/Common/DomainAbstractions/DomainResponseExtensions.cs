@@ -1,9 +1,9 @@
-namespace ViteCommerce.Api.Common.ValidationResults;
+namespace ViteCommerce.Api.Common.DomainAbstractions;
 
 public static class DomainResponseExtensions
 {
     public static async Task<IResult> ToCreatedResult<TDomainResponse>(
-        this Task<DomainResponseBase<TDomainResponse>> task, Func<TDomainResponse, string> createResourceUrl)
+        this Task<DomainResponse<TDomainResponse>> task, Func<TDomainResponse, string> createResourceUrl)
     {
         var domainResult = await task;
         switch (domainResult)
@@ -22,7 +22,7 @@ public static class DomainResponseExtensions
     }
 
     public static async Task<IResult> ToOkResult<TDomainResponse>(
-        this Task<DomainResponseBase<TDomainResponse>> task)
+        this Task<DomainResponse<TDomainResponse>> task)
     {
         var domainResult = await task;
         switch (domainResult)
