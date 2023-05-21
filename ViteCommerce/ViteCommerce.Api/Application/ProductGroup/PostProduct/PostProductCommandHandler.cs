@@ -19,7 +19,7 @@ public class PostProductCommandHandler : IRequestHandler<PostProductCommand, Dom
 
     public async Task<DomainResponse<Product>> Handle(PostProductCommand request, CancellationToken cancellationToken)
     {
-        var session = await _unitOfWork.GetSessionAsync();
+        var session = await _unitOfWork.GetSessionAsync(cancellationToken);
         var product = request.ToProduct();
         await _db.Products.InsertOneAsync(session, product, cancellationToken: cancellationToken);
         return DomainResponses.OkOrNotFound(product);

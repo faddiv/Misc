@@ -18,7 +18,7 @@ public class GetProductsRequestHandler : IRequestHandler<GetProductsRequest, Dom
 
     public async Task<DomainResponse<GetProductsResponse>> Handle(GetProductsRequest request, CancellationToken cancellationToken)
     {
-        var session = await _unitOfWork.GetSessionAsync();
+        var session = await _unitOfWork.GetSessionAsync(cancellationToken);
         var result = await _db.Products.AsQueryable(session)
             .ToListAsync(cancellationToken: cancellationToken);
         return DomainResponses.OkOrNotFound(new GetProductsResponse

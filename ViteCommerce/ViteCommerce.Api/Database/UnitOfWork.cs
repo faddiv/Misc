@@ -14,15 +14,12 @@ public class UnitOfWork : IAsyncDisposable, IUnitOfWork
 
     }
 
-    public IClientSessionHandle Session =>
-        _session ?? throw new InvalidOperationException("The session is not created.");
-
-    public async ValueTask<IClientSessionHandle> GetSessionAsync()
+    public async ValueTask<IClientSessionHandle> GetSessionAsync(CancellationToken token = default)
     {
         if (_session is not null)
             return _session;
 
-        _session = await _client.StartSessionAsync();
+        _session = await _client.StartSessionAsync(cancellationToken: token);
         return _session;
     }
 

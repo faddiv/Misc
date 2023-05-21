@@ -1,6 +1,4 @@
-using Database;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.Identity;
 
 namespace ViteCommerce.Api.Configurations
 {

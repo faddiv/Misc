@@ -15,13 +15,17 @@ public class ValidationBehavior<TMessage, TResponse> : IPipelineBehavior<TMessag
         _validator = validator;
     }
 
-    public async Task<TResponse> Handle(TMessage request, RequestHandlerDelegate<TResponse> next, CancellationToken cancellationToken)
+    public Task<TResponse> Handle(TMessage request, RequestHandlerDelegate<TResponse> next, CancellationToken cancellationToken)
     {
-        if (_validator is null)
-            return await next();
+        return _validator is null
+            ? next()
+            : ValidateAndHandle(request, next, cancellationToken);
+    }
 
+    private async Task<TResponse> ValidateAndHandle(TMessage request, RequestHandlerDelegate<TResponse> next, CancellationToken cancellationToken)
+    {
         var context = new ValidationContext<TMessage>(request);
-        var result = await _validator.ValidateAsync(context, cancellationToken);
+        var result = await _validator!.ValidateAsync(context, cancellationToken);
         if (result.IsValid)
             return await next();
 

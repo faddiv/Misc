@@ -19,7 +19,7 @@ public class DeleteProductCommandHandler : IRequestHandler<DeleteProductCommand,
 
     public async Task<DomainResponse<object>> Handle(DeleteProductCommand request, CancellationToken cancellationToken)
     {
-        var session = await _unitOfWork.GetSessionAsync();
+        var session = await _unitOfWork.GetSessionAsync(cancellationToken);
         var builder = new FilterDefinitionBuilder<Product>().Eq(e => e.Id, request.Id);
         var result = await _db.Products.DeleteOneAsync(session, builder);
 

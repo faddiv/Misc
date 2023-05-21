@@ -4,6 +4,6 @@ namespace Database
 {
     public interface IUnitOfWork
     {
-        ValueTask<IClientSessionHandle> GetSessionAsync();
+        ValueTask<IClientSessionHandle> GetSessionAsync(CancellationToken token = default);
     }
 }

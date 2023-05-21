@@ -1,5 +1,4 @@
 using Database;
-using Duende.IdentityServer.Models;
 using MediatR;
 
 namespace ViteCommerce.Api.PipelineBehaviors;
@@ -16,7 +15,7 @@ public class DbContextBehavior<TMessage, TResponse> : IPipelineBehavior<TMessage
 
     public async Task<TResponse> Handle(TMessage request, RequestHandlerDelegate<TResponse> next, CancellationToken cancellationToken)
     {
-        await _unitOfWork.GetSessionAsync();
+        await _unitOfWork.GetSessionAsync(cancellationToken);
         return await next();
     }
 }

@@ -1,4 +1,4 @@
-using ViteCommerce.Api.Common.DomainAbstractions;
+namespace ViteCommerce.Api.Common.DomainAbstractions;
 
 public abstract class DomainResponse<T> : IDomainResponse<DomainResponse<T>>
 {
