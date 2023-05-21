@@ -1,6 +1,7 @@
 using FluentValidation;
 using Mediator;
 using Microsoft.AspNetCore.Mvc;
+using ViteCommerce.Api.Common;
 using ViteCommerce.Api.Common.ValidationResults;
 
 namespace ViteCommerce.Api.Application.SelfContained;
@@ -14,14 +15,14 @@ public static class SelfContainedApi
             .WithTags("SelfContainedApi")
             .WithOpenApi();
 
-        group.MapPost("/validated", GetProducts)
+        group.MapPost("/validated", SelfContainedValidated)
         .Produces(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status204NoContent)
         .Produces(StatusCodes.Status404NotFound)
         .Produces(StatusCodes.Status201Created, typeof(ValidatedGetResponse))
         .Produces(StatusCodes.Status400BadRequest, typeof(List<ValidationError>));
 
-        group.MapPost("/un-validated", GetProducts2)
+        group.MapPost("/un-validated", SelfContainedUnvalidated)
         .Produces(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status204NoContent)
         .Produces(StatusCodes.Status404NotFound)
@@ -30,7 +31,7 @@ public static class SelfContainedApi
 
     }
 
-    public static async Task<IResult> GetProducts(
+    public static async Task<IResult> SelfContainedValidated(
         ValidatedGet model,
         [FromServices] IMediator mediator)
     {
@@ -38,7 +39,7 @@ public static class SelfContainedApi
             .ToOkResult();
     }
 
-    public static async Task<IResult> GetProducts2(
+    public static async Task<IResult> SelfContainedUnvalidated(
         UnvalidatedGet model,
         [FromServices] IMediator mediator)
     {
@@ -62,7 +63,7 @@ public class ValidatedGetHandler : ICommandHandler<ValidatedGet, SelfContainedDo
 {
     public async ValueTask<SelfContainedDomainResponse<ValidatedGetResponse>> Handle(ValidatedGet command, CancellationToken cancellationToken)
     {
-        await Task.Delay(100).ConfigureAwait(false);
+        await Task.Delay(Contants.Delay).ConfigureAwait(false);
         if (command.Id == "NoContent")
         {
             return DomainResponses.Ok<ValidatedGetResponse>();
@@ -80,9 +81,11 @@ public record class UnvalidatedGet(string Id) : ICommand<SelfContainedDomainResp
 public record class UnvalidatedGetResponse(string Id);
 public class UnvalidatedGetHandler : ICommandHandler<UnvalidatedGet, SelfContainedDomainResponse<UnvalidatedGetResponse>>
 {
+    
+
     public async ValueTask<SelfContainedDomainResponse<UnvalidatedGetResponse>> Handle(UnvalidatedGet command, CancellationToken cancellationToken)
     {
-        await Task.Delay(100).ConfigureAwait(false);
+        await Task.Delay(Contants.Delay).ConfigureAwait(false);
         if (command.Id == "NoContent")
         {
             return DomainResponses.Ok<UnvalidatedGetResponse>();

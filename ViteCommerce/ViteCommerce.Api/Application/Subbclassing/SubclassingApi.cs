@@ -1,11 +1,12 @@
 using FluentValidation;
 using Mediator;
 using Microsoft.AspNetCore.Mvc;
+using ViteCommerce.Api.Common;
 using ViteCommerce.Api.Common.ValidationResults;
 
 namespace ViteCommerce.Api.Application.Subbclassing;
 
-public static class SubbclassingApi
+public static class SubclassingApi
 {
     public static void Register(IEndpointRouteBuilder app)
     {
@@ -14,14 +15,14 @@ public static class SubbclassingApi
             .WithTags("SubbclassingApi")
             .WithOpenApi();
 
-        group.MapPost("/validated", GetProducts)
+        group.MapPost("/validated", SubClassingValidated)
         .Produces(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status204NoContent)
         .Produces(StatusCodes.Status404NotFound)
         .Produces(StatusCodes.Status201Created, typeof(ValidatedGetResponse2))
         .Produces(StatusCodes.Status400BadRequest, typeof(List<ValidationError>));
 
-        group.MapPost("/un-validated", GetProducts2)
+        group.MapPost("/un-validated", SubClassingUnvalidated)
         .Produces(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status204NoContent)
         .Produces(StatusCodes.Status404NotFound)
@@ -30,7 +31,7 @@ public static class SubbclassingApi
 
     }
 
-    public static async Task<IResult> GetProducts(
+    public static async Task<IResult> SubClassingValidated(
         ValidatedGet2 model,
         [FromServices] IMediator mediator)
     {
@@ -38,7 +39,7 @@ public static class SubbclassingApi
             .ToOkResult();
     }
 
-    public static async Task<IResult> GetProducts2(
+    public static async Task<IResult> SubClassingUnvalidated(
         UnvalidatedGet2 model,
         [FromServices] IMediator mediator)
     {
@@ -62,7 +63,7 @@ public class ValidatedGetHandler : ICommandHandler<ValidatedGet2, DomainResponse
 {
     public async ValueTask<DomainResponseBase<ValidatedGetResponse2>> Handle(ValidatedGet2 command, CancellationToken cancellationToken)
     {
-        await Task.Delay(100).ConfigureAwait(false);
+        await Task.Delay(Contants.Delay).ConfigureAwait(false);
         if (command.Id == "NoContent")
         {
             return DomainResponses2.Ok<ValidatedGetResponse2>();
@@ -82,7 +83,7 @@ public class UnvalidatedGetHandler : ICommandHandler<UnvalidatedGet2, SelfContai
 {
     public async ValueTask<SelfContainedDomainResponse<UnvalidatedGetResponse2>> Handle(UnvalidatedGet2 command, CancellationToken cancellationToken)
     {
-        await Task.Delay(100).ConfigureAwait(false);
+        await Task.Delay(Contants.Delay).ConfigureAwait(false);
         if (command.Id == "NoContent")
         {
             return DomainResponses.Ok<UnvalidatedGetResponse2>();

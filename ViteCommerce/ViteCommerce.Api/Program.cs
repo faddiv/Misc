@@ -103,7 +103,7 @@ app.MapGet("/api/weatherforecast", async (
 .WithOpenApi();
 ProductApi.Register(app);
 SelfContainedApi.Register(app);
-SubbclassingApi.Register(app);
+SubclassingApi.Register(app);
 
 await using (var scope = app.Services.CreateAsyncScope())
 {

@@ -7,6 +7,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ViteCommerce.Api", "ViteCom
 EndProject
 Project("{E53339B2-1760-4266-BCC7-CA923CBCF16C}") = "docker-compose", "docker-compose.dcproj", "{E8344B82-9C5E-45AB-8416-DD47B02F9C59}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ViteCommerce.Benchmarks", "ViteCommerce.Benchmarks\ViteCommerce.Benchmarks.csproj", "{FF3B7384-7C13-4D0F-B246-1A405592E1A2}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -19,8 +21,12 @@ Global
 		{CEEA3EE7-233E-481E-A61F-0D89DEFF3F9A}.Release|Any CPU.Build.0 = Release|Any CPU
 		{E8344B82-9C5E-45AB-8416-DD47B02F9C59}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{E8344B82-9C5E-45AB-8416-DD47B02F9C59}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{E8344B82-9C5E-45AB-8416-DD47B02F9C59}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{E8344B82-9C5E-45AB-8416-DD47B02F9C59}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E8344B82-9C5E-45AB-8416-DD47B02F9C59}.Release|Any CPU.ActiveCfg = Debug|Any CPU
+		{E8344B82-9C5E-45AB-8416-DD47B02F9C59}.Release|Any CPU.Build.0 = Debug|Any CPU
+		{FF3B7384-7C13-4D0F-B246-1A405592E1A2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FF3B7384-7C13-4D0F-B246-1A405592E1A2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FF3B7384-7C13-4D0F-B246-1A405592E1A2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FF3B7384-7C13-4D0F-B246-1A405592E1A2}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
