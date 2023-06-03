@@ -108,7 +108,7 @@ public class ResultShapeBenchmark
                 onEmpty: () => "None");
     }*/
     [Benchmark]
-    public string CastV3_Ok()
+    public string CastV4_Ok()
     {
         var ok = new DomainResponseV4<Dummy>(_value);
         return ok
@@ -119,7 +119,7 @@ public class ResultShapeBenchmark
     }
 
     [Benchmark]
-    public string CastV3_Error()
+    public string CastV4_Error()
     {
         var ok = new DomainResponseV4<Dummy>(_ex);
         return ok
@@ -130,9 +130,42 @@ public class ResultShapeBenchmark
     }
 
     [Benchmark]
-    public string CastV3_Empty()
+    public string CastV4_Empty()
     {
         var ok = new DomainResponseV4<Dummy>();
+        return ok
+            .Match(
+                onSuccess: e => e.Value,
+                onFail: e => e.Message,
+                onEmpty: () => "None");
+    }
+
+    [Benchmark]
+    public string CastClass_Ok()
+    {
+        ClassDomainResponse<Dummy> ok = new OkDomainResponse<Dummy>(_value);
+        return ok
+            .Match(
+                onSuccess: e => e.Value,
+                onFail: e => e.Message,
+                onEmpty: () => "None");
+    }
+
+    [Benchmark]
+    public string CastClass_Error()
+    {
+        ClassDomainResponse<Dummy> ok = new ValidationFailedDomainResponse<Dummy>(_ex);
+        return ok
+            .Match(
+                onSuccess: e => e.Value,
+                onFail: e => e.Message,
+                onEmpty: () => "None");
+    }
+
+    [Benchmark]
+    public string CastClass_Empty()
+    {
+        ClassDomainResponse<Dummy> ok = NotFoundDomainResponse<Dummy>.Instance;
         return ok
             .Match(
                 onSuccess: e => e.Value,
