@@ -19,6 +19,6 @@ public class GetWeatherForecastRequestHandler : IRequestHandler<GetWeatherForeca
             summaries[Random.Shared.Next(summaries.Length)]
         ))
         .ToArray();
-        return Task.FromResult(DomainResponses.OkOrNotFound(forecast));
+        return Task.FromResult(DomainResponses.OkOrEmpty(forecast));
     }
 }

@@ -6,7 +6,7 @@ namespace ViteCommerce.Api.PipelineBehaviors;
 
 public class ValidationBehavior<TMessage, TResponse> : IPipelineBehavior<TMessage, TResponse>
      where TMessage : notnull, IRequest<TResponse>
-    where TResponse : IDomainResponse<TResponse>
+    where TResponse : IResponse<TResponse>
 {
     private readonly IValidator<TMessage>? _validator;
 
@@ -30,6 +30,6 @@ public class ValidationBehavior<TMessage, TResponse> : IPipelineBehavior<TMessag
             return await next();
 
         var validationErrors = ValidationError.Convert(result);
-        return TResponse.ValidationFailed(validationErrors);
+        return TResponse.ToFail(new ValidationFailedException(validationErrors));
     }
 }

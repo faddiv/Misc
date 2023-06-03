@@ -6,38 +6,43 @@ public static class DomainResponseExtensions
         this Task<DomainResponse<TDomainResponse>> task, Func<TDomainResponse, string> createResourceUrl)
     {
         var domainResult = await task;
-        switch (domainResult)
-        {
-            case ValidationFailedDomainResponse<TDomainResponse> response:
-                return Results.BadRequest(response.Errors);
-            case NotFoundDomainResponse<TDomainResponse>:
-                return Results.NotFound();
-            case EmptyDomainResponse<TDomainResponse>:
-                return Results.Ok();
-            case OkDomainResponse<TDomainResponse> response2:
-                return Results.Created(createResourceUrl(response2.Value), response2.Value);
-            default:
-                throw new ArgumentException($"Can't convert to IResult: {domainResult.GetType()}"); ;
-        }
+        return domainResult
+            .OnSuccess(response2 => Results.Created(createResourceUrl(response2), response2))
+            .OnEmpty(() => Results.NoContent())
+            .OnFail<ValidationFailedException>((response) => Results.BadRequest(response.Errors))
+            .ToValue();
     }
 
-    public static async Task<IResult> ToOkResult<TDomainResponse>(
+    public static async Task<IResult> ToOkOrNotFoundResult<TDomainResponse>(
         this Task<DomainResponse<TDomainResponse>> task)
     {
         var domainResult = await task;
-        switch (domainResult)
-        {
-            case ValidationFailedDomainResponse<TDomainResponse> response:
-                return Results.BadRequest(response.Errors);
-            case NotFoundDomainResponse<TDomainResponse>:
-                return Results.NotFound();
-            case EmptyDomainResponse<TDomainResponse>:
-                return Results.NoContent();
-            case OkDomainResponse<TDomainResponse> response2:
-                return Results.Ok(response2.Value);
-            default:
-                return Results.Ok(domainResult);
-        }
+        return domainResult
+            .OnSuccess(response2 => Results.Ok(response2))
+            .OnEmpty(() => Results.NotFound())
+            .OnFail<ValidationFailedException>((response) => Results.BadRequest(response.Errors))
+            .ToValue();
     }
 
+    public static async Task<IResult> ToDeleteResult(
+        this Task<DomainResponse<bool>> task)
+    {
+        var domainResult = await task;
+        return domainResult
+            .OnSuccess(response2 => Results.NoContent())
+            .OnEmpty(() => Results.NotFound())
+            .OnFail<ValidationFailedException>((response) => Results.BadRequest(response.Errors))
+            .ToValue();
+    }
+
+    public static async Task<IResult> ToNoContentResult<TDomainResponse>(
+        this Task<DomainResponse<TDomainResponse>> task)
+    {
+        var domainResult = await task;
+        return domainResult
+            .OnSuccess(response2 => Results.Ok(response2))
+            .OnEmpty(() => Results.NoContent())
+            .OnFail<ValidationFailedException>((response) => Results.BadRequest(response.Errors))
+            .ToValue();
+    }
 }

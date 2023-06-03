@@ -18,7 +18,8 @@ public class GetProductQueryHandler : IRequestHandler<GetProductQuery, DomainRes
 
     public async Task<DomainResponse<Product>> Handle(GetProductQuery request, CancellationToken cancellationToken)
     {
-        var result = await _db.Products.AsQueryable().FirstOrDefaultAsync(e => e.Id == request.Id, cancellationToken: cancellationToken);
-        return DomainResponses.OkOrNotFound(result);
+        var result = await _db.Products.AsQueryable()
+            .FirstOrDefaultAsync(e => e.Id == request.Id, cancellationToken: cancellationToken);
+        return result;
     }
 }

@@ -1,12 +1,17 @@
 namespace ViteCommerce.Api.Common.DomainAbstractions;
 
-public sealed class ValidationFailedDomainResponse<T> : DomainResponse<T>
+
+[Serializable]
+public class ValidationFailedException : Exception
 {
-    public ValidationFailedDomainResponse(IReadOnlyList<ValidationError> errors)
+    public ValidationFailedException(IReadOnlyList<ValidationError> errors)
     {
         Errors = errors;
     }
 
-    public IReadOnlyList<ValidationError> Errors { get; }
+    protected ValidationFailedException(
+      System.Runtime.Serialization.SerializationInfo info,
+      System.Runtime.Serialization.StreamingContext context) : base(info, context) { }
 
+    public IReadOnlyList<ValidationError> Errors { get; }
 }

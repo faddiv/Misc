@@ -39,7 +39,7 @@ namespace ViteCommerce.Api.Application.ProductGroup
                 [FromServices] IMediator mediator)
         {
             return await mediator.Send(new GetProductsRequest())
-                .ToOkResult();
+                .ToOkOrNotFoundResult();
         }
 
         private static async Task<IResult> GetProduct(
@@ -47,7 +47,7 @@ namespace ViteCommerce.Api.Application.ProductGroup
             [FromServices] IMediator mediator)
         {
             return await mediator.Send(new GetProductQuery(id))
-                .ToOkResult();
+                .ToOkOrNotFoundResult();
         }
 
         private static async Task<IResult> CreateProduct(
@@ -63,7 +63,7 @@ namespace ViteCommerce.Api.Application.ProductGroup
                 [FromServices] IMediator mediator)
         {
             return await mediator.Send(new DeleteProductCommand(id))
-                .ToOkResult();
+                .ToDeleteResult();
         }
     }
 }
