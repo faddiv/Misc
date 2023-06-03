@@ -1,7 +1,7 @@
 namespace ViteCommerce.Api.Common.DomainAbstractions;
 
-public interface IDomainResponse<T>
-    where T : IDomainResponse<T>
+public interface IResponse<T>
+    where T : IResponse<T>
 {
-    static abstract T ValidationFailed(IReadOnlyList<ValidationError> validationErrors);
+    static abstract T ToFail(Exception exception);
 }

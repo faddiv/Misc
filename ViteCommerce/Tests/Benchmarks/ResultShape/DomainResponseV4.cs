@@ -1,30 +1,31 @@
 using System.Diagnostics.Contracts;
 using System.Runtime.InteropServices;
+using ViteCommerce.Api.Common.DomainAbstractions;
 
-namespace ViteCommerce.Api.Common.DomainAbstractions;
+namespace Benchmarks.ResultShape;
 
 [StructLayout(LayoutKind.Auto)]
-public readonly struct DomainResponse<T> : IResponse<DomainResponse<T>>
+public readonly struct DomainResponseV4<T> : IResponse<DomainResponseV4<T>>
 {
     public T? Value { get; }
     public Exception? Error { get; }
 
     [Pure]
-    public DomainResponse()
+    public DomainResponseV4()
     {
         Value = default;
         Error = null;
     }
 
     [Pure]
-    public DomainResponse(in T? value)
+    public DomainResponseV4(in T? value)
     {
         Value = value;
         Error = null;
     }
 
     [Pure]
-    public DomainResponse(in Exception error)
+    public DomainResponseV4(in Exception error)
     {
         ArgumentNullException.ThrowIfNull(error);
         Value = default;
@@ -63,17 +64,17 @@ public readonly struct DomainResponse<T> : IResponse<DomainResponse<T>>
         throw new NullReferenceException($"Response<{typeof(T).Name}> is empty. Can't cast to back.");
     }
 
-    public static DomainResponse<T> ToFail(Exception exception)
+    public static DomainResponseV4<T> ToFail(Exception exception)
     {
         return new(exception);
     }
 
     [Pure]
-    public static implicit operator DomainResponse<T>(T? value) => new(value);
+    public static implicit operator DomainResponseV4<T>(T? value) => new(value);
 
     [Pure]
-    public static implicit operator DomainResponse<T>(Exception error) => new(error);
+    public static implicit operator DomainResponseV4<T>(Exception error) => new(error);
 
     [Pure]
-    public static explicit operator T(DomainResponse<T> response) => response.ToValue();
+    public static explicit operator T(DomainResponseV4<T> response) => response.ToValue();
 }

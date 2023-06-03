@@ -21,9 +21,9 @@ public class GetProductsRequestHandler : IRequestHandler<GetProductsRequest, Dom
         var session = await _unitOfWork.GetSessionAsync(cancellationToken);
         var result = await _db.Products.AsQueryable(session)
             .ToListAsync(cancellationToken: cancellationToken);
-        return DomainResponses.OkOrNotFound(new GetProductsResponse
+        return new GetProductsResponse
         {
             Data = result
-        });
+        };
     }
 }

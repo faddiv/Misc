@@ -6,38 +6,62 @@ public static class DomainResponseExtensions
         this Task<DomainResponse<TDomainResponse>> task, Func<TDomainResponse, string> createResourceUrl)
     {
         var domainResult = await task;
-        switch (domainResult)
-        {
-            case ValidationFailedDomainResponse<TDomainResponse> response:
-                return Results.BadRequest(response.Errors);
-            case NotFoundDomainResponse<TDomainResponse>:
-                return Results.NotFound();
-            case EmptyDomainResponse<TDomainResponse>:
-                return Results.Ok();
-            case OkDomainResponse<TDomainResponse> response2:
-                return Results.Created(createResourceUrl(response2.Value), response2.Value);
-            default:
-                throw new ArgumentException($"Can't convert to IResult: {domainResult.GetType()}"); ;
-        }
+        return domainResult
+            .Match(
+                response2 => Results.Created(createResourceUrl(response2), response2),
+                ToBadRequest,
+                Results.NoContent);
     }
 
-    public static async Task<IResult> ToOkResult<TDomainResponse>(
+    public static async Task<IResult> ToOkOrNotFoundResult<TDomainResponse>(
         this Task<DomainResponse<TDomainResponse>> task)
     {
         var domainResult = await task;
-        switch (domainResult)
-        {
-            case ValidationFailedDomainResponse<TDomainResponse> response:
-                return Results.BadRequest(response.Errors);
-            case NotFoundDomainResponse<TDomainResponse>:
-                return Results.NotFound();
-            case EmptyDomainResponse<TDomainResponse>:
-                return Results.NoContent();
-            case OkDomainResponse<TDomainResponse> response2:
-                return Results.Ok(response2.Value);
-            default:
-                return Results.Ok(domainResult);
-        }
+        return domainResult
+            .Match(
+                Results.Ok,
+                ToBadRequest,
+                ToNotFound);
     }
 
+    public static async Task<IResult> ToDeleteResult(
+        this Task<DomainResponse<bool>> task)
+    {
+        var domainResult = await task;
+        return domainResult
+            .Match(
+                _ => Results.NoContent(),
+                ToBadRequest,
+                ToNotFound);
+    }
+
+    public static async Task<IResult> ToNoContentResult<TDomainResponse>(
+        this Task<DomainResponse<TDomainResponse>> task)
+    {
+        var domainResult = await task;
+        return domainResult
+            .Match(
+                Results.Ok,
+                ToBadRequest,
+                Results.NoContent);
+    }
+
+
+    private static IResult ToNotFound()
+    {
+        return Results.NotFound();
+    }
+    private static IResult ToBadRequest(Exception ex)
+    {
+        if (ex is ValidationFailedException vfe)
+        {
+            return
+                Results.BadRequest(vfe.Errors);
+        }
+
+        return Results.BadRequest(new
+        {
+            Exception = ex.GetType().Name, ex.Message
+        });
+    }
 }

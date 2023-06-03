@@ -22,6 +22,6 @@ public class PostProductCommandHandler : IRequestHandler<PostProductCommand, Dom
         var session = await _unitOfWork.GetSessionAsync(cancellationToken);
         var product = request.ToProduct();
         await _db.Products.InsertOneAsync(session, product, cancellationToken: cancellationToken);
-        return DomainResponses.OkOrNotFound(product);
+        return product;
     }
 }

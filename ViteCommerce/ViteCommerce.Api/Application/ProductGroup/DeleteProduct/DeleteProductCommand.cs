@@ -5,4 +5,4 @@ namespace ViteCommerce.Api.Application.ProductGroup.DeleteProduct;
 
 public record DeleteProductCommand(
     string Id
-    ) : IRequest<DomainResponse<object>>;
+    ) : IRequest<DomainResponse<bool>>;
