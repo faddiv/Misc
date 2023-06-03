@@ -7,10 +7,10 @@ public static class DomainResponseExtensions
     {
         var domainResult = await task;
         return domainResult
-            .OnSuccess(response2 => Results.Created(createResourceUrl(response2), response2))
-            .OnEmpty(() => Results.NoContent())
-            .OnFail<ValidationFailedException>((response) => Results.BadRequest(response.Errors))
-            .ToValue();
+            .Match(
+                response2 => Results.Created(createResourceUrl(response2), response2),
+                ToBadRequest,
+                Results.NoContent);
     }
 
     public static async Task<IResult> ToOkOrNotFoundResult<TDomainResponse>(
@@ -18,10 +18,10 @@ public static class DomainResponseExtensions
     {
         var domainResult = await task;
         return domainResult
-            .OnSuccess(response2 => Results.Ok(response2))
-            .OnEmpty(() => Results.NotFound())
-            .OnFail<ValidationFailedException>((response) => Results.BadRequest(response.Errors))
-            .ToValue();
+            .Match(
+                Results.Ok,
+                ToBadRequest,
+                ToNotFound);
     }
 
     public static async Task<IResult> ToDeleteResult(
@@ -29,10 +29,10 @@ public static class DomainResponseExtensions
     {
         var domainResult = await task;
         return domainResult
-            .OnSuccess(response2 => Results.NoContent())
-            .OnEmpty(() => Results.NotFound())
-            .OnFail<ValidationFailedException>((response) => Results.BadRequest(response.Errors))
-            .ToValue();
+            .Match(
+                _ => Results.NoContent(),
+                ToBadRequest,
+                ToNotFound);
     }
 
     public static async Task<IResult> ToNoContentResult<TDomainResponse>(
@@ -40,9 +40,28 @@ public static class DomainResponseExtensions
     {
         var domainResult = await task;
         return domainResult
-            .OnSuccess(response2 => Results.Ok(response2))
-            .OnEmpty(() => Results.NoContent())
-            .OnFail<ValidationFailedException>((response) => Results.BadRequest(response.Errors))
-            .ToValue();
+            .Match(
+                Results.Ok,
+                ToBadRequest,
+                Results.NoContent);
+    }
+
+
+    private static IResult ToNotFound()
+    {
+        return Results.NotFound();
+    }
+    private static IResult ToBadRequest(Exception ex)
+    {
+        if (ex is ValidationFailedException vfe)
+        {
+            return
+                Results.BadRequest(vfe.Errors);
+        }
+
+        return Results.BadRequest(new
+        {
+            Exception = ex.GetType().Name, ex.Message
+        });
     }
 }
