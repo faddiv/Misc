@@ -1,9 +1,9 @@
 using MediatR;
 using ViteCommerce.Api.Common.DomainAbstractions;
-using ViteCommerce.Api.Entities;
+using ViteCommerce.Api.Common.Models;
 
 namespace ViteCommerce.Api.Application.ProductAggregate.GetProduct;
 
-public record GetProductQuery(
+public record GetTaskQuery(
     string Id
-    ) : IRequest<DomainResponse<Product>>;
+    ) : IRequest<DomainResponse<TaskModel>>;

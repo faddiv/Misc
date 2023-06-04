@@ -5,6 +5,7 @@ namespace Database
 {
     public interface IApplicationDbContext
     {
-        IMongoCollection<Product> Products { get; }
+        ValueTask<IClientSessionHandle> GetSessionAsync(CancellationToken token = default);
+        IMongoCollection<TaskItem> TaskItems { get; }
     }
 }

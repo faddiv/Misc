@@ -14,6 +14,5 @@ public static class DatabaseServiceCollectionExtensions
             return client;
         });
         services.AddSingleton<IApplicationDbContext, ApplicationDbContext>();
-        services.AddScoped<IUnitOfWork, UnitOfWork>();
     }
 }
