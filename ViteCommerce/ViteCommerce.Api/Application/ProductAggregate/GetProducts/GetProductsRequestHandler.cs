@@ -3,7 +3,7 @@ using MediatR;
 using MongoDB.Driver;
 using ViteCommerce.Api.Common.DomainAbstractions;
 
-namespace ViteCommerce.Api.Application.ProductGroup.GetProducts;
+namespace ViteCommerce.Api.Application.ProductAggregate.GetProducts;
 
 public class GetProductsRequestHandler : IRequestHandler<GetProductsRequest, DomainResponse<GetProductsResponse>>
 {

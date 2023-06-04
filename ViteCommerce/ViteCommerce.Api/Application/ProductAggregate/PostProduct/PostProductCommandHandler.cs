@@ -4,7 +4,7 @@ using ViteCommerce.Api.Common.Mappers;
 using ViteCommerce.Api.Common.DomainAbstractions;
 using ViteCommerce.Api.Entities;
 
-namespace ViteCommerce.Api.Application.ProductGroup.PostProduct;
+namespace ViteCommerce.Api.Application.ProductAggregate.PostProduct;
 
 public class PostProductCommandHandler : IRequestHandler<PostProductCommand, DomainResponse<Product>>
 {

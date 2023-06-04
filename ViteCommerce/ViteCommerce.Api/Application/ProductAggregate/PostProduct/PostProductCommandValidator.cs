@@ -1,6 +1,6 @@
 using FluentValidation;
 
-namespace ViteCommerce.Api.Application.ProductGroup.PostProduct;
+namespace ViteCommerce.Api.Application.ProductAggregate.PostProduct;
 
 public class PostProductCommandValidator : AbstractValidator<PostProductCommand>
 {

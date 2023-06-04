@@ -2,8 +2,8 @@ using Database;
 using FluentValidation;
 using Microsoft.EntityFrameworkCore;
 using ViteCommerce.Api.Application.GetWeatherForecast;
-using ViteCommerce.Api.Application.ProductGroup;
-using ViteCommerce.Api.Application.ProductGroup.PostProduct;
+using ViteCommerce.Api.Application.ProductAggregate;
+using ViteCommerce.Api.Application.ProductAggregate.PostProduct;
 using ViteCommerce.Api.Configurations;
 
 var builder = WebApplication.CreateBuilder(args);

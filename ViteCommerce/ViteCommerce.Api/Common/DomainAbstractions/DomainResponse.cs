@@ -1,4 +1,4 @@
-using AutoMapper.Internal;
+using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Contracts;
 using System.Runtime.InteropServices;
 
@@ -7,21 +7,26 @@ namespace ViteCommerce.Api.Common.DomainAbstractions;
 [StructLayout(LayoutKind.Auto)]
 public readonly struct DomainResponse<T> : IResponse<DomainResponse<T>>
 {
+    private readonly Exception? _error;
+
     public T? Value { get; }
-    public Exception? Error { get; }
+    public Exception? Error => IsEmpty ? null : _error;
+    public bool IsEmpty => _error is EmptyException;
+    [MemberNotNullWhen(true, nameof(Error))]
+    public bool IsError => _error is not null && _error is not EmptyException;
 
     [Pure]
     public DomainResponse()
     {
         Value = default;
-        Error = null;
+        _error = EmptyException.Instance;
     }
 
     [Pure]
     public DomainResponse(in T? value)
     {
         Value = value;
-        Error = null;
+        _error = value is null ? EmptyException.Instance : null;
     }
 
     [Pure]
@@ -29,7 +34,7 @@ public readonly struct DomainResponse<T> : IResponse<DomainResponse<T>>
     {
         ArgumentNullException.ThrowIfNull(error);
         Value = default;
-        Error = error;
+        _error = error;
     }
 
     [Pure]
@@ -38,11 +43,11 @@ public readonly struct DomainResponse<T> : IResponse<DomainResponse<T>>
         in Func<Exception, R> onFail,
         in Func<R> onEmpty)
     {
-        if (Error is not null)
+        if (IsError)
         {
             return onFail(Error);
         }
-        if (Value is not null)
+        else if (Value is not null)
         {
             return onSuccess(Value);
         }
@@ -53,7 +58,7 @@ public readonly struct DomainResponse<T> : IResponse<DomainResponse<T>>
     public T ToValue()
     {
 
-        if (Error is not null)
+        if (IsError)
         {
             throw Error;
         }
@@ -77,4 +82,13 @@ public readonly struct DomainResponse<T> : IResponse<DomainResponse<T>>
 
     [Pure]
     public static explicit operator T(DomainResponse<T> response) => response.ToValue();
+
+    internal class EmptyException : Exception
+    {
+        private EmptyException()
+        {
+
+        }
+        public static Exception Instance = new();
+    }
 }

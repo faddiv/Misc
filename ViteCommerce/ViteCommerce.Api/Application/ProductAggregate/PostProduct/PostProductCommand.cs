@@ -2,7 +2,7 @@ using MediatR;
 using ViteCommerce.Api.Common.DomainAbstractions;
 using ViteCommerce.Api.Entities;
 
-namespace ViteCommerce.Api.Application.ProductGroup.PostProduct;
+namespace ViteCommerce.Api.Application.ProductAggregate.PostProduct;
 
 public record PostProductCommand(
     string? Name,

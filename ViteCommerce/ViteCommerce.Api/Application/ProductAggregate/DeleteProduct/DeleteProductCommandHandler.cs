@@ -4,7 +4,7 @@ using MongoDB.Driver;
 using ViteCommerce.Api.Common.DomainAbstractions;
 using ViteCommerce.Api.Entities;
 
-namespace ViteCommerce.Api.Application.ProductGroup.DeleteProduct;
+namespace ViteCommerce.Api.Application.ProductAggregate.DeleteProduct;
 
 public class DeleteProductCommandHandler : IRequestHandler<DeleteProductCommand, DomainResponse<bool>>
 {

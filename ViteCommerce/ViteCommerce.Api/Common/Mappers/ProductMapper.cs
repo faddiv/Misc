@@ -1,5 +1,5 @@
 using Riok.Mapperly.Abstractions;
-using ViteCommerce.Api.Application.ProductGroup.PostProduct;
+using ViteCommerce.Api.Application.ProductAggregate.PostProduct;
 using ViteCommerce.Api.Entities;
 
 namespace ViteCommerce.Api.Common.Mappers;

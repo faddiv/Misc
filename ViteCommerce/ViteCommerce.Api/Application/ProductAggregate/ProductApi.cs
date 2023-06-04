@@ -1,13 +1,13 @@
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
-using ViteCommerce.Api.Application.ProductGroup.DeleteProduct;
-using ViteCommerce.Api.Application.ProductGroup.GetProduct;
-using ViteCommerce.Api.Application.ProductGroup.GetProducts;
-using ViteCommerce.Api.Application.ProductGroup.PostProduct;
+using ViteCommerce.Api.Application.ProductAggregate.DeleteProduct;
+using ViteCommerce.Api.Application.ProductAggregate.GetProduct;
+using ViteCommerce.Api.Application.ProductAggregate.GetProducts;
+using ViteCommerce.Api.Application.ProductAggregate.PostProduct;
 using ViteCommerce.Api.Common.DomainAbstractions;
 using ViteCommerce.Api.Entities;
 
-namespace ViteCommerce.Api.Application.ProductGroup
+namespace ViteCommerce.Api.Application.ProductAggregate
 {
     public static class ProductApi
     {
