@@ -1,3 +1,4 @@
+using AutoMapper.Internal;
 using System.Diagnostics.Contracts;
 using System.Runtime.InteropServices;
 

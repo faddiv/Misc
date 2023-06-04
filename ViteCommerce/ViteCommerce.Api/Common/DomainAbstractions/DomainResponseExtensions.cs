@@ -30,7 +30,7 @@ public static class DomainResponseExtensions
         var domainResult = await task;
         return domainResult
             .Match(
-                _ => Results.NoContent(),
+                found => found ? Results.NoContent() : Results.NotFound(),
                 ToBadRequest,
                 ToNotFound);
     }

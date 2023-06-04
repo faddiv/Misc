@@ -43,7 +43,7 @@ namespace ViteCommerce.Api.Application.ProductGroup
         }
 
         private static async Task<IResult> GetProduct(
-            [FromQuery] string id,
+            [FromRoute] string id,
             [FromServices] IMediator mediator)
         {
             return await mediator.Send(new GetProductQuery(id))
@@ -59,7 +59,7 @@ namespace ViteCommerce.Api.Application.ProductGroup
         }
 
         private static async Task<IResult> DeleteProduct(
-                [FromQuery] string id,
+                [FromRoute] string id,
                 [FromServices] IMediator mediator)
         {
             return await mediator.Send(new DeleteProductCommand(id))
