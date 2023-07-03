@@ -3,7 +3,7 @@
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
     <IsPackable>false</IsPackable>
-    <RootNamespace>Mediatr.Analyzers</RootNamespace>
+    <RootNamespace>MediatR.Analyzers</RootNamespace>
   </PropertyGroup>
 
   <ItemGroup>
@@ -11,7 +11,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Mediatr.Analyzers\Mediatr.Analyzers.csproj" />
+    <ProjectReference Include="..\MediatR.Analyzers\MediatR.Analyzers.csproj" />
   </ItemGroup>
 
   <ItemGroup>

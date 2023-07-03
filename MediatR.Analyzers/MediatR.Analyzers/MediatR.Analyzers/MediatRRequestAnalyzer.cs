@@ -1,8 +1,12 @@
 using MediatR.Analyzers.Utilities;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Diagnostics;
+using System;
 using System.Collections.Immutable;
+using System.Diagnostics;
 using System.Linq;
+using System.Threading;
+using static MediatR.Analyzers.Utilities.Constants;
 
 namespace MediatR.Analyzers
 {
@@ -32,42 +36,43 @@ namespace MediatR.Analyzers
 
         public override void Initialize(AnalysisContext context)
         {
+            Debugger.Launch();
+            Logger.Log("Initialize started");
             context.EnableConcurrentExecution();
             context.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.None);
 
-            // TODO: Consider registering other actions that act on syntax instead of or in addition to symbols
-            // See https://github.com/dotnet/roslyn/blob/main/docs/analyzers/Analyzer%20Actions%20Semantics.md for more information
             context.RegisterCompilationStartAction(ctx =>
             {
-                RequestHandlerCollector handlers = null;
-                if (ctx.TryGetValue(ctx.Compilation.SyntaxTrees.First(), new SyntaxTreeValueProvider<RequestHandlerCollector>(tree =>
+                Logger.Log("CompilationStartAction started");
+
+                var cache = DiagnosticDataCache.GetInstance(ctx.Compilation);
+
+                ctx.RegisterSymbolAction(ctx2 =>
                 {
-                    
-                    var compilation1 = ctx.Compilation;
-                    RequestHandlerCollector h = new RequestHandlerCollector();
-                    compilation1.Assembly.Accept(h);
-                    return h;
-                }), out handlers))
-                {
-                    ctx.RegisterSymbolAction(ctx2 =>
+                    Logger.Log("SymbolAction started {0}", ctx2.Symbol.Name);
+                    var local = cache;
+                    var compilation = ctx2.Compilation;
+                    var symbol = (INamedTypeSymbol)ctx2.Symbol;
+                    if (symbol.Name.StartsWith("Message") && !symbol.Name.EndsWith("Handler"))
                     {
-                        var local = handlers;
-                        if (ctx2.Symbol.Name.StartsWith("Message") && !ctx2.Symbol.Name.EndsWith("Handler"))
+                        if (!cache.HasHandler(symbol, compilation))
                         {
-                            var handler = ctx2.Symbol.Name + "Handler";
-                            if (!local.Handlers.Any(e => e.Name == handler))
-                            {
-                                var diagnostic = Diagnostic.Create(Rule, ctx2.Symbol.Locations[0], ctx2.Symbol.Name);
+                            var diagnostic = Diagnostic.Create(Rule, ctx2.Symbol.Locations[0], ctx2.Symbol.Name);
 
-                                ctx2.ReportDiagnostic(diagnostic);
+                            ctx2.ReportDiagnostic(diagnostic);
 
-                            }
                         }
-                    }, SymbolKind.NamedType);
-                }
-            });
-        }
+                    }
+                    // TODO This fires later than the message is checked if this is later in the code.
+                    cache.TryAddNewHandler(symbol, compilation);
 
+                    Logger.Log("SymbolAction finished {0}", ctx2.Symbol.Name);
+                }, SymbolKind.NamedType);
+
+                Logger.Log("CompilationStartAction finished");
+            });
+            Logger.Log("Initialize finished");
+        }
 
         private static void AnalyzeSymbol(SymbolAnalysisContext ctx)
         {

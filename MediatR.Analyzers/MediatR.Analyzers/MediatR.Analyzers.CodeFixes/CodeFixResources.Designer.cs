@@ -45,7 +45,7 @@ namespace MediatR.Analyzers
             {
                 if (object.ReferenceEquals(resourceMan, null))
                 {
-                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("Mediatr.Analyzers.CodeFixResources", typeof(CodeFixResources).GetTypeInfo().Assembly);
+                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("MediatR.Analyzers.CodeFixResources", typeof(CodeFixResources).GetTypeInfo().Assembly);
                     resourceMan = temp;
                 }
                 return resourceMan;

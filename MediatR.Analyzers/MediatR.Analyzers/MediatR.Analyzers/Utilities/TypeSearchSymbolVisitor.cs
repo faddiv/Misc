@@ -1,15 +1,13 @@
 using Microsoft.CodeAnalysis;
-using System.Collections.Concurrent;
-using System.Threading;
 
 namespace MediatR.Analyzers.Utilities
 {
-    public class RequestHandlerCollector : SymbolVisitor
+    public class TypeSearchSymbolVisitor : SymbolVisitor
     {
-        private static volatile int _idGen = 0;
-        public int id = Interlocked.Increment(ref _idGen);
+        public TypeSearchSymbolVisitor()
+        {
+        }
 
-        public readonly ConcurrentBag<INamedTypeSymbol> Handlers = new ConcurrentBag<INamedTypeSymbol>();
         public override void VisitAssembly(IAssemblySymbol symbol)
         {
             foreach (var item in symbol.Modules)
@@ -34,14 +32,6 @@ namespace MediatR.Analyzers.Utilities
                     VisitNamedType(type);
                 }
             }
-        }
-        public override void VisitNamedType(INamedTypeSymbol symbol)
-        {
-            if (symbol.Name.EndsWith("Handler"))
-            {
-                Handlers.Add(symbol);
-            }
-            base.VisitNamedType(symbol);
         }
     }
 }
