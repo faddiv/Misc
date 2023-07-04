@@ -13,7 +13,7 @@ namespace MediatR.Analyzers
     [DiagnosticAnalyzer(LanguageNames.CSharp)]
     public class MediatRRequestAnalyzer : DiagnosticAnalyzer
     {
-        public const string DiagnosticId = "MediatRRequestAnalyzer";
+        public const string DiagnosticId = "MR1000";
 
         public const string Category = "MediatR";
 
@@ -44,84 +44,35 @@ namespace MediatR.Analyzers
             context.RegisterCompilationStartAction(ctx =>
             {
                 Logger.Log("CompilationStartAction started");
+                DiagnosticDataCache.GetInstance(ctx.Compilation);
 
-                var cache = DiagnosticDataCache.GetInstance(ctx.Compilation);
-
-                ctx.RegisterSymbolAction(ctx2 =>
-                {
-                    Logger.Log("SymbolAction started {0}", ctx2.Symbol.Name);
-                    var local = cache;
-                    var compilation = ctx2.Compilation;
-                    var symbol = (INamedTypeSymbol)ctx2.Symbol;
-                    if (symbol.Name.StartsWith("Message") && !symbol.Name.EndsWith("Handler"))
-                    {
-                        if (!cache.HasHandler(symbol, compilation))
-                        {
-                            var diagnostic = Diagnostic.Create(Rule, ctx2.Symbol.Locations[0], ctx2.Symbol.Name);
-
-                            ctx2.ReportDiagnostic(diagnostic);
-
-                        }
-                    }
-                    // TODO This fires later than the message is checked if this is later in the code.
-                    cache.TryAddNewHandler(symbol, compilation);
-
-                    Logger.Log("SymbolAction finished {0}", ctx2.Symbol.Name);
-                }, SymbolKind.NamedType);
+                ctx.RegisterSymbolAction(AnalyzeSymbol, SymbolKind.NamedType);
 
                 Logger.Log("CompilationStartAction finished");
             });
             Logger.Log("Initialize finished");
         }
 
-        private static void AnalyzeSymbol(SymbolAnalysisContext ctx)
+        private static void AnalyzeSymbol(SymbolAnalysisContext ctx2)
         {
-
-            // TODO: Replace the following code with your own analysis, generating Diagnostic objects for any issues you find
-            var namedTypeSymbol = (INamedTypeSymbol)ctx.Symbol;
-            if (namedTypeSymbol.IsAbstract)
-                return;
-
-            if (namedTypeSymbol.IsStatic)
-                return;
-
-            var interfaces = namedTypeSymbol.AllInterfaces;
-
-            if (interfaces.Length == 0)
-                return;
-
-            var compilation = ctx.Compilation;
-            var iRequest1 = compilation.GetTypeByMetadataName("MediatR.IRequest`1");
-            if (iRequest1 is null)
-                return;
-            var correctInterface = interfaces.FirstOrDefault(i => SymbolEqualityComparer.Default.Equals(iRequest1, i.OriginalDefinition));
-            if (correctInterface is null)
-                return;
-            var responseTypeSymbol = correctInterface.TypeArguments.FirstOrDefault();
-            if (responseTypeSymbol is null)
-                return;
-            /*var iRequestHandler1 = compilation.GetTypeByMetadataName("MediatR.IRequestHandler`1");
-            if (iRequestHandler1 is null)
-                return;*/
-
-            var iRequestHandler2 = compilation.GetTypeByMetadataName("MediatR.IRequestHandler`2");
-            if (iRequestHandler2 is null)
-                return;
-            var concretehandler = iRequestHandler2.Construct(namedTypeSymbol, responseTypeSymbol);
-            var handleMethod = concretehandler.GetMembers("Handle").FirstOrDefault();
-            if (handleMethod is null)
-                return;
-
-            var implementation = concretehandler.FindImplementationForInterfaceMember(handleMethod);
-
-            if (implementation is null)
+            Logger.Log("SymbolAction started {0}", ctx2.Symbol.Name);
+            var compilation = ctx2.Compilation;
+            var cache = DiagnosticDataCache.GetInstance(compilation);
+            var symbol = (INamedTypeSymbol)ctx2.Symbol;
+            if (TypeChecks.IsRequest(symbol, compilation))
             {
-                // For all such symbols, produce a diagnostic.
-                var diagnostic = Diagnostic.Create(Rule, namedTypeSymbol.Locations[0], namedTypeSymbol.Name);
+                if (!cache.HasHandler(symbol, compilation))
+                {
+                    var diagnostic = Diagnostic.Create(Rule, symbol.Locations[0], symbol.Name);
 
-                ctx.ReportDiagnostic(diagnostic);
+                    ctx2.ReportDiagnostic(diagnostic);
 
+                }
             }
+
+            cache.TryAddNewHandler(symbol, compilation);
+
+            Logger.Log("SymbolAction finished {0}", ctx2.Symbol.Name);
         }
     }
 }

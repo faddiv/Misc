@@ -5,4 +5,4 @@
 
 Rule ID                | Category | Severity | Notes
 -----------------------|----------|----------|-----------------------
-MediatRRequestAnalyzer | MediatR  | Warning  | MediatRRequestAnalyzer
+MR1000                 | MediatR  | Warning  | MediatRRequestAnalyzer
