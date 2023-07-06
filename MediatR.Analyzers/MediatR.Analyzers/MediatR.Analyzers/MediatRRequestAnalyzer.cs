@@ -2,6 +2,7 @@ using MediatR.Analyzers.Utilities;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Diagnostics;
 using System;
+using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Linq;
@@ -36,7 +37,6 @@ namespace MediatR.Analyzers
 
         public override void Initialize(AnalysisContext context)
         {
-            Debugger.Launch();
             Logger.Log("Initialize started");
             context.EnableConcurrentExecution();
             context.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.None);
@@ -59,11 +59,18 @@ namespace MediatR.Analyzers
             var compilation = ctx2.Compilation;
             var cache = DiagnosticDataCache.GetInstance(compilation);
             var symbol = (INamedTypeSymbol)ctx2.Symbol;
-            if (TypeChecks.IsRequest(symbol, compilation))
+            if (TypeChecks.IsRequest(symbol, compilation, out var responseType))
             {
                 if (!cache.HasHandler(symbol, compilation))
                 {
-                    var diagnostic = Diagnostic.Create(Rule, symbol.Locations[0], symbol.Name);
+                    var diagnostic = Diagnostic.Create(
+                        Rule,
+                        symbol.Locations[0],
+                        new Dictionary<string, string>()
+                        {
+                            { "Response", responseType?.ToDisplayString(SymbolDisplayFormat.CSharpShortErrorMessageFormat)}
+                        }.ToImmutableDictionary(),
+                        symbol.Name);
 
                     ctx2.ReportDiagnostic(diagnostic);
 

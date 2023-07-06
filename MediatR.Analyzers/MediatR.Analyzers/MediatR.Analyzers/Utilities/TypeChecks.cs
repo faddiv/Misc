@@ -55,8 +55,10 @@ namespace MediatR.Analyzers.Utilities
             return compilation.GetTypeByMetadataName(IRequestHandler2);
         }
 
-        internal static bool IsRequest(INamedTypeSymbol namedTypeSymbol, Compilation compilation)
+        internal static bool IsRequest(INamedTypeSymbol namedTypeSymbol, Compilation compilation,
+            out INamedTypeSymbol responseType)
         {
+            responseType = null;
             var request = compilation.GetTypeByMetadataName(IRequest);
             if (request is null)
                 return false;
@@ -79,6 +81,7 @@ namespace MediatR.Analyzers.Utilities
             if (correctInterface is null)
                 return false;
 
+            responseType = correctInterface.TypeArguments.FirstOrDefault() as INamedTypeSymbol;
             return true;
         }
     }

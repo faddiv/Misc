@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 using Xunit;
 using VerifyCS = MediatR.Analyzers.Test.CSharpCodeFixVerifier<
     MediatR.Analyzers.MediatRRequestAnalyzer,
-    MediatR.Analyzers.MediatRAnalyzersCodeFixProvider>;
+    MediatR.Analyzers.MediatRRequestCodeFixProvider>;
 
 namespace MediatR.Analyzers.Test
 {
@@ -47,41 +47,68 @@ public class MessageHandler : IRequestHandler<Message, Response>
 
             await VerifyCS.VerifyAnalyzerNoDiagnosticResultAsync(test);
         }
-        //Diagnostic and CodeFix both triggered and checked for
-        //[Fact]
-        public async Task TestMethod2()
+
+        [Fact]
+        public async Task Refactoring_WhenNoRequest1Handler_ShouldImplementIt()
         {
-            var test = @"
-    using System;
-    using System.Collections.Generic;
-    using System.Linq;
-    using System.Text;
-    using System.Threading.Tasks;
-    using System.Diagnostics;
+            var test = CodeBuilder
+                .WithDefaults()
+                .AddCode(@"
+public class {|#0:Message|} : IRequest<Response> {
+}
+public class Response { }").ToString();
 
-    namespace ConsoleApplication1
+            var fixtest = CodeBuilder
+                .WithDefaults()
+                .AddCode(@"
+public class Message : IRequest<Response> {
+}
+
+    public class MessageHandler : IRequestHandler<Message, Response>
     {
-        class {|#0:TypeName|}
-        {   
+        public Task<Response> Handle(Message request, CancellationToken cancellationToken)
+        {
+            throw new NotImplementedException();
         }
-    }";
+    }
 
-            var fixtest = @"
-    using System;
-    using System.Collections.Generic;
-    using System.Linq;
-    using System.Text;
-    using System.Threading.Tasks;
-    using System.Diagnostics;
+    public class Response { }").ToString();
 
-    namespace ConsoleApplication1
+            var expected = VerifyCS
+               .Diagnostic(MediatRRequestAnalyzer.DiagnosticId)
+               .WithLocation(0)
+               .WithArguments("Message");
+            await VerifyCS.VerifyCodeFixAsync(test, expected, fixtest);
+        }
+
+        [Fact]
+        public async Task Refactoring_WhenNoRequestHandler_ShouldImplementIt()
+        {
+            var test = CodeBuilder
+                .WithDefaults()
+                .AddCode(@"
+public class {|#0:Message|} : IRequest {
+}
+").ToString();
+
+            var fixtest = CodeBuilder
+                .WithDefaults()
+                .AddCode(@"
+public class Message : IRequest {
+}
+
+    public class MessageHandler : IRequestHandler<Message>
     {
-        class TYPENAME
-        {   
+        public Task Handle(Message request, CancellationToken cancellationToken)
+        {
+            throw new NotImplementedException();
         }
-    }";
+    }").ToString();
 
-            var expected = VerifyCS.Diagnostic("MediatrAnalyzers").WithLocation(0).WithArguments("TypeName");
+            var expected = VerifyCS
+               .Diagnostic(MediatRRequestAnalyzer.DiagnosticId)
+               .WithLocation(0)
+               .WithArguments("Message");
             await VerifyCS.VerifyCodeFixAsync(test, expected, fixtest);
         }
     }
