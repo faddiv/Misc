@@ -92,4 +92,10 @@ public static class UI
             Console.WriteLine("This step doesn't favor anyone.");
         }
     }
+
+    internal static void Pause()
+    {
+        Console.WriteLine("Press any key to continue.");
+        Console.ReadKey(true);
+    }
 }

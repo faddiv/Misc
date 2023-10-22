@@ -4,7 +4,7 @@ using KalahaGame.GameModel;
 
 Console.WriteLine("Hello");
 var computerPlayer = Player.Player2;
-var searchDepth = 5;
+var searchDepth = 6;
 var state = GameState.Initial();
 var searchEngine = new MinMaxSearch.SearchEngine();
 while (!state.IsEndState())
@@ -30,3 +30,4 @@ while (!state.IsEndState())
 }
 UI.PrintState(state);
 UI.PrintPoints(state);
+UI.Pause();
