@@ -1,4 +1,4 @@
-﻿namespace KalahaGame;
+﻿namespace KalahaGame.GameModel;
 
 public record class Step(
     Player Player,

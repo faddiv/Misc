@@ -1,4 +1,4 @@
-namespace KalahaGame;
+namespace KalahaGame.GameModel;
 
 public record class GameState(
 GameState? PreviousState,
@@ -7,19 +7,21 @@ int[] Cups)
 {
     public Span<int> Player1Cups => new(Cups, 0, 6);
     public int Player1Mancala => Cups[6];
+    public int Player1Pieces => SumPieces(Player1Cups);
     public Span<int> Player2Cups => new(Cups, 7, 6);
     public int Player2Mancala => Cups[13];
+    public int Player2Pieces => SumPieces(Player2Cups);
 
-    public int Player1Points => Player1Mancala + SumPieces(Player1Cups);
+    public int Player1Points => Player1Mancala + Player1Pieces;
 
-    public int Player2Points => Player2Mancala + SumPieces(Player2Cups);
+    public int Player2Points => Player2Mancala + Player2Pieces;
 
     public static GameState Initial()
     {
         return new GameState(
             null,
             Player.Player1,
-            new[] { 4, 4, 4, 4, 4, 4, 4, 0, 4, 4, 4, 4, 4, 0 });
+            new[] { 4, 4, 4, 4, 4, 4, 0, 4, 4, 4, 4, 4, 4, 0 });
     }
 
     public Step[] GetAvailableSteps()

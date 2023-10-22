@@ -1,3 +1,5 @@
+using KalahaGame.GameModel;
+
 namespace KalahaGame;
 
 public static class UI
@@ -21,6 +23,15 @@ public static class UI
     {
         Console.ForegroundColor = gray;
         Console.WriteLine(string.Join("; ", steps.AsEnumerable()));
+        Console.ForegroundColor = ConsoleColor.White;
+    }
+
+    public static void PrintStep(Step? step)
+    {
+        ArgumentNullException.ThrowIfNull(step, nameof(step));
+
+        Console.ForegroundColor = gray;
+        Console.WriteLine("Taken step: {0}", step);
         Console.ForegroundColor = ConsoleColor.White;
     }
 
@@ -64,5 +75,21 @@ public static class UI
     private static void PrintMancalas(int player2Mancala, int player1Mancala)
     {
         Console.WriteLine("{0,4}{1,24}{2,4}", player2Mancala, "", player1Mancala);
+    }
+
+    internal static void ShowComputerScore(double evaluation)
+    {
+        if (evaluation > 0)
+        {
+            Console.WriteLine("This step favors the computer: {0}", evaluation);
+        }
+        else if (evaluation < 0)
+        {
+            Console.WriteLine("This step favors the player: {0}", evaluation);
+        }
+        else
+        {
+            Console.WriteLine("This step doesn't favor anyone.");
+        }
     }
 }
