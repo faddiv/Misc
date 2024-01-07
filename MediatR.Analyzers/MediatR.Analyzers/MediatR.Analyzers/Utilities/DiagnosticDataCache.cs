@@ -1,11 +1,8 @@
 using Microsoft.CodeAnalysis;
-using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
-using System.Transactions;
-using static MediatR.Analyzers.Utilities.Constants;
 
 namespace MediatR.Analyzers.Utilities
 {

@@ -1,5 +1,4 @@
 using Mediatr.Analyzers.Test.Utilities;
-using System.Collections.Generic;
 using System.Threading.Tasks;
 using Xunit;
 using VerifyCS = MediatR.Analyzers.Test.CSharpCodeFixVerifier<
