@@ -29,6 +29,7 @@ namespace Foxy.Params.SourceGenerator
                 {
                     var maxOverrides = SemanticHelpers.GetValue(item.AttributeSyntax, "MaxOverrides", 3);
                     string name = item.MethodSymbol.Name;
+                    var spanArgumentType = GetSpanArgumentType(item.MethodSymbol);
                     var argumentInfos = GetNonParamsArguments(item.MethodSymbol);
                     var fixArguments = argumentInfos.Select(e => e.ToParameter()).ToList();
                     var argName = "args";
@@ -41,9 +42,9 @@ namespace Foxy.Params.SourceGenerator
                             sb.AppendLine();
                         }
 
-                        var variableArguments = Enumerable.Range(0, i).Select(j => $"object {argName}{j}");
+                        var variableArguments = Enumerable.Range(0, i).Select(j => $"{spanArgumentType} {argName}{j}");
                         sb.Method(name, fixArguments.Concat(variableArguments), isStatic);
-                        sb.AppendLine($"var foxyParamsArray = new Arguments{i}<object>({string.Join(", ", Enumerable.Range(0, i).Select(j => $"{argName}{j}"))});");
+                        sb.AppendLine($"var foxyParamsArray = new Arguments{i}<{spanArgumentType}>({string.Join(", ", Enumerable.Range(0, i).Select(j => $"{argName}{j}"))});");
                         sb.AppendLine($"{name}({string.Join(", ", argumentInfos.Select(e => e.Name))}, global::System.Runtime.InteropServices.MemoryMarshal.CreateReadOnlySpan(ref foxyParamsArray.arg0, {i}));");
                         sb.CloseBlock();
                     }
@@ -51,8 +52,8 @@ namespace Foxy.Params.SourceGenerator
                     if (hasParams)
                     {
                         sb.AppendLine();
-                        sb.Method(name, fixArguments.Append($"params object[] {argName}"), isStatic);
-                        sb.AppendLine($"{name}({string.Join(", ", argumentInfos.Select(e => e.Name))}, new global::System.ReadOnlySpan<object>(args));");
+                        sb.Method(name, fixArguments.Append($"params {spanArgumentType}[] {argName}"), isStatic);
+                        sb.AppendLine($"{name}({string.Join(", ", argumentInfos.Select(e => e.Name))}, new global::System.ReadOnlySpan<{spanArgumentType}>(args));");
                         sb.CloseBlock();
                     }
                     maxOverridesMax = Math.Max(maxOverridesMax, maxOverrides);
@@ -67,6 +68,14 @@ namespace Foxy.Params.SourceGenerator
                 context.AddSource(uniqueClass.Key.CreateFileName(), SourceText.From(sb.ToString(), Encoding.UTF8));
             }
 
+        }
+
+        private string GetSpanArgumentType(IMethodSymbol methodSymbol)
+        {
+             var spanParam = methodSymbol.Parameters.Last();
+            var spanType = spanParam.Type as INamedTypeSymbol;
+            var spanTypeArgument = spanType.TypeArguments.First();
+            return spanTypeArgument.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
         }
 
         private static List<ArgumentInfo> GetNonParamsArguments(IMethodSymbol methodSymbol)

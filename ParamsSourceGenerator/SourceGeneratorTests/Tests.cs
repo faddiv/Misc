@@ -19,7 +19,7 @@ public class Tests
     }
 
     [Fact]
-    public async Task Generate_OverridesFor_SimpleCase_WithDefaultParameters()
+    public async Task Generate_OverridesFor_ReadOnlySpan_WithDefaultParameters()
     {
         string code = TestEnvironment.GetSource();
         await VerifyCS.VerifyGeneratorAsync(code,
@@ -53,6 +53,14 @@ public class Tests
 
     [Fact]
     public async Task Generate_ForInstanceLevelMethod()
+    {
+        string code = TestEnvironment.GetSource();
+        await VerifyCS.VerifyGeneratorAsync(code,
+            TestEnvironment.GetOuputs());
+    }
+
+    [Fact]
+    public async Task Generate_ForNonObjectReadOnlySpan()
     {
         string code = TestEnvironment.GetSource();
         await VerifyCS.VerifyGeneratorAsync(code,
