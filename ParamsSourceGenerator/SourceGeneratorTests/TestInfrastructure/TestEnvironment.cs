@@ -7,26 +7,33 @@ namespace SourceGeneratorTests.TestInfrastructure;
 
 internal class TestEnvironment
 {
+    private static readonly string _projectDirectory;
+
+    private static readonly string _testDataDirectory;
+
+    public static readonly string AttributeImpl;
+
     static TestEnvironment()
     {
-        ProjectDirectory = FindDirectoryOfFile(".csproj");
-        TestDataDirectory = Path.Combine(ProjectDirectory, "TestData");
-        AttributeImpl = File.ReadAllText(Path.Combine(TestDataDirectory, "Attribute.cs"));
+        _projectDirectory = FindDirectoryOfFile(".csproj");
+        _testDataDirectory = Path.Combine(_projectDirectory, "TestData");
+        AttributeImpl = File.ReadAllText(Path.Combine(_testDataDirectory, "Attribute.cs"));
     }
-    public static string GetSource([CallerMemberName]string caller = null)
+    public static string GetSource([CallerMemberName] string caller = null)
     {
-        var sourcePath = Path.Combine(TestDataDirectory, caller, "_source.cs");
+        var sourcePath = Path.Combine(_testDataDirectory, caller, "_source.cs");
         return File.ReadAllText(sourcePath);
     }
 
     public static (string filename, string content)[] GetOuputs([CallerMemberName] string caller = null)
     {
-        var basePath = Path.Combine(TestDataDirectory, caller);
+        var basePath = Path.Combine(_testDataDirectory, caller);
         var sources = new List<(string filename, string content)>
         {
             ("ParamsAttribute.g.cs", AttributeImpl)
         };
-        foreach (var filePath in Directory.GetFiles(basePath, "*.cs", SearchOption.TopDirectoryOnly)) {
+        foreach (var filePath in Directory.GetFiles(basePath, "*.cs", SearchOption.TopDirectoryOnly))
+        {
             var fileName = Path.GetFileName(filePath);
             if (fileName == "_source.cs")
                 continue;
@@ -36,12 +43,6 @@ internal class TestEnvironment
         }
         return sources.ToArray();
     }
-
-    private static readonly string ProjectDirectory;
-
-    public static readonly string AttributeImpl;
-
-    private static readonly string TestDataDirectory;
 
     private static string FindDirectoryOfFile(string fileExtension, [CallerFilePath] string baseFilePath = null)
     {

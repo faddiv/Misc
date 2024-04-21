@@ -51,6 +51,18 @@ namespace Foxy.Params.SourceGenerator
             return methodSymbol.ContainingNamespace.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
         }
 
+        public static T GetValue<T>(AttributeData attributeSyntax, string argumentName, T defaultValue)
+        {
+            foreach (var item in attributeSyntax.NamedArguments)
+            {
+                if (item.Key != argumentName)
+                    continue;
+
+                return (T)item.Value.Value;
+            }
+
+            return defaultValue;
+        }
     }
 }
 

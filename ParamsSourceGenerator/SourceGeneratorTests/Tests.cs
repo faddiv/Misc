@@ -1,13 +1,4 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Reflection;
 using System.Threading.Tasks;
-using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CodeFixes;
-using Microsoft.CodeAnalysis.CSharp;
-using Microsoft.CodeAnalysis.Diagnostics;
-using Microsoft.CodeAnalysis.Testing;
 using Foxy.Params.SourceGenerator;
 using Xunit;
 using Xunit.Abstractions;
@@ -69,6 +60,14 @@ namespace Foxy.Params {
 
     [Fact]
     public async Task Generate_OverridesFor_MultipleFixedParameters()
+    {
+        string code = TestEnvironment.GetSource();
+        await VerifyCS.VerifyGeneratorAsync(code,
+            TestEnvironment.GetOuputs());
+    }
+
+    [Fact]
+    public async Task DoesNotGenerateParams_WhenHasParamsIsFalse()
     {
         string code = TestEnvironment.GetSource();
         await VerifyCS.VerifyGeneratorAsync(code,

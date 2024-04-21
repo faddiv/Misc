@@ -5,7 +5,6 @@ using System.Threading;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Testing;
 using Microsoft.CodeAnalysis.Text;
-using static Microsoft.CodeAnalysis.Testing.ReferenceAssemblies;
 using System.IO;
 
 namespace SourceGeneratorTests;
