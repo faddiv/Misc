@@ -42,10 +42,17 @@ namespace Foxy.Params.SourceGenerator
             OpenBlock(className);
         }
 
-        internal void Method(string name, IEnumerable<string> args)
+        internal void Method(string name, IEnumerable<string> args, bool isStatic)
         {
             AddIntend();
-            _builder.Append($"public static void {name}(");
+            _builder.Append("public");
+            if (isStatic)
+            {
+                _builder.Append(" static");
+                 
+            }
+            _builder.Append(" void");
+            _builder.Append($" {name}(");
             ItemList(", ", args);
             _builder.AppendLine(")");
             OpenBlock(name);

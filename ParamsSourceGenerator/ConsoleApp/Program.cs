@@ -20,10 +20,3 @@ namespace ConsoleApp
         }
     }
 }
-namespace System {
-
-    public class Exception
-    {
-
-    }
-}

@@ -29,8 +29,10 @@ namespace Foxy.Params.SourceGenerator
                 {
                     var maxOverrides = SemanticHelpers.GetValue(item.AttributeSyntax, "MaxOverrides", 3);
                     string name = item.MethodSymbol.Name;
-                    var preArguments = GetNonParamsArguments(item.MethodSymbol);
+                    var argumentInfos = GetNonParamsArguments(item.MethodSymbol);
+                    var fixArguments = argumentInfos.Select(e => e.ToParameter()).ToList();
                     var argName = "args";
+                    var isStatic = item.MethodSymbol.IsStatic;
 
                     for (int i = 1; i <= maxOverrides; i++)
                     {
@@ -38,18 +40,19 @@ namespace Foxy.Params.SourceGenerator
                         {
                             sb.AppendLine();
                         }
-                        sb.Method(name,
-                            preArguments.Select(e => e.ToParameter()).Concat(Enumerable.Range(0, i).Select(j => $"object {argName}{j}")));
+
+                        var variableArguments = Enumerable.Range(0, i).Select(j => $"object {argName}{j}");
+                        sb.Method(name, fixArguments.Concat(variableArguments), isStatic);
                         sb.AppendLine($"var foxyParamsArray = new Arguments{i}<object>({string.Join(", ", Enumerable.Range(0, i).Select(j => $"{argName}{j}"))});");
-                        sb.AppendLine($"{name}({string.Join(", ", preArguments.Select(e => e.Name))}, global::System.Runtime.InteropServices.MemoryMarshal.CreateReadOnlySpan(ref foxyParamsArray.arg0, {i}));");
+                        sb.AppendLine($"{name}({string.Join(", ", argumentInfos.Select(e => e.Name))}, global::System.Runtime.InteropServices.MemoryMarshal.CreateReadOnlySpan(ref foxyParamsArray.arg0, {i}));");
                         sb.CloseBlock();
                     }
                     var hasParams = SemanticHelpers.GetValue(item.AttributeSyntax, "HasParams", true);
                     if (hasParams)
                     {
                         sb.AppendLine();
-                        sb.Method(name, preArguments.Select(e => e.ToParameter()).Append($"params object[] {argName}"));
-                        sb.AppendLine($"{name}({string.Join(", ", preArguments.Select(e => e.Name))}, new global::System.ReadOnlySpan<object>(args));");
+                        sb.Method(name, fixArguments.Append($"params object[] {argName}"), isStatic);
+                        sb.AppendLine($"{name}({string.Join(", ", argumentInfos.Select(e => e.Name))}, new global::System.ReadOnlySpan<object>(args));");
                         sb.CloseBlock();
                     }
                     maxOverridesMax = Math.Max(maxOverridesMax, maxOverrides);
