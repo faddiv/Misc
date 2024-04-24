@@ -32,6 +32,8 @@ namespace Foxy.Params.SourceGenerator
                     var spanArgumentType = GetSpanArgumentType(item.MethodSymbol);
                     var argumentInfos = GetNonParamsArguments(item.MethodSymbol);
                     var fixArguments = argumentInfos.Select(e => e.ToParameter()).ToList();
+                    var returnsVoid = item.MethodSymbol.ReturnsVoid;
+                    string returnType = item.MethodSymbol.ReturnType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
                     var argName = "args";
                     var isStatic = item.MethodSymbol.IsStatic;
 
@@ -43,17 +45,17 @@ namespace Foxy.Params.SourceGenerator
                         }
 
                         var variableArguments = Enumerable.Range(0, i).Select(j => $"{spanArgumentType} {argName}{j}");
-                        sb.Method(name, fixArguments.Concat(variableArguments), isStatic);
+                        sb.Method(name, fixArguments.Concat(variableArguments), isStatic, returnType);
                         sb.AppendLine($"var foxyParamsArray = new Arguments{i}<{spanArgumentType}>({string.Join(", ", Enumerable.Range(0, i).Select(j => $"{argName}{j}"))});");
-                        sb.AppendLine($"{name}({string.Join(", ", argumentInfos.Select(e => e.Name))}, global::System.Runtime.InteropServices.MemoryMarshal.CreateReadOnlySpan(ref foxyParamsArray.arg0, {i}));");
+                        CreateCallLine(sb, name, argumentInfos, returnsVoid, $"global::System.Runtime.InteropServices.MemoryMarshal.CreateReadOnlySpan(ref foxyParamsArray.arg0, {i})");
                         sb.CloseBlock();
                     }
                     var hasParams = SemanticHelpers.GetValue(item.AttributeSyntax, "HasParams", true);
                     if (hasParams)
                     {
                         sb.AppendLine();
-                        sb.Method(name, fixArguments.Append($"params {spanArgumentType}[] {argName}"), isStatic);
-                        sb.AppendLine($"{name}({string.Join(", ", argumentInfos.Select(e => e.Name))}, new global::System.ReadOnlySpan<{spanArgumentType}>(args));");
+                        sb.Method(name, fixArguments.Append($"params {spanArgumentType}[] {argName}"), isStatic, returnType);
+                        CreateCallLine(sb, name, argumentInfos, returnsVoid, $"new global::System.ReadOnlySpan<{spanArgumentType}>(args)");
                         sb.CloseBlock();
                     }
                     maxOverridesMax = Math.Max(maxOverridesMax, maxOverrides);
@@ -68,6 +70,25 @@ namespace Foxy.Params.SourceGenerator
                 context.AddSource(uniqueClass.Key.CreateFileName(), SourceText.From(sb.ToString(), Encoding.UTF8));
             }
 
+        }
+
+        private static void CreateCallLine(
+            SourceBuilder sb,
+            string name,
+            List<ArgumentInfo> argumentInfos,
+            bool returnsVoid,
+            string paramsArgument)
+        {
+            var codeLine = sb.StartLine();
+            if (!returnsVoid)
+            {
+                codeLine.Returns();
+            }
+            codeLine.AddSegment(name);
+            codeLine.AddSegment("(");
+            codeLine.AddCommaSeparatedList(argumentInfos.Select(e => e.Name));
+            codeLine.AddSegment($", {paramsArgument})");
+            codeLine.EndLine();
         }
 
         private string GetSpanArgumentType(IMethodSymbol methodSymbol)

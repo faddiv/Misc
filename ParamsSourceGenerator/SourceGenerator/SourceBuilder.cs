@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Text;
 
@@ -42,7 +43,7 @@ namespace Foxy.Params.SourceGenerator
             OpenBlock(className);
         }
 
-        internal void Method(string name, IEnumerable<string> args, bool isStatic)
+        internal void Method(string name, IEnumerable<string> args, bool isStatic, string returnType)
         {
             AddIntend();
             _builder.Append("public");
@@ -51,7 +52,7 @@ namespace Foxy.Params.SourceGenerator
                 _builder.Append(" static");
                  
             }
-            _builder.Append(" void");
+            _builder.Append(" ").Append(returnType);
             _builder.Append($" {name}(");
             ItemList(", ", args);
             _builder.AppendLine(")");
@@ -108,6 +109,41 @@ namespace Foxy.Params.SourceGenerator
         public void DecreaseIntend() {
             _scope.Pop();
             _intendLevel--;
+        }
+
+        public SourceLine StartLine()
+        {
+            return new SourceLine(this);
+        }
+
+        public class SourceLine
+        {
+            private readonly SourceBuilder _builder;
+
+            public SourceLine(SourceBuilder builder)
+            {
+                _builder = builder;
+                _builder.AddIntend();
+            }
+
+            public void Returns()
+            {
+                _builder._builder.Append("return ");
+            }
+
+            public void AddSegment(string segment)
+            {
+                _builder._builder.Append(segment);
+            }
+
+            public void AddCommaSeparatedList(IEnumerable<string> elements)
+            {
+                _builder._builder.Append(string.Join(", ", elements));
+            }
+
+            public void EndLine() {
+                _builder._builder.AppendLine(";");
+            }
         }
 
         private void AddLineInternal(string text)
