@@ -68,7 +68,15 @@ public class Tests
     }
 
     [Fact]
-    public async Task Generate_ForFunctions()
+    public async Task Generate_ForFunctions_WithKeywordReturnType()
+    {
+        string code = TestEnvironment.GetSource();
+        await VerifyCS.VerifyGeneratorAsync(code,
+            TestEnvironment.GetOuputs());
+    }
+
+    [Fact]
+    public async Task Generate_ForFunctions_WithNonKeywordReturnType()
     {
         string code = TestEnvironment.GetSource();
         await VerifyCS.VerifyGeneratorAsync(code,
