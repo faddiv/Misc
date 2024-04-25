@@ -37,7 +37,7 @@ namespace Foxy.Params.SourceGenerator
             AddIntend();
             string className = _scope.Peek();
             _builder.Append($"public {className}(");
-            ItemList(", ", args);
+            CommaSeparatedItemList(args);
             _builder.AppendLine(")");
             OpenBlock(className);
         }
@@ -47,26 +47,28 @@ namespace Foxy.Params.SourceGenerator
             IEnumerable<string> args,
             bool isStatic,
             string returnType,
-            List<string> typeArguments)
+            List<string> typeArguments,
+            List<TypeConstrainInfo> typeConstraintsList)
         {
             AddIntend();
             _builder.Append("public");
             if (isStatic)
             {
                 _builder.Append(" static");
-                 
+
             }
             _builder.Append(" ").Append(returnType);
             _builder.Append($" {name}");
-            if(typeArguments.Count > 0)
+            if (typeArguments.Count > 0)
             {
                 _builder.Append($"<");
-                ItemList(", ", typeArguments);
+                CommaSeparatedItemList(typeArguments);
                 _builder.Append($">");
             }
             _builder.Append($"(");
-            ItemList(", ", args);
+            CommaSeparatedItemList(args);
             _builder.AppendLine(")");
+            AddTypeConstraints(typeConstraintsList);
             OpenBlock(name);
         }
 
@@ -157,6 +159,22 @@ namespace Foxy.Params.SourceGenerator
             }
         }
 
+        private void AddTypeConstraints(List<TypeConstrainInfo> typeConstraintsList)
+        {
+            if (typeConstraintsList.Count <= 0)
+                return;
+
+            IncreaseIntend(_scope.Peek());
+            foreach (var typeConstraints in typeConstraintsList)
+            {
+                AddIntend();
+                _builder.Append($"where {typeConstraints.Type} : ");
+                CommaSeparatedItemList(typeConstraints.Constraints);
+                _builder.AppendLine();
+            }
+            DecreaseIntend();
+        }
+
         private void AddLineInternal(string text)
         {
             AddIntend();
@@ -170,7 +188,10 @@ namespace Foxy.Params.SourceGenerator
                 _builder.Append(Intend);
             }
         }
-
+        private void CommaSeparatedItemList(IEnumerable<string> args)
+        {
+            ItemList(", ", args);
+        }
         private void ItemList(string separator, IEnumerable<string> args)
         {
             var more = false;

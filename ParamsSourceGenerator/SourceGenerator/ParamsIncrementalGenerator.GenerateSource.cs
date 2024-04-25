@@ -33,8 +33,8 @@ namespace Foxy.Params.SourceGenerator
                     var argumentInfos = GetNonParamsArguments(item.MethodSymbol);
                     var fixArguments = argumentInfos.Select(e => e.ToParameter()).ToList();
                     var returnsVoid = item.MethodSymbol.ReturnsVoid;
-                    var isGenericMethod = item.MethodSymbol.IsGenericMethod;
                     var typeArguments = item.MethodSymbol.TypeArguments.Select(e => e.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)).ToList();
+                    var typeConstraints = CreateTypeConstraints(item.MethodSymbol.TypeArguments);
                     string returnType = item.MethodSymbol.ReturnType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
                     var argName = "args";
                     var isStatic = item.MethodSymbol.IsStatic;
@@ -52,7 +52,8 @@ namespace Foxy.Params.SourceGenerator
                             fixArguments.Concat(variableArguments),
                             isStatic,
                             returnType,
-                            typeArguments);
+                            typeArguments,
+                            typeConstraints);
                         sb.AppendLine($"var foxyParamsArray = new Arguments{i}<{spanArgumentType}>({string.Join(", ", Enumerable.Range(0, i).Select(j => $"{argName}{j}"))});");
                         CreateCallLine(
                             sb,
@@ -72,7 +73,8 @@ namespace Foxy.Params.SourceGenerator
                             fixArguments.Append($"params {spanArgumentType}[] {argName}"),
                             isStatic,
                             returnType,
-                            typeArguments);
+                            typeArguments,
+                            typeConstraints);
                         CreateCallLine(
                             sb,
                             name,
@@ -96,6 +98,51 @@ namespace Foxy.Params.SourceGenerator
 
         }
 
+        private List<TypeConstrainInfo> CreateTypeConstraints(ImmutableArray<ITypeSymbol> typeArguments)
+        {
+            var typeConstraintsList = new List<TypeConstrainInfo>();
+            foreach (var typeArg in typeArguments.Cast<ITypeParameterSymbol>())
+            {
+                var typeConstraints = new List<string>();
+                if (typeArg.HasUnmanagedTypeConstraint)
+                {
+                    typeConstraints.Add("unmanaged");
+                }
+                else if (typeArg.HasValueTypeConstraint)
+                {
+                    typeConstraints.Add("struct");
+                }
+                else if (typeArg.HasReferenceTypeConstraint)
+                {
+                    typeConstraints.Add("class");
+                }
+                else if (typeArg.HasNotNullConstraint)
+                {
+                    typeConstraints.Add("notnull");
+                }
+                if (typeArg.ConstraintTypes.Length > 0)
+                {
+                    foreach (var item in typeArg.ConstraintTypes)
+                    {
+                        typeConstraints.Add(item.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat));
+                    }
+                }
+                if (typeArg.HasConstructorConstraint)
+                {
+                    typeConstraints.Add("new()");
+                }
+                if (typeConstraints.Count > 0)
+                {
+                    typeConstraintsList.Add(new TypeConstrainInfo
+                    {
+                        Type = typeArg.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat),
+                        Constraints = typeConstraints
+                    });
+                }
+            }
+            return typeConstraintsList;
+        }
+
         private static void CreateCallLine(
             SourceBuilder sb,
             string name,
@@ -110,7 +157,7 @@ namespace Foxy.Params.SourceGenerator
                 codeLine.Returns();
             }
             codeLine.AddSegment(name);
-            if(typeArguments.Count > 0)
+            if (typeArguments.Count > 0)
             {
                 codeLine.AddSegment("<");
                 codeLine.AddCommaSeparatedList(typeArguments);
@@ -124,7 +171,7 @@ namespace Foxy.Params.SourceGenerator
 
         private string GetSpanArgumentType(IMethodSymbol methodSymbol)
         {
-             var spanParam = methodSymbol.Parameters.Last();
+            var spanParam = methodSymbol.Parameters.Last();
             var spanType = spanParam.Type as INamedTypeSymbol;
             var spanTypeArgument = spanType.TypeArguments.First();
             return spanTypeArgument.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
@@ -160,17 +207,6 @@ namespace Foxy.Params.SourceGenerator
             }
             sb.CloseBlock();
             sb.CloseBlock();
-        }
-    }
-
-    public class ArgumentInfo
-    {
-        public string Type { get; set; }
-        public string Name { get; set; }
-
-        public string ToParameter()
-        {
-            return $"{Type} {Name}";
         }
     }
 }

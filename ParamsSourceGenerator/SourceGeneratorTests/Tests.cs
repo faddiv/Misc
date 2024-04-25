@@ -106,4 +106,12 @@ public class Tests
         await VerifyCS.VerifyGeneratorAsync(code,
             TestEnvironment.GetOuputs());
     }
+
+    [Fact]
+    public async Task Generate_ForGenericMethods_WithRestrictedGenericParameters()
+    {
+        string code = TestEnvironment.GetSource();
+        await VerifyCS.VerifyGeneratorAsync(code,
+            TestEnvironment.GetOuputs());
+    }
 }
