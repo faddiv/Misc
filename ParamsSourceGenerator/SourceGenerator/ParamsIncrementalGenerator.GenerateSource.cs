@@ -33,6 +33,8 @@ namespace Foxy.Params.SourceGenerator
                     var argumentInfos = GetNonParamsArguments(item.MethodSymbol);
                     var fixArguments = argumentInfos.Select(e => e.ToParameter()).ToList();
                     var returnsVoid = item.MethodSymbol.ReturnsVoid;
+                    var isGenericMethod = item.MethodSymbol.IsGenericMethod;
+                    var typeArguments = item.MethodSymbol.TypeArguments.Select(e => e.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)).ToList();
                     string returnType = item.MethodSymbol.ReturnType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
                     var argName = "args";
                     var isStatic = item.MethodSymbol.IsStatic;
@@ -45,17 +47,39 @@ namespace Foxy.Params.SourceGenerator
                         }
 
                         var variableArguments = Enumerable.Range(0, i).Select(j => $"{spanArgumentType} {argName}{j}");
-                        sb.Method(name, fixArguments.Concat(variableArguments), isStatic, returnType);
+                        sb.Method(
+                            name,
+                            fixArguments.Concat(variableArguments),
+                            isStatic,
+                            returnType,
+                            typeArguments);
                         sb.AppendLine($"var foxyParamsArray = new Arguments{i}<{spanArgumentType}>({string.Join(", ", Enumerable.Range(0, i).Select(j => $"{argName}{j}"))});");
-                        CreateCallLine(sb, name, argumentInfos, returnsVoid, $"global::System.Runtime.InteropServices.MemoryMarshal.CreateReadOnlySpan(ref foxyParamsArray.arg0, {i})");
+                        CreateCallLine(
+                            sb,
+                            name,
+                            argumentInfos,
+                            returnsVoid,
+                            typeArguments,
+                            $"global::System.Runtime.InteropServices.MemoryMarshal.CreateReadOnlySpan(ref foxyParamsArray.arg0, {i})");
                         sb.CloseBlock();
                     }
                     var hasParams = SemanticHelpers.GetValue(item.AttributeSyntax, "HasParams", true);
                     if (hasParams)
                     {
                         sb.AppendLine();
-                        sb.Method(name, fixArguments.Append($"params {spanArgumentType}[] {argName}"), isStatic, returnType);
-                        CreateCallLine(sb, name, argumentInfos, returnsVoid, $"new global::System.ReadOnlySpan<{spanArgumentType}>(args)");
+                        sb.Method(
+                            name,
+                            fixArguments.Append($"params {spanArgumentType}[] {argName}"),
+                            isStatic,
+                            returnType,
+                            typeArguments);
+                        CreateCallLine(
+                            sb,
+                            name,
+                            argumentInfos,
+                            returnsVoid,
+                            typeArguments,
+                            $"new global::System.ReadOnlySpan<{spanArgumentType}>(args)");
                         sb.CloseBlock();
                     }
                     maxOverridesMax = Math.Max(maxOverridesMax, maxOverrides);
@@ -77,6 +101,7 @@ namespace Foxy.Params.SourceGenerator
             string name,
             List<ArgumentInfo> argumentInfos,
             bool returnsVoid,
+            List<string> typeArguments,
             string paramsArgument)
         {
             var codeLine = sb.StartLine();
@@ -85,6 +110,12 @@ namespace Foxy.Params.SourceGenerator
                 codeLine.Returns();
             }
             codeLine.AddSegment(name);
+            if(typeArguments.Count > 0)
+            {
+                codeLine.AddSegment("<");
+                codeLine.AddCommaSeparatedList(typeArguments);
+                codeLine.AddSegment(">");
+            }
             codeLine.AddSegment("(");
             codeLine.AddCommaSeparatedList(argumentInfos.Select(e => e.Name));
             codeLine.AddSegment($", {paramsArgument})");

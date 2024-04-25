@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using System.Text;
 
@@ -43,7 +42,12 @@ namespace Foxy.Params.SourceGenerator
             OpenBlock(className);
         }
 
-        internal void Method(string name, IEnumerable<string> args, bool isStatic, string returnType)
+        internal void Method(
+            string name,
+            IEnumerable<string> args,
+            bool isStatic,
+            string returnType,
+            List<string> typeArguments)
         {
             AddIntend();
             _builder.Append("public");
@@ -53,7 +57,14 @@ namespace Foxy.Params.SourceGenerator
                  
             }
             _builder.Append(" ").Append(returnType);
-            _builder.Append($" {name}(");
+            _builder.Append($" {name}");
+            if(typeArguments.Count > 0)
+            {
+                _builder.Append($"<");
+                ItemList(", ", typeArguments);
+                _builder.Append($">");
+            }
+            _builder.Append($"(");
             ItemList(", ", args);
             _builder.AppendLine(")");
             OpenBlock(name);
