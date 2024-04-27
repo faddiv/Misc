@@ -30,7 +30,6 @@ namespace Something
     file struct Arguments1<T>
     {
         public T arg0;
-
         public Arguments1(T value0)
         {
             arg0 = value0;

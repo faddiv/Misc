@@ -28,7 +28,6 @@ namespace Something
     file struct Arguments1<T>
     {
         public T arg0;
-
         public Arguments1(T value0)
         {
             arg0 = value0;
@@ -39,7 +38,6 @@ namespace Something
     file struct Arguments2<T>
     {
         public T arg0;
-
         public Arguments2(T value0, T value1)
         {
             arg0 = value0;

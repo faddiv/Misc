@@ -1,3 +1,7 @@
+using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.Formatting;
+using System;
 using System.Collections.Generic;
 using System.Text;
 
@@ -205,6 +209,18 @@ namespace Foxy.Params.SourceGenerator
                 _builder.Append(item);
             }
         }
+
+        internal void AddCompilationElement(ref SyntaxNode trivias)
+        {
+            var text = trivias.
+                NormalizeWhitespace().ToFullString();
+            foreach (var line in text.Split(new string[] { "\r\n" }, StringSplitOptions.None))
+            {
+                AddIntend();
+                _builder.AppendLine(line);
+            }
+        }
+        
     }
 }
 
