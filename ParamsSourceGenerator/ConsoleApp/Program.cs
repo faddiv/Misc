@@ -13,7 +13,7 @@ namespace ConsoleApp
             }
         }
 
-        [Foxy.Params.Params(MaxOverrides = 1)]
+        //[Foxy.Params.Params(MaxOverrides = 1)]
         public static void Format(Exception ex, string s, ReadOnlySpan<object> span)
         {
 

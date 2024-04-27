@@ -114,4 +114,28 @@ public class Tests
         await VerifyCS.VerifyGeneratorAsync(code,
             TestEnvironment.GetOuputs());
     }
+
+    [Fact]
+    public async Task Generate_ForGenericMethods_WithRestrictedGenericParamsParameters()
+    {
+        string code = TestEnvironment.GetSource();
+        await VerifyCS.VerifyGeneratorAsync(code,
+            TestEnvironment.GetOuputs());
+    }
+
+    [Fact]
+    public async Task Generate_ForGenericMethods_WithRestrictedGenericReturnType()
+    {
+        string code = TestEnvironment.GetSource();
+        await VerifyCS.VerifyGeneratorAsync(code,
+            TestEnvironment.GetOuputs());
+    }
+
+    [Fact]
+    public async Task Generate_ForCustomTypeParametersAndReturnType()
+    {
+        string code = TestEnvironment.GetSource();
+        await VerifyCS.VerifyGeneratorAsync(code,
+            TestEnvironment.GetOuputs());
+    }
 }
