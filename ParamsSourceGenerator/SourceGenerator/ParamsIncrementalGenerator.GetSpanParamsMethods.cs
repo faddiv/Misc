@@ -44,6 +44,8 @@ namespace Foxy.Params.SourceGenerator
                     attributeSyntax.GetLocation(),
                     typeName, methodSymbol.Name));
             }
+
+            int maxOverrides = SemanticHelpers.GetValue(context.Attributes.First(), "MaxOverrides", 3);
             var spanParam = methodSymbol.Parameters.LastOrDefault();
             var spanType = spanParam?.Type as INamedTypeSymbol;
             if (spanType == null)
@@ -53,6 +55,7 @@ namespace Foxy.Params.SourceGenerator
                     attributeSyntax.GetLocation(),
                     methodSymbol.Name));
             }
+
             if (!IsReadOnlySpan(spanType))
             {
                 diagnostics.Add(Diagnostic.Create(
@@ -60,12 +63,21 @@ namespace Foxy.Params.SourceGenerator
                     attributeSyntax.GetLocation(),
                     methodSymbol.Name, spanParam.ToDisplayString(SymbolDisplayFormat.CSharpErrorMessageFormat)));
             }
-            if(IsOutParameter(spanParam))
+
+            if (IsOutParameter(spanParam))
             {
                 diagnostics.Add(Diagnostic.Create(
                     DiagnosticReports.OutModifierNotAllowedDescriptor,
                     attributeSyntax.GetLocation(),
                     methodSymbol.Name, spanParam.ToDisplayString(SymbolDisplayFormat.CSharpErrorMessageFormat)));
+            }
+
+            if (HasNameCollision(methodSymbol.Parameters, maxOverrides, out string unusableParameters))
+            {
+                diagnostics.Add(Diagnostic.Create(
+                    DiagnosticReports.ParameterCollisionDescriptor,
+                    attributeSyntax.GetLocation(),
+                    methodSymbol.Name, unusableParameters));
             }
             return new ParamsCandidate
             {
@@ -77,9 +89,36 @@ namespace Foxy.Params.SourceGenerator
                 MethodSymbol = methodSymbol,
                 Diagnostics = diagnostics,
                 SpanParam = spanParam,
-                MaxOverrides = SemanticHelpers.GetValue(context.Attributes.First(), "MaxOverrides", 3),
+                MaxOverrides = maxOverrides,
                 HasParams = SemanticHelpers.GetValue(context.Attributes.First(), "HasParams", true)
             };
+        }
+
+        private bool HasNameCollision(ImmutableArray<IParameterSymbol> parameters, int maxOverrides, out string unusableParameters)
+        {
+            unusableParameters = null;
+            if (parameters.Length <= 1)
+            {
+                return false;
+            }
+            var spanParameterName = parameters[parameters.Length - 1].Name;
+            var collisionParameters = new List<string>
+            {
+                $"{spanParameterName}Span"
+            };
+            for (int i = 0; i < maxOverrides; i++)
+            {
+                collisionParameters.Add($"{spanParameterName}{i}");
+            }
+            for (int i = 0; i < parameters.Length - 1; i++)
+            {
+                if (collisionParameters.Contains(parameters[i].Name))
+                {
+                    unusableParameters = string.Join(", ", collisionParameters);
+                    return true;
+                }
+            }
+            return false;
         }
 
         private bool HasDuplication(ImmutableArray<IParameterSymbol> parameters)

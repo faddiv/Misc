@@ -37,5 +37,13 @@ namespace Foxy.Params.SourceGenerator.Data
             Category,
             DiagnosticSeverity.Warning,
             isEnabledByDefault: true);
+
+        public static DiagnosticDescriptor ParameterCollisionDescriptor { get; } = new DiagnosticDescriptor(
+            "PRM1004",
+            "Parameter collision",
+            "The following parameter names can't be used on the method '{0}': '{1}'",
+            Category,
+            DiagnosticSeverity.Warning,
+            isEnabledByDefault: true);
     }
 }

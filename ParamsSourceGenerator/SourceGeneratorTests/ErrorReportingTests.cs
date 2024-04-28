@@ -101,4 +101,17 @@ public class ErrorReportingTests
 
         await VerifyCS.VerifyGeneratorAsync(code, expected, TestEnvironment.GetDefaultOuput());
     }
+
+    [Fact]
+    public async Task Reports_OnNameCollision()
+    {
+        string code = TestEnvironment.GetInvalidSource();
+
+        var expected = VerifyCS
+            .Diagnostic(DiagnosticReports.ParameterCollisionDescriptor)
+            .WithLocation(0)
+            .WithArguments("Format", "valuesSpan, values0, values1, values2");
+
+        await VerifyCS.VerifyGeneratorAsync(code, expected, TestEnvironment.GetDefaultOuput());
+    }
 }
