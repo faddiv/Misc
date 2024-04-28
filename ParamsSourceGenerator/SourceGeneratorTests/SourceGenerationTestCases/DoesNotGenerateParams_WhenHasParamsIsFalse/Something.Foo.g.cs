@@ -8,8 +8,9 @@ namespace Something
     {
         public static void Format(string format, object args0)
         {
-            var foxyParamsArray = new Arguments1<object>(args0);
-            Format(format, global::System.Runtime.InteropServices.MemoryMarshal.CreateReadOnlySpan(ref foxyParamsArray.arg0, 1));
+            var args = new Arguments1<object>(args0);
+            var argsSpan = global::System.Runtime.InteropServices.MemoryMarshal.CreateReadOnlySpan(ref args.arg0, 1);
+            Format(format, argsSpan);
         }
     }
 

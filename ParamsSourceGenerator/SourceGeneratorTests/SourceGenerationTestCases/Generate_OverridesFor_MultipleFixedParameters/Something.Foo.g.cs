@@ -8,19 +8,22 @@ namespace Something
     {
         public static void Format(global::System.Exception ex, string format, object args0)
         {
-            var foxyParamsArray = new Arguments1<object>(args0);
-            Format(ex, format, global::System.Runtime.InteropServices.MemoryMarshal.CreateReadOnlySpan(ref foxyParamsArray.arg0, 1));
+            var args = new Arguments1<object>(args0);
+            var argsSpan = global::System.Runtime.InteropServices.MemoryMarshal.CreateReadOnlySpan(ref args.arg0, 1);
+            Format(ex, format, argsSpan);
         }
 
         public static void Format(global::System.Exception ex, string format, object args0, object args1)
         {
-            var foxyParamsArray = new Arguments2<object>(args0, args1);
-            Format(ex, format, global::System.Runtime.InteropServices.MemoryMarshal.CreateReadOnlySpan(ref foxyParamsArray.arg0, 2));
+            var args = new Arguments2<object>(args0, args1);
+            var argsSpan = global::System.Runtime.InteropServices.MemoryMarshal.CreateReadOnlySpan(ref args.arg0, 2);
+            Format(ex, format, argsSpan);
         }
 
         public static void Format(global::System.Exception ex, string format, params object[] args)
         {
-            Format(ex, format, new global::System.ReadOnlySpan<object>(args));
+            var argsSpan = new global::System.ReadOnlySpan<object>(args);
+            Format(ex, format, argsSpan);
         }
     }
 

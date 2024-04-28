@@ -9,14 +9,16 @@ namespace Something
         public static void Format<T>(string format, T args0)
             where T : class, global::System.ICloneable, new()
         {
-            var foxyParamsArray = new Arguments1<T>(args0);
-            Format<T>(format, global::System.Runtime.InteropServices.MemoryMarshal.CreateReadOnlySpan(ref foxyParamsArray.arg0, 1));
+            var args = new Arguments1<T>(args0);
+            var argsSpan = global::System.Runtime.InteropServices.MemoryMarshal.CreateReadOnlySpan(ref args.arg0, 1);
+            Format<T>(format, argsSpan);
         }
 
         public static void Format<T>(string format, params T[] args)
             where T : class, global::System.ICloneable, new()
         {
-            Format<T>(format, new global::System.ReadOnlySpan<T>(args));
+            var argsSpan = new global::System.ReadOnlySpan<T>(args);
+            Format<T>(format, argsSpan);
         }
     }
 

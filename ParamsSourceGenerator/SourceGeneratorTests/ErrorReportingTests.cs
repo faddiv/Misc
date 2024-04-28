@@ -45,7 +45,7 @@ public class ErrorReportingTests
         var expected = VerifyCS
             .Diagnostic(DiagnosticReports.ParameterMismatchDescriptor)
             .WithLocation(0)
-            .WithArguments("Format", "object");
+            .WithArguments("Format", "object args");
 
         await VerifyCS.VerifyGeneratorAsync(code, expected, TestEnvironment.GetDefaultOuput());
     }

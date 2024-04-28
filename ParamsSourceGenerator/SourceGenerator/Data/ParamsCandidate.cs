@@ -13,10 +13,12 @@ namespace Foxy.Params.SourceGenerator.Data
 
         public TypeCandidate TypeInfo { get; set; }
 
-        public INamedTypeSymbol LastParameter { get; set; }
+        public IParameterSymbol SpanParam { get; internal set; }
 
         public List<Diagnostic> Diagnostics { get; internal set; }
+
         public int MaxOverrides { get; internal set; }
+
         public bool HasParams { get; internal set; }
     }
 }

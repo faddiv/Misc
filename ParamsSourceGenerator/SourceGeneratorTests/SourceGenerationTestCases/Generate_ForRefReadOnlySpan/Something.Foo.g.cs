@@ -6,24 +6,24 @@ namespace Something
 {
     partial class Foo
     {
-        public static T Format<T>(string format, object args0)
+        public static void Format(string format, string args0)
         {
-            var args = new Arguments1<object>(args0);
+            var args = new Arguments1<string>(args0);
             var argsSpan = global::System.Runtime.InteropServices.MemoryMarshal.CreateReadOnlySpan(ref args.arg0, 1);
-            return Format<T>(format, argsSpan);
+            Format(format, ref argsSpan);
         }
 
-        public static T Format<T>(string format, object args0, object args1)
+        public static void Format(string format, string args0, string args1)
         {
-            var args = new Arguments2<object>(args0, args1);
+            var args = new Arguments2<string>(args0, args1);
             var argsSpan = global::System.Runtime.InteropServices.MemoryMarshal.CreateReadOnlySpan(ref args.arg0, 2);
-            return Format<T>(format, argsSpan);
+            Format(format, ref argsSpan);
         }
 
-        public static T Format<T>(string format, params object[] args)
+        public static void Format(string format, params string[] args)
         {
-            var argsSpan = new global::System.ReadOnlySpan<object>(args);
-            return Format<T>(format, argsSpan);
+            var argsSpan = new global::System.ReadOnlySpan<string>(args);
+            Format(format, ref argsSpan);
         }
     }
 

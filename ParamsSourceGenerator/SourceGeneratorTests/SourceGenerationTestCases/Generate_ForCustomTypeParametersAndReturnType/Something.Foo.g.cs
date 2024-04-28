@@ -8,13 +8,15 @@ namespace Something
     {
         public static global::Something.Foo.InnerClass Format(global::Something.Foo.InnerClass format, global::Something.Foo.InnerClass args0)
         {
-            var foxyParamsArray = new Arguments1<global::Something.Foo.InnerClass>(args0);
-            return Format(format, global::System.Runtime.InteropServices.MemoryMarshal.CreateReadOnlySpan(ref foxyParamsArray.arg0, 1));
+            var args = new Arguments1<global::Something.Foo.InnerClass>(args0);
+            var argsSpan = global::System.Runtime.InteropServices.MemoryMarshal.CreateReadOnlySpan(ref args.arg0, 1);
+            return Format(format, argsSpan);
         }
 
         public static global::Something.Foo.InnerClass Format(global::Something.Foo.InnerClass format, params global::Something.Foo.InnerClass[] args)
         {
-            return Format(format, new global::System.ReadOnlySpan<global::Something.Foo.InnerClass>(args));
+            var argsSpan = new global::System.ReadOnlySpan<global::Something.Foo.InnerClass>(args);
+            return Format(format, argsSpan);
         }
     }
 

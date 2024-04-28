@@ -12,8 +12,9 @@ namespace Something
             where G : notnull, global::System.Attribute
             where H : unmanaged
         {
-            var foxyParamsArray = new Arguments1<object>(args0);
-            Format<T, F, G, H>(format, global::System.Runtime.InteropServices.MemoryMarshal.CreateReadOnlySpan(ref foxyParamsArray.arg0, 1));
+            var args = new Arguments1<object>(args0);
+            var argsSpan = global::System.Runtime.InteropServices.MemoryMarshal.CreateReadOnlySpan(ref args.arg0, 1);
+            Format<T, F, G, H>(format, argsSpan);
         }
 
         public static void Format<T, F, G, H>(string format, params object[] args)
@@ -22,7 +23,8 @@ namespace Something
             where G : notnull, global::System.Attribute
             where H : unmanaged
         {
-            Format<T, F, G, H>(format, new global::System.ReadOnlySpan<object>(args));
+            var argsSpan = new global::System.ReadOnlySpan<object>(args);
+            Format<T, F, G, H>(format, argsSpan);
         }
     }
 

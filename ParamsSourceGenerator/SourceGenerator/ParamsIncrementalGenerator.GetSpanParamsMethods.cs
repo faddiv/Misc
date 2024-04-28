@@ -43,15 +43,16 @@ namespace Foxy.Params.SourceGenerator
                     attributeSyntax.GetLocation(),
                     typeName, methodSymbol.Name));
             }
-            var spanParam = SemanticHelpers.GetLastParameterOrNull(methodSymbol);
-            if (spanParam == null)
+            var spanParam = methodSymbol.Parameters.LastOrDefault();
+            var spanType = spanParam?.Type as INamedTypeSymbol;
+            if (spanType == null)
             {
                 diagnostics.Add(Diagnostic.Create(
                     DiagnosticReports.ParameterMissingDescriptor,
                     attributeSyntax.GetLocation(),
                     methodSymbol.Name));
             }
-            if (!IsReadOnlySpan(spanParam))
+            if (!IsReadOnlySpan(spanType))
             {
                 diagnostics.Add(Diagnostic.Create(
                     DiagnosticReports.ParameterMismatchDescriptor,
@@ -68,6 +69,7 @@ namespace Foxy.Params.SourceGenerator
                 AttributeSyntax = context.Attributes.First(),
                 MethodSymbol = methodSymbol,
                 Diagnostics = diagnostics,
+                SpanParam = spanParam,
                 MaxOverrides = SemanticHelpers.GetValue(context.Attributes.First(), "MaxOverrides", 3),
                 HasParams = SemanticHelpers.GetValue(context.Attributes.First(), "HasParams", true)
             };
