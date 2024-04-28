@@ -21,4 +21,17 @@ public class ErrorReportingTests
 
         await VerifyCS.VerifyGeneratorAsync(code, expected, TestEnvironment.GetDefaultOuput());
     }
+
+    [Fact]
+    public async Task Reports_NonReadOnlySpanParameter()
+    {
+        string code = TestEnvironment.GetInvalidSource();
+
+        var expected = VerifyCS
+            .Diagnostic(DiagnosticReports.ParameterMismatchDescriptor)
+            .WithLocation(0)
+            .WithArguments("Format", "object");
+
+        await VerifyCS.VerifyGeneratorAsync(code, expected, TestEnvironment.GetDefaultOuput());
+    }
 }

@@ -33,7 +33,7 @@ namespace Foxy.Params.SourceGenerator
                 var maxOverridesMax = 0;
                 foreach (var item in uniqueClass)
                 {
-                    var maxOverrides = SemanticHelpers.GetValue(item.AttributeSyntax, "MaxOverrides", 3);
+                    var maxOverrides = item.MaxOverrides;
                     string name = item.MethodSymbol.Name;
                     var spanArgumentType = GetSpanArgumentType(item.MethodSymbol);
                     var argumentInfos = GetNonParamsArguments(item.MethodSymbol);
@@ -70,8 +70,7 @@ namespace Foxy.Params.SourceGenerator
                             $"global::System.Runtime.InteropServices.MemoryMarshal.CreateReadOnlySpan(ref foxyParamsArray.arg0, {i})");
                         sb.CloseBlock();
                     }
-                    var hasParams = SemanticHelpers.GetValue(item.AttributeSyntax, "HasParams", true);
-                    if (hasParams)
+                    if (item.HasParams)
                     {
                         sb.AppendLine();
                         sb.Method(

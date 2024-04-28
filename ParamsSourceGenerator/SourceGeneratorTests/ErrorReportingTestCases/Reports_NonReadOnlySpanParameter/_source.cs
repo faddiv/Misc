@@ -3,10 +3,10 @@ using System;
 
 namespace Something;
 
-public class Foo
+public partial class Foo
 {
     [{|#0:Params|}]
-    private static void Format(string format, ReadOnlySpan<object> args)
+    private static void Format(string format, {|#1:object|} args)
     {
     }
 }

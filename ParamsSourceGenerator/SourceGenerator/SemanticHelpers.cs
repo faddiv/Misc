@@ -63,6 +63,12 @@ namespace Foxy.Params.SourceGenerator
 
             return defaultValue;
         }
+
+        public static INamedTypeSymbol GetLastParameterOrNull(IMethodSymbol methodSymbol)
+        {
+            var lastParam = methodSymbol.Parameters.LastOrDefault();
+            return lastParam?.Type as INamedTypeSymbol;
+        }
     }
 }
 
