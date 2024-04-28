@@ -4,7 +4,7 @@ using System.Threading;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
-namespace Foxy.Params.SourceGenerator
+namespace Foxy.Params.SourceGenerator.Helpers
 {
     internal static class SemanticHelpers
     {

@@ -8,6 +8,8 @@ using Microsoft.CodeAnalysis.CSharp;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System;
+using Foxy.Params.SourceGenerator.Helpers;
+using Foxy.Params.SourceGenerator.Data;
 
 namespace Foxy.Params.SourceGenerator
 {
@@ -25,12 +27,16 @@ namespace Foxy.Params.SourceGenerator
                 return null;
             }
 
+            if (HasErrorType(methodSymbol))
+            {
+                return null;
+            }
+
             string nameSpace = SemanticHelpers.GetNameSpaceNoGlobal(methodSymbol);
             string typeName = methodSymbol.ContainingType.ToDisplayString(SymbolDisplayFormat.MinimallyQualifiedFormat);
 
-            var attr = context.Attributes.First();
             var diagnostics = new List<Diagnostic>();
-            if(!IsContainingTypePartial(targetNode))
+            if (!IsContainingTypePartial(targetNode))
             {
                 diagnostics.Add(Diagnostic.Create(
                     DiagnosticReports.PartialIsMissingDescriptor,
@@ -38,7 +44,7 @@ namespace Foxy.Params.SourceGenerator
                     typeName, methodSymbol.Name));
             }
             var spanParam = SemanticHelpers.GetLastParameterOrNull(methodSymbol);
-            if(spanParam == null)
+            if (spanParam == null)
             {
                 diagnostics.Add(Diagnostic.Create(
                     DiagnosticReports.ParameterMissingDescriptor,
@@ -54,23 +60,41 @@ namespace Foxy.Params.SourceGenerator
             }
             return new ParamsCandidate
             {
-                HasErrors = false,
                 TypeInfo = new TypeCandidate
                 {
                     Namespace = nameSpace,
                     TypeName = typeName,
                 },
-                AttributeSyntax = attr,
+                AttributeSyntax = context.Attributes.First(),
                 MethodSymbol = methodSymbol,
                 Diagnostics = diagnostics,
-                MaxOverrides = SemanticHelpers.GetValue(attr, "MaxOverrides", 3),
-                HasParams = SemanticHelpers.GetValue(attr, "HasParams", true)
+                MaxOverrides = SemanticHelpers.GetValue(context.Attributes.First(), "MaxOverrides", 3),
+                HasParams = SemanticHelpers.GetValue(context.Attributes.First(), "HasParams", true)
             };
+        }
+
+        private bool HasErrorType(IMethodSymbol methodSymbol)
+        {
+            foreach (var parameter in methodSymbol.Parameters)
+            {
+                if (parameter.Type.Kind == SymbolKind.ErrorType)
+                {
+                    return true;
+                }
+            }
+
+            if (methodSymbol.ReturnType.Kind == SymbolKind.ErrorType)
+            {
+                return true;
+
+            }
+
+            return false;
         }
 
         private bool IsReadOnlySpan(INamedTypeSymbol spanParam)
         {
-            return spanParam == null || spanParam.MetadataName  == "ReadOnlySpan`1";
+            return spanParam == null || spanParam.MetadataName == "ReadOnlySpan`1";
         }
 
         private static bool IsContainingTypePartial(SyntaxNode targetNode)

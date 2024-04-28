@@ -5,6 +5,8 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Text;
 using System;
 using System.Collections.Generic;
+using Foxy.Params.SourceGenerator.Helpers;
+using Foxy.Params.SourceGenerator.Data;
 
 namespace Foxy.Params.SourceGenerator
 {
@@ -12,14 +14,17 @@ namespace Foxy.Params.SourceGenerator
     {
         private void GenerateSource(SourceProductionContext context, ImmutableArray<ParamsCandidate> typeSymbols)
         {
-            foreach (var diagnostic in typeSymbols.Where(e => e.Diagnostics.Count > 0)
+            foreach (var diagnostic in typeSymbols
+                .NotNull()
+                .Where(e => e.HasErrors)
                 .SelectMany(e => e.Diagnostics))
             {
                 context.ReportDiagnostic(diagnostic);
                 
             } 
             foreach (var uniqueClass in typeSymbols
-                .Where(e => !e.HasErrors && e.Diagnostics.Count == 0)
+                .NotNull()
+                .Where(e => !e.HasErrors)
                 .GroupBy(e => e.TypeInfo))
             {
                 var typeInfo = uniqueClass.Key;

@@ -1,6 +1,6 @@
 using Microsoft.CodeAnalysis;
 
-namespace Foxy.Params.SourceGenerator
+namespace Foxy.Params.SourceGenerator.Data
 {
     public class DiagnosticReports
     {

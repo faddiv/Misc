@@ -2,6 +2,8 @@ using System.Threading.Tasks;
 using Foxy.Params.SourceGenerator;
 using Xunit;
 using SourceGeneratorTests.TestInfrastructure;
+using Foxy.Params.SourceGenerator.Data;
+using Microsoft.CodeAnalysis;
 
 namespace SourceGeneratorTests;
 
@@ -44,6 +46,32 @@ public class ErrorReportingTests
             .Diagnostic(DiagnosticReports.ParameterMismatchDescriptor)
             .WithLocation(0)
             .WithArguments("Format", "object");
+
+        await VerifyCS.VerifyGeneratorAsync(code, expected, TestEnvironment.GetDefaultOuput());
+    }
+
+    [Fact]
+    public async Task DoesntGenerateOnFaultyMethodParameter()
+    {
+        string code = TestEnvironment.GetInvalidSource();
+
+        var expected = VerifyCS
+            .Diagnostic("CS0246", DiagnosticSeverity.Error)
+            .WithLocation(0)
+            .WithArguments("ThisIsWrong");
+
+        await VerifyCS.VerifyGeneratorAsync(code, expected, TestEnvironment.GetDefaultOuput());
+    }
+
+    [Fact]
+    public async Task DoesntGenerateOnFaultyReturnType()
+    {
+        string code = TestEnvironment.GetInvalidSource();
+
+        var expected = VerifyCS
+            .Diagnostic("CS0246", DiagnosticSeverity.Error)
+            .WithLocation(0)
+            .WithArguments("ThisIsWrong");
 
         await VerifyCS.VerifyGeneratorAsync(code, expected, TestEnvironment.GetDefaultOuput());
     }

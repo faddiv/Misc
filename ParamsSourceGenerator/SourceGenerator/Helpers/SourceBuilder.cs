@@ -1,7 +1,8 @@
 using System.Collections.Generic;
 using System.Text;
+using Foxy.Params.SourceGenerator.Data;
 
-namespace Foxy.Params.SourceGenerator
+namespace Foxy.Params.SourceGenerator.Helpers
 {
     internal class SourceBuilder
     {
@@ -115,11 +116,13 @@ namespace Foxy.Params.SourceGenerator
             IncreaseIntend(scope);
         }
 
-        public void IncreaseIntend(string scope) {
+        public void IncreaseIntend(string scope)
+        {
             _scope.Push(scope);
             _intendLevel++;
         }
-        public void DecreaseIntend() {
+        public void DecreaseIntend()
+        {
             _scope.Pop();
             _intendLevel--;
         }
@@ -154,7 +157,8 @@ namespace Foxy.Params.SourceGenerator
                 _builder._builder.Append(string.Join(", ", elements));
             }
 
-            public void EndLine() {
+            public void EndLine()
+            {
                 _builder._builder.AppendLine(";");
             }
         }

@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace Foxy.Params.SourceGenerator
+namespace Foxy.Params.SourceGenerator.Data
 {
     public class TypeConstrainInfo
     {

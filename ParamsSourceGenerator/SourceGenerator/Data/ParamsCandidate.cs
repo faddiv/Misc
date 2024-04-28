@@ -1,11 +1,11 @@
 using Microsoft.CodeAnalysis;
 using System.Collections.Generic;
 
-namespace Foxy.Params.SourceGenerator
+namespace Foxy.Params.SourceGenerator.Data
 {
     internal class ParamsCandidate
     {
-        public bool HasErrors { get; internal set; }
+        public bool HasErrors => Diagnostics.Count > 0;
 
         public IMethodSymbol MethodSymbol { get; set; }
 

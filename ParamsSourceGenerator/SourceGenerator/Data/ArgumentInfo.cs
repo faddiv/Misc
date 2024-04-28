@@ -1,4 +1,4 @@
-namespace Foxy.Params.SourceGenerator
+namespace Foxy.Params.SourceGenerator.Data
 {
     public class ArgumentInfo
     {
