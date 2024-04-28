@@ -41,8 +41,8 @@ namespace Foxy.Params.SourceGenerator
                     var maxOverrides = item.MaxOverrides;
                     string name = item.MethodSymbol.Name;
                     var spanArgumentType = GetSpanArgumentType(item.SpanParam);
-                    var argumentInfos = GetNonParamsArguments(item.MethodSymbol);
-                    var fixArguments = argumentInfos.Select(e => e.ToParameter()).ToList();
+                    var parameterInfos = GetNonParamsArguments(item.MethodSymbol);
+                    var fixArguments = parameterInfos.Select(e => e.ToParameter()).ToList();
                     var returnsVoid = item.MethodSymbol.ReturnsVoid;
                     var typeArguments = item.MethodSymbol.TypeArguments.Select(e => e.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)).ToList();
                     var typeConstraints = CreateTypeConstraints(item.MethodSymbol.TypeArguments);
@@ -74,7 +74,7 @@ namespace Foxy.Params.SourceGenerator
                         CreateCallLine(
                             sb,
                             name,
-                            argumentInfos,
+                            parameterInfos,
                             returnsVoid,
                             typeArguments,
                             argNameSpanInput);
@@ -94,7 +94,7 @@ namespace Foxy.Params.SourceGenerator
                         CreateCallLine(
                             sb,
                             name,
-                            argumentInfos,
+                            parameterInfos,
                             returnsVoid,
                             typeArguments,
                             argNameSpanInput);
@@ -162,7 +162,7 @@ namespace Foxy.Params.SourceGenerator
         private static void CreateCallLine(
             SourceBuilder sb,
             string name,
-            List<ArgumentInfo> argumentInfos,
+            List<ParameterInfo> parameterInfos,
             bool returnsVoid,
             List<string> typeArguments,
             string paramsArgument)
@@ -180,7 +180,7 @@ namespace Foxy.Params.SourceGenerator
                 codeLine.AddSegment(">");
             }
             codeLine.AddSegment("(");
-            codeLine.AddCommaSeparatedList(argumentInfos.Select(e => e.Name));
+            codeLine.AddCommaSeparatedList(parameterInfos.Select(e => e.ToPassParameter()));
             codeLine.AddSegment($", {paramsArgument})");
             codeLine.EndLine();
         }
@@ -192,20 +192,12 @@ namespace Foxy.Params.SourceGenerator
             return spanTypeArgument.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
         }
 
-        private static List<ArgumentInfo> GetNonParamsArguments(IMethodSymbol methodSymbol)
+        private static List<ParameterInfo> GetNonParamsArguments(IMethodSymbol methodSymbol)
         {
-            var parameters = new List<ArgumentInfo>();
-            foreach (var arg in methodSymbol.Parameters.Take(methodSymbol.Parameters.Length - 1))
-            {
-                var type = arg.Type.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
-                var name = arg.Name;
-                parameters.Add(new ArgumentInfo
-                {
-                    Name = name,
-                    Type = type,
-                });
-            }
-            return parameters;
+            return methodSymbol.Parameters
+                .Take(methodSymbol.Parameters.Length - 1)
+                .Select(arg => new ParameterInfo(arg))
+                .ToList();
         }
 
         private void CreateArguments(SourceBuilder sb, int length)

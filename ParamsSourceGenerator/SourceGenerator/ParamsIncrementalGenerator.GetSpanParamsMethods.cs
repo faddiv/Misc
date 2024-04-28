@@ -6,8 +6,6 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.CSharp;
 using System.Collections.Generic;
-using System.Collections.Immutable;
-using System;
 using Foxy.Params.SourceGenerator.Helpers;
 using Foxy.Params.SourceGenerator.Data;
 
@@ -83,7 +81,8 @@ namespace Foxy.Params.SourceGenerator
 
         private bool IsOutParameter(IParameterSymbol spanParam)
         {
-            return spanParam.RefKind == RefKind.Out;
+            return spanParam != null
+                && spanParam.RefKind == RefKind.Out;
         }
 
         private bool HasErrorType(IMethodSymbol methodSymbol)
