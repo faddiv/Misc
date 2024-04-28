@@ -1,11 +1,21 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFramework>net8.0</TargetFramework>
     <IsPackable>false</IsPackable>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Remove="TestData\**\*.cs" />
-    <None Include="TestData\**\*" />
+    <Compile Remove="SourceGenerationTestCases\**\*.cs" />
+    <None Include="SourceGenerationTestCases\**\*" />
+    <Compile Remove="ErrorReportingTestCases\**\*.cs" />
+    <None Include="ErrorReportingTestCases\**\*" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Remove="ErrorReportingTestCases\Attribute.cs" />
+    <Compile Remove="ErrorReportingTestCases\Reports_NoPartialKeyword\_source.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="ErrorReportingTestCases\Attribute.cs" />
+    <None Include="ErrorReportingTestCases\Reports_NoPartialKeyword\_source.cs" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.CodeAnalysis.Analyzers" Version="3.3.4">

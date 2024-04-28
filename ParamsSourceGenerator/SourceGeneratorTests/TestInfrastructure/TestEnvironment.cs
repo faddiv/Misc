@@ -9,28 +9,41 @@ internal class TestEnvironment
 {
     private static readonly string _projectDirectory;
 
-    private static readonly string _testDataDirectory;
+    private static readonly string _validTestDataDirectory;
+
+
+    private static readonly string _invalidTestDataDirectory;
 
     public static readonly string AttributeImpl;
 
     static TestEnvironment()
     {
         _projectDirectory = FindDirectoryOfFile(".csproj");
-        _testDataDirectory = Path.Combine(_projectDirectory, "TestData");
-        AttributeImpl = File.ReadAllText(Path.Combine(_testDataDirectory, "Attribute.cs"));
+        _validTestDataDirectory = Path.Combine(_projectDirectory, "SourceGenerationTestCases");
+        _invalidTestDataDirectory = Path.Combine(_projectDirectory, "ErrorReportingTestCases");
+        AttributeImpl = File.ReadAllText(Path.Combine(_validTestDataDirectory, "Attribute.cs"));
     }
-    public static string GetSource([CallerMemberName] string caller = null)
+    public static string GetValidSource([CallerMemberName] string caller = null)
     {
-        var sourcePath = Path.Combine(_testDataDirectory, caller, "_source.cs");
+        var sourcePath = Path.Combine(_validTestDataDirectory, caller, "_source.cs");
+        return File.ReadAllText(sourcePath);
+    }
+    public static string GetInvalidSource([CallerMemberName] string caller = null)
+    {
+        var sourcePath = Path.Combine(_invalidTestDataDirectory, caller, "_source.cs");
         return File.ReadAllText(sourcePath);
     }
 
+    public static (string filename, string content) GetDefaultOuput()
+    {
+        return ("ParamsAttribute.g.cs", AttributeImpl);
+    }
     public static (string filename, string content)[] GetOuputs([CallerMemberName] string caller = null)
     {
-        var basePath = Path.Combine(_testDataDirectory, caller);
+        var basePath = Path.Combine(_validTestDataDirectory, caller);
         var sources = new List<(string filename, string content)>
         {
-            ("ParamsAttribute.g.cs", AttributeImpl)
+            GetDefaultOuput()
         };
         foreach (var filePath in Directory.GetFiles(basePath, "*.cs", SearchOption.TopDirectoryOnly))
         {

@@ -1,4 +1,5 @@
 using Microsoft.CodeAnalysis;
+using System.Collections.Generic;
 
 namespace Foxy.Params.SourceGenerator
 {
@@ -8,6 +9,7 @@ namespace Foxy.Params.SourceGenerator
         public AttributeData AttributeSyntax { get; set; }
         public TypeCandidate TypeInfo { get; set; }
         public bool HasErrors { get; internal set; }
+        public List<Diagnostic> Diagnostics { get; internal set; }
     }
 }
 

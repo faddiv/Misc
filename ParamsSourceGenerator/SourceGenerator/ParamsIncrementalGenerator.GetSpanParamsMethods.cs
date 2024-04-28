@@ -5,6 +5,8 @@ using System.Threading;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.CSharp;
+using System.Collections.Generic;
+using System.Collections.Immutable;
 
 namespace Foxy.Params.SourceGenerator
 {
@@ -25,6 +27,15 @@ namespace Foxy.Params.SourceGenerator
             string typeName = methodSymbol.ContainingType.ToDisplayString(SymbolDisplayFormat.MinimallyQualifiedFormat);
 
             var attr = context.Attributes.First();
+            var diagnostics = new List<Diagnostic>();
+            var containingType = context.TargetNode.FirstAncestorOrSelf<TypeDeclarationSyntax>();
+            if(!containingType?.Modifiers.Any(token => token.IsKind(SyntaxKind.PartialKeyword)) ?? false)
+            {
+                diagnostics.Add(Diagnostic.Create(
+                    DiagnosticReports.PartialIsMissingDescriptor,
+                    attributeSyntax.GetLocation(),
+                    typeName, methodSymbol.Name));
+            }
             return new ParamsCandidate
             {
                 HasErrors = false,
@@ -34,7 +45,8 @@ namespace Foxy.Params.SourceGenerator
                     TypeName = typeName,
                 },
                 AttributeSyntax = attr,
-                MethodSymbol = methodSymbol
+                MethodSymbol = methodSymbol,
+                Diagnostics = diagnostics 
             };
         }
     }
