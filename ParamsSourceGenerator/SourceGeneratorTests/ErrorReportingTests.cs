@@ -88,4 +88,17 @@ public class ErrorReportingTests
 
         await VerifyCS.VerifyGeneratorAsync(code, expected, TestEnvironment.GetDefaultOuput());
     }
+
+    [Fact]
+    public async Task DoesntGenerateOnNameCollision()
+    {
+        string code = TestEnvironment.GetInvalidSource();
+
+        var expected = VerifyCS
+            .Diagnostic("CS0100", DiagnosticSeverity.Error)
+            .WithLocation(0)
+            .WithArguments("values");
+
+        await VerifyCS.VerifyGeneratorAsync(code, expected, TestEnvironment.GetDefaultOuput());
+    }
 }

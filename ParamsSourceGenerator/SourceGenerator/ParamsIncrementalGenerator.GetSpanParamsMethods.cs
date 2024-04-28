@@ -8,6 +8,8 @@ using Microsoft.CodeAnalysis.CSharp;
 using System.Collections.Generic;
 using Foxy.Params.SourceGenerator.Helpers;
 using Foxy.Params.SourceGenerator.Data;
+using System.Collections.Immutable;
+using System;
 
 namespace Foxy.Params.SourceGenerator
 {
@@ -25,7 +27,8 @@ namespace Foxy.Params.SourceGenerator
                 return null;
             }
 
-            if (HasErrorType(methodSymbol))
+            if (HasErrorType(methodSymbol) ||
+                HasDuplication(methodSymbol.Parameters))
             {
                 return null;
             }
@@ -77,6 +80,21 @@ namespace Foxy.Params.SourceGenerator
                 MaxOverrides = SemanticHelpers.GetValue(context.Attributes.First(), "MaxOverrides", 3),
                 HasParams = SemanticHelpers.GetValue(context.Attributes.First(), "HasParams", true)
             };
+        }
+
+        private bool HasDuplication(ImmutableArray<IParameterSymbol> parameters)
+        {
+            for (int i = 0; i < parameters.Length; i++)
+            {
+                for (int j = i + 1; j < parameters.Length; j++)
+                {
+                    if (parameters[i].Name == parameters[j].Name)
+                    {
+                        return true;
+                    }
+                }
+            }
+            return false;
         }
 
         private bool IsOutParameter(IParameterSymbol spanParam)
