@@ -7,6 +7,7 @@ using System;
 using System.Collections.Generic;
 using Foxy.Params.SourceGenerator.Helpers;
 using Foxy.Params.SourceGenerator.Data;
+using System.Data.SqlTypes;
 
 namespace Foxy.Params.SourceGenerator
 {
@@ -117,16 +118,17 @@ namespace Foxy.Params.SourceGenerator
         private string CreateReturnTypeFor(IMethodSymbol methodSymbol)
         {
             var returnType = methodSymbol.ReturnType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
+            var isNullable = methodSymbol.ReturnType.NullableAnnotation == NullableAnnotation.Annotated;
             if (methodSymbol.ReturnsByRef)
             {
-                return $"ref {returnType}";
+                return SemanticHelpers.WithModifiers(returnType, RefKind.Ref, isNullable);
             }
             else if (methodSymbol.ReturnsByRefReadonly)
             {
-                return $"ref readonly {returnType}";
+                return SemanticHelpers.WithModifiers(returnType, RefKind.RefReadOnlyParameter, isNullable);
             }
 
-            return returnType;
+            return SemanticHelpers.WithModifiers(returnType, RefKind.None, isNullable);
         }
 
         private List<TypeConstrainInfo> CreateTypeConstraints(ImmutableArray<ITypeSymbol> typeArguments)
@@ -208,7 +210,9 @@ namespace Foxy.Params.SourceGenerator
         {
             var spanType = spanParam.Type as INamedTypeSymbol;
             var spanTypeArgument = spanType.TypeArguments.First();
-            return spanTypeArgument.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
+            string spanTypeName = spanTypeArgument.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
+            bool isNullable = spanTypeArgument.NullableAnnotation == NullableAnnotation.Annotated;
+            return SemanticHelpers.WithModifiers(spanTypeName, RefKind.None, isNullable);
         }
 
         private static List<ParameterInfo> GetNonParamsArguments(IMethodSymbol methodSymbol)

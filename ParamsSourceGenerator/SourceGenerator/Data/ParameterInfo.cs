@@ -1,3 +1,4 @@
+using Foxy.Params.SourceGenerator.Helpers;
 using Microsoft.CodeAnalysis;
 using System;
 
@@ -10,52 +11,37 @@ namespace Foxy.Params.SourceGenerator.Data
             Type = arg.Type.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
             Name = arg.Name;
             RefKind = arg.RefKind;
+            IsNullable = arg.NullableAnnotation == NullableAnnotation.Annotated;
         }
 
         public string Type { get; }
         public string Name { get; }
         public RefKind RefKind { get; }
+        public bool IsNullable { get; }
 
         public string ToParameter()
         {
-            return $"{GetParameterModifier(RefKind)}{Type} {Name}";
+            return $"{SemanticHelpers.WithModifiers(Type, RefKind, IsNullable)} {Name}";
         }
 
         public string ToPassParameter()
         {
-            return $"{GetPassParameterModifier(RefKind)}{Name}";
+            return SemanticHelpers.WithModifiers(Name, GetPassParameterModifier(RefKind), false);
         }
 
-        private static string GetParameterModifier(RefKind refKind)
+        private static RefKind GetPassParameterModifier(RefKind refKind)
         {
             switch (refKind)
             {
                 case RefKind.Ref:
-                    return "ref ";
+                    return RefKind.Ref;
                 case RefKind.Out:
-                    return "out ";
-                case RefKind.In:
-                    return "in ";
-                case RefKind.RefReadOnlyParameter:
-                    return "ref readonly ";
-                default:
-                    return "";
-            }
-        }
-
-        private static string GetPassParameterModifier(RefKind refKind)
-        {
-            switch (refKind)
-            {
-                case RefKind.Ref:
-                    return "ref ";
-                case RefKind.Out:
-                    return "out ";
+                    return RefKind.Out;
                 case RefKind.In:
                 case RefKind.RefReadOnlyParameter:
-                    return "in ";
+                    return RefKind.In;
                 default:
-                    return "";
+                    return RefKind.None;
             }
         }
     }

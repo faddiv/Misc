@@ -77,6 +77,32 @@ namespace Foxy.Params.SourceGenerator.Helpers
             }
             return ReturnKind.ReturnsType;
         }
+
+        public static string WithModifiers(string typeName, RefKind refKind, bool isNullable)
+        {
+            switch (refKind)
+            {
+                case RefKind.Ref:
+                    return $"ref {typeName}{GetNullableModifier(isNullable)}";
+                case RefKind.Out:
+                    return $"out {typeName}{GetNullableModifier(isNullable)}";
+                case RefKind.In:
+                    return $"in {typeName}{GetNullableModifier(isNullable)}";
+                case RefKind.RefReadOnlyParameter:
+                    return $"ref readonly {typeName}{GetNullableModifier(isNullable)}";
+                default:
+                    if (!isNullable)
+                    {
+                        return typeName;
+                    }
+                    return $"{typeName}?";
+            }
+        }
+
+        private static string GetNullableModifier(bool isNullable)
+        {
+            return isNullable ? "?" : "";
+        }
     }
 }
 
