@@ -23,6 +23,19 @@ public class ErrorReportingTests
     }
 
     [Fact]
+    public async Task Reports_NoParameter()
+    {
+        string code = TestEnvironment.GetInvalidSource();
+
+        var expected = VerifyCS
+            .Diagnostic(DiagnosticReports.ParameterMissingDescriptor)
+            .WithLocation(0)
+            .WithArguments("Format");
+
+        await VerifyCS.VerifyGeneratorAsync(code, expected, TestEnvironment.GetDefaultOuput());
+    }
+
+    [Fact]
     public async Task Reports_NonReadOnlySpanParameter()
     {
         string code = TestEnvironment.GetInvalidSource();

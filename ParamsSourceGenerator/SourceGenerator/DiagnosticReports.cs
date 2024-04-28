@@ -14,6 +14,14 @@ namespace Foxy.Params.SourceGenerator
             DiagnosticSeverity.Warning,
             isEnabledByDefault: true);
 
+        public static DiagnosticDescriptor ParameterMissingDescriptor { get; } = new DiagnosticDescriptor(
+            "PRM1001",
+            "Parameter missing",
+            "The method '{0}' must have ReadOnlySpan<> as last parameter but no parameter found.",
+            Category,
+            DiagnosticSeverity.Warning,
+            isEnabledByDefault: true);
+
         public static DiagnosticDescriptor ParameterMismatchDescriptor { get; } = new DiagnosticDescriptor(
             "PRM1002",
             "Parameter mismatch",

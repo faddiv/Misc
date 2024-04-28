@@ -38,6 +38,13 @@ namespace Foxy.Params.SourceGenerator
                     typeName, methodSymbol.Name));
             }
             var spanParam = SemanticHelpers.GetLastParameterOrNull(methodSymbol);
+            if(spanParam == null)
+            {
+                diagnostics.Add(Diagnostic.Create(
+                    DiagnosticReports.ParameterMissingDescriptor,
+                    attributeSyntax.GetLocation(),
+                    methodSymbol.Name));
+            }
             if (!IsReadOnlySpan(spanParam))
             {
                 diagnostics.Add(Diagnostic.Create(
