@@ -29,5 +29,13 @@ namespace Foxy.Params.SourceGenerator.Data
             Category,
             DiagnosticSeverity.Warning,
             isEnabledByDefault: true);
+
+        public static DiagnosticDescriptor OutModifierNotAllowedDescriptor { get; } = new DiagnosticDescriptor(
+            "PRM1003",
+            "Out modifier not allowed",
+            "The last parameter on method '{0}' can't have out modifier. Found: '{1}'",
+            Category,
+            DiagnosticSeverity.Warning,
+            isEnabledByDefault: true);
     }
 }

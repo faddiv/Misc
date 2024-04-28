@@ -75,4 +75,17 @@ public class ErrorReportingTests
 
         await VerifyCS.VerifyGeneratorAsync(code, expected, TestEnvironment.GetDefaultOuput());
     }
+
+    [Fact]
+    public async Task Reports_OutReadOnlySpanParameter()
+    {
+        string code = TestEnvironment.GetInvalidSource();
+
+        var expected = VerifyCS
+            .Diagnostic(DiagnosticReports.OutModifierNotAllowedDescriptor)
+            .WithLocation(0)
+            .WithArguments("Format", "out System.ReadOnlySpan<object> args");
+
+        await VerifyCS.VerifyGeneratorAsync(code, expected, TestEnvironment.GetDefaultOuput());
+    }
 }

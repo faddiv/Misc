@@ -59,6 +59,13 @@ namespace Foxy.Params.SourceGenerator
                     attributeSyntax.GetLocation(),
                     methodSymbol.Name, spanParam.ToDisplayString(SymbolDisplayFormat.CSharpErrorMessageFormat)));
             }
+            if(IsOutParameter(spanParam))
+            {
+                diagnostics.Add(Diagnostic.Create(
+                    DiagnosticReports.OutModifierNotAllowedDescriptor,
+                    attributeSyntax.GetLocation(),
+                    methodSymbol.Name, spanParam.ToDisplayString(SymbolDisplayFormat.CSharpErrorMessageFormat)));
+            }
             return new ParamsCandidate
             {
                 TypeInfo = new TypeCandidate
@@ -72,6 +79,11 @@ namespace Foxy.Params.SourceGenerator
                 MaxOverrides = SemanticHelpers.GetValue(context.Attributes.First(), "MaxOverrides", 3),
                 HasParams = SemanticHelpers.GetValue(context.Attributes.First(), "HasParams", true)
             };
+        }
+
+        private bool IsOutParameter(IParameterSymbol spanParam)
+        {
+            return spanParam.RefKind == RefKind.Out;
         }
 
         private bool HasErrorType(IMethodSymbol methodSymbol)
