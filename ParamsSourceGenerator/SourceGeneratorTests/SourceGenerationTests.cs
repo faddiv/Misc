@@ -170,4 +170,20 @@ public class SourceGenerationTests
         await VerifyCS.VerifyGeneratorAsync(code,
             TestEnvironment.GetOuputs());
     }
+
+    [Fact]
+    public async Task Generate_ForRefReturn()
+    {
+        string code = TestEnvironment.GetValidSource();
+        await VerifyCS.VerifyGeneratorAsync(code,
+            TestEnvironment.GetOuputs());
+    }
+
+    [Fact]
+    public async Task Generate_ForRefReadonlyReturn()
+    {
+        string code = TestEnvironment.GetValidSource();
+        await VerifyCS.VerifyGeneratorAsync(code,
+            TestEnvironment.GetOuputs());
+    }
 }

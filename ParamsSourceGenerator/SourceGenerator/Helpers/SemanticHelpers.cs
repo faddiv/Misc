@@ -1,6 +1,7 @@
 using System;
 using System.Linq;
 using System.Threading;
+using Foxy.Params.SourceGenerator.Data;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
@@ -62,6 +63,19 @@ namespace Foxy.Params.SourceGenerator.Helpers
             }
 
             return defaultValue;
+        }
+
+        public static ReturnKind GetReturnsKind(IMethodSymbol methodSymbol)
+        {
+            if(methodSymbol.ReturnsVoid)
+            {
+                return ReturnKind.ReturnsVoid;
+            }
+            if(methodSymbol.ReturnsByRef || methodSymbol.ReturnsByRefReadonly)
+            {
+                return ReturnKind.ReturnsRef;
+            }
+            return ReturnKind.ReturnsType;
         }
     }
 }

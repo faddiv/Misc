@@ -20,8 +20,8 @@ namespace Foxy.Params.SourceGenerator
                 .SelectMany(e => e.Diagnostics))
             {
                 context.ReportDiagnostic(diagnostic);
-                
-            } 
+
+            }
             foreach (var uniqueClass in typeSymbols
                 .NotNull()
                 .Where(e => !e.HasErrors)
@@ -43,10 +43,10 @@ namespace Foxy.Params.SourceGenerator
                     var spanArgumentType = GetSpanArgumentType(item.SpanParam);
                     var parameterInfos = GetNonParamsArguments(item.MethodSymbol);
                     var fixArguments = parameterInfos.Select(e => e.ToParameter()).ToList();
-                    var returnsVoid = item.MethodSymbol.ReturnsVoid;
+                    var returnsKind = SemanticHelpers.GetReturnsKind(item.MethodSymbol);
                     var typeArguments = item.MethodSymbol.TypeArguments.Select(e => e.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)).ToList();
                     var typeConstraints = CreateTypeConstraints(item.MethodSymbol.TypeArguments);
-                    string returnType = item.MethodSymbol.ReturnType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
+                    string returnType = CreateReturnTypeFor(item.MethodSymbol);
                     var argName = "args";
                     var argNameSpan = $"{argName}Span";
                     var argNameSpanInput = item.SpanParam.RefKind == RefKind.Ref || item.SpanParam.RefKind == RefKind.RefReadOnlyParameter
@@ -75,7 +75,7 @@ namespace Foxy.Params.SourceGenerator
                             sb,
                             name,
                             parameterInfos,
-                            returnsVoid,
+                            returnsKind,
                             typeArguments,
                             argNameSpanInput);
                         sb.CloseBlock();
@@ -95,7 +95,7 @@ namespace Foxy.Params.SourceGenerator
                             sb,
                             name,
                             parameterInfos,
-                            returnsVoid,
+                            returnsKind,
                             typeArguments,
                             argNameSpanInput);
                         sb.CloseBlock();
@@ -112,6 +112,21 @@ namespace Foxy.Params.SourceGenerator
                 context.AddSource(uniqueClass.Key.CreateFileName(), SourceText.From(sb.ToString(), Encoding.UTF8));
             }
 
+        }
+
+        private string CreateReturnTypeFor(IMethodSymbol methodSymbol)
+        {
+            var returnType = methodSymbol.ReturnType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
+            if (methodSymbol.ReturnsByRef)
+            {
+                return $"ref {returnType}";
+            }
+            else if (methodSymbol.ReturnsByRefReadonly)
+            {
+                return $"ref readonly {returnType}";
+            }
+
+            return returnType;
         }
 
         private List<TypeConstrainInfo> CreateTypeConstraints(ImmutableArray<ITypeSymbol> typeArguments)
@@ -163,14 +178,18 @@ namespace Foxy.Params.SourceGenerator
             SourceBuilder sb,
             string name,
             List<ParameterInfo> parameterInfos,
-            bool returnsVoid,
+            ReturnKind returnsKind,
             List<string> typeArguments,
             string paramsArgument)
         {
             var codeLine = sb.StartLine();
-            if (!returnsVoid)
+            if (returnsKind != ReturnKind.ReturnsVoid)
             {
                 codeLine.Returns();
+            }
+            if(returnsKind == ReturnKind.ReturnsRef)
+            {
+                codeLine.AddSegment("ref ");
             }
             codeLine.AddSegment(name);
             if (typeArguments.Count > 0)
