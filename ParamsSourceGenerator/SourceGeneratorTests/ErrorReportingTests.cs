@@ -90,7 +90,7 @@ public class ErrorReportingTests
     }
 
     [Fact]
-    public async Task DoesntGenerateOnNameCollision()
+    public async Task DoesntGenerateOnNameDuplication()
     {
         string code = TestEnvironment.GetInvalidSource();
 
