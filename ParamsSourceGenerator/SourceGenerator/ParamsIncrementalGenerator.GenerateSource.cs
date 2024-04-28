@@ -49,7 +49,7 @@ namespace Foxy.Params.SourceGenerator
                     string returnType = item.MethodSymbol.ReturnType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
                     var argName = "args";
                     var argNameSpan = $"{argName}Span";
-                    var argNameSpanInput = item.SpanParam.RefKind == RefKind.Ref
+                    var argNameSpanInput = item.SpanParam.RefKind == RefKind.Ref || item.SpanParam.RefKind == RefKind.RefReadOnlyParameter
                         ? $"ref {argNameSpan}"
                         : argNameSpan;
                     var isStatic = item.MethodSymbol.IsStatic;

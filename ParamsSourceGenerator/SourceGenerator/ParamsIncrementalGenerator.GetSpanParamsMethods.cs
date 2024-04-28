@@ -66,7 +66,6 @@ namespace Foxy.Params.SourceGenerator
                     Namespace = nameSpace,
                     TypeName = typeName,
                 },
-                AttributeSyntax = context.Attributes.First(),
                 MethodSymbol = methodSymbol,
                 Diagnostics = diagnostics,
                 SpanParam = spanParam,

@@ -9,8 +9,6 @@ namespace Foxy.Params.SourceGenerator.Data
 
         public IMethodSymbol MethodSymbol { get; set; }
 
-        public AttributeData AttributeSyntax { get; set; }
-
         public TypeCandidate TypeInfo { get; set; }
 
         public IParameterSymbol SpanParam { get; internal set; }

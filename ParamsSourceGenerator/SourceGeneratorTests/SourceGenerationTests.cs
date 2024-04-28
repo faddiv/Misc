@@ -147,4 +147,11 @@ public class SourceGenerationTests
             TestEnvironment.GetOuputs());
     }
 
+    [Fact]
+    public async Task Generate_ForRefReadonlyReadOnlySpan()
+    {
+        string code = TestEnvironment.GetValidSource();
+        await VerifyCS.VerifyGeneratorAsync(code,
+            TestEnvironment.GetOuputs());
+    }
 }
