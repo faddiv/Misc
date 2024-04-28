@@ -48,7 +48,7 @@ namespace Foxy.Params.SourceGenerator
                     var typeArguments = item.MethodSymbol.TypeArguments.Select(e => e.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)).ToList();
                     var typeConstraints = CreateTypeConstraints(item.MethodSymbol.TypeArguments);
                     string returnType = CreateReturnTypeFor(item.MethodSymbol);
-                    var argName = "args";
+                    var argName = item.SpanParam.Name;
                     var argNameSpan = $"{argName}Span";
                     var argNameSpanInput = item.SpanParam.RefKind == RefKind.Ref || item.SpanParam.RefKind == RefKind.RefReadOnlyParameter
                         ? $"ref {argNameSpan}"
