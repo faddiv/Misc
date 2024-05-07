@@ -15,7 +15,7 @@ namespace Foxy.Params.SourceGenerator
 {
     partial class ParamsIncrementalGenerator : IIncrementalGenerator
     {
-        private ParamsCandidate GetSpanParamsMethods(GeneratorAttributeSyntaxContext context, CancellationToken cancellationToken)
+        private ParamsCandidate? GetSpanParamsMethods(GeneratorAttributeSyntaxContext context, CancellationToken cancellationToken)
         {
             SyntaxNode targetNode = context.TargetNode;
             Debug.Assert(targetNode is MethodDeclarationSyntax);

@@ -16,7 +16,6 @@ namespace Foxy.Params.SourceGenerator
         private void GenerateSource(SourceProductionContext context, ImmutableArray<ParamsCandidate> typeSymbols)
         {
             foreach (var diagnostic in typeSymbols
-                .NotNull()
                 .Where(e => e.HasErrors)
                 .SelectMany(e => e.Diagnostics))
             {
@@ -24,7 +23,6 @@ namespace Foxy.Params.SourceGenerator
 
             }
             foreach (var uniqueClass in typeSymbols
-                .NotNull()
                 .Where(e => !e.HasErrors)
                 .GroupBy(e => e.TypeInfo))
             {

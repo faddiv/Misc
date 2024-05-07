@@ -1,13 +1,15 @@
-using System.Collections.Generic;
+using Microsoft.CodeAnalysis;
 using System.Linq;
 
 namespace Foxy.Params.SourceGenerator.Helpers
 {
     internal static class FoxyEnumerableExtensions
     {
-        public static IEnumerable<T> NotNull<T>(this IEnumerable<T> enumerable)
+        public static IncrementalValuesProvider<TSource> NotNull<TSource>(
+            this IncrementalValuesProvider<TSource?> enumerable)
+            where TSource : class
         {
-            return enumerable.Where(x => x != null);
+            return enumerable.Where(x => x is not null)!;
         }
     }
 }

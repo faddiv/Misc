@@ -1,4 +1,5 @@
 using System.Threading;
+using Foxy.Params.SourceGenerator.Helpers;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
@@ -16,6 +17,7 @@ namespace Foxy.Params.SourceGenerator
                 _attributeName,
                 predicate: Filter,
                 transform: GetSpanParamsMethods)
+                .NotNull()
                 .Collect();
 
             context.RegisterSourceOutput(declarations, GenerateSource);

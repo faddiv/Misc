@@ -7,13 +7,13 @@ namespace Foxy.Params.SourceGenerator.Data
     {
         public bool HasErrors => Diagnostics.Count > 0;
 
-        public IMethodSymbol MethodSymbol { get; set; }
+        public IMethodSymbol MethodSymbol { get; set; } = default!;
 
-        public TypeCandidate TypeInfo { get; set; }
+        public TypeCandidate TypeInfo { get; set; } = default!;
 
-        public IParameterSymbol SpanParam { get; internal set; }
+        public IParameterSymbol SpanParam { get; internal set; } = default!;
 
-        public List<Diagnostic> Diagnostics { get; internal set; }
+        public List<Diagnostic> Diagnostics { get; internal set; } = default!;
 
         public int MaxOverrides { get; internal set; }
 
