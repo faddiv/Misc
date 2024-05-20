@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using Foxy.Params.SourceGenerator.Data;
@@ -36,11 +37,12 @@ namespace Foxy.Params.SourceGenerator.Helpers
             return false;
         }
 
-        public static string GetNameSpaceNoGlobal(IMethodSymbol methodSymbol)
+        public static string GetNameSpaceNoGlobal(ISymbol? symbol)
         {
-            if (methodSymbol.ContainingNamespace.IsGlobalNamespace)
+            if (symbol is null ||
+                symbol.ContainingNamespace.IsGlobalNamespace)
                 return "";
-            var nameSpacesParts = methodSymbol.ContainingNamespace.ToDisplayParts(SymbolDisplayFormat.FullyQualifiedFormat);
+            var nameSpacesParts = symbol.ContainingNamespace.ToDisplayParts(SymbolDisplayFormat.FullyQualifiedFormat);
             var nameSpace = string.Join("", nameSpacesParts.Skip(2));
             return nameSpace;
         }
@@ -76,6 +78,22 @@ namespace Foxy.Params.SourceGenerator.Helpers
                 return ReturnKind.ReturnsRef;
             }
             return ReturnKind.ReturnsType;
+        }
+
+        public static List<INamedTypeSymbol> GetTypeHierarchy(INamedTypeSymbol? containingType)
+        {
+            var list = new List<INamedTypeSymbol>();
+            while (containingType is not null)
+            {
+                list.Add(containingType);
+                containingType = containingType.ContainingType;
+            }
+            list.Reverse();
+            return list;
+        }
+        public static string CreateFileName(INamedTypeSymbol containingType)
+        {
+            return $"{containingType.ToDisplayString(SymbolDisplayFormat.CSharpErrorMessageFormat)}.g.cs";
         }
 
         public static string WithModifiers(string typeName, RefKind refKind, bool isNullable)

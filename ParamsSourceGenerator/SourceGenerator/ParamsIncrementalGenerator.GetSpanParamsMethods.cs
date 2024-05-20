@@ -10,6 +10,7 @@ using Foxy.Params.SourceGenerator.Helpers;
 using Foxy.Params.SourceGenerator.Data;
 using System.Collections.Immutable;
 using System;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Foxy.Params.SourceGenerator
 {
@@ -33,38 +34,34 @@ namespace Foxy.Params.SourceGenerator
                 return null;
             }
 
-            string nameSpace = SemanticHelpers.GetNameSpaceNoGlobal(methodSymbol);
-            string typeName = methodSymbol.ContainingType.ToDisplayString(SymbolDisplayFormat.MinimallyQualifiedFormat);
-
             var diagnostics = new List<Diagnostic>();
             if (!IsContainingTypePartial(targetNode))
             {
                 diagnostics.Add(Diagnostic.Create(
                     DiagnosticReports.PartialIsMissingDescriptor,
                     attributeSyntax.GetLocation(),
-                    typeName, methodSymbol.Name));
+                    methodSymbol.ContainingType.ToDisplayString(SymbolDisplayFormat.MinimallyQualifiedFormat),
+                    methodSymbol.Name));
             }
 
             int maxOverrides = SemanticHelpers.GetValue(context.Attributes.First(), "MaxOverrides", 3);
             var spanParam = methodSymbol.Parameters.LastOrDefault();
-            var spanType = spanParam?.Type as INamedTypeSymbol;
-            if (spanType == null)
+            if (spanParam is null ||
+                spanParam?.Type is not INamedTypeSymbol spanType)
             {
                 diagnostics.Add(Diagnostic.Create(
                     DiagnosticReports.ParameterMissingDescriptor,
                     attributeSyntax.GetLocation(),
                     methodSymbol.Name));
             }
-
-            if (!IsReadOnlySpan(spanType))
+            else if (!IsReadOnlySpan(spanType))
             {
                 diagnostics.Add(Diagnostic.Create(
                     DiagnosticReports.ParameterMismatchDescriptor,
                     attributeSyntax.GetLocation(),
                     methodSymbol.Name, spanParam.ToDisplayString(SymbolDisplayFormat.CSharpErrorMessageFormat)));
             }
-
-            if (IsOutParameter(spanParam))
+            else if (IsOutParameter(spanParam))
             {
                 diagnostics.Add(Diagnostic.Create(
                     DiagnosticReports.OutModifierNotAllowedDescriptor,
@@ -72,44 +69,63 @@ namespace Foxy.Params.SourceGenerator
                     methodSymbol.Name, spanParam.ToDisplayString(SymbolDisplayFormat.CSharpErrorMessageFormat)));
             }
 
-            if (HasNameCollision(methodSymbol.Parameters, maxOverrides, out string unusableParameters))
+            if (HasNameCollision(methodSymbol.Parameters, maxOverrides, out string? unusableParameters))
             {
                 diagnostics.Add(Diagnostic.Create(
                     DiagnosticReports.ParameterCollisionDescriptor,
                     attributeSyntax.GetLocation(),
                     methodSymbol.Name, unusableParameters));
             }
-            return new ParamsCandidate
+
+            if (diagnostics.Count > 0)
             {
-                TypeInfo = new TypeCandidate
-                {
-                    Namespace = nameSpace,
-                    TypeName = typeName,
-                },
+                return new FailedParamsCandidate { Diagnostics = diagnostics };
+            }
+
+            return new SuccessfulParamsCandidate
+            {
+                ContainingType = methodSymbol.ContainingType,
                 MethodSymbol = methodSymbol,
-                Diagnostics = diagnostics,
-                SpanParam = spanParam,
+                SpanParam = spanParam!,
                 MaxOverrides = maxOverrides,
                 HasParams = SemanticHelpers.GetValue(context.Attributes.First(), "HasParams", true)
             };
         }
 
-        private bool HasNameCollision(ImmutableArray<IParameterSymbol> parameters, int maxOverrides, out string unusableParameters)
+        private List<INamedTypeSymbol> GetTypeChain(INamedTypeSymbol? containingType)
+        {
+            var list = new List<INamedTypeSymbol>();
+            while (containingType is not null)
+            {
+                list.Add(containingType);
+                containingType = containingType.ContainingType;
+            }
+
+            return list;
+        }
+
+        private bool HasNameCollision(
+            ImmutableArray<IParameterSymbol> parameters,
+            int maxOverrides,
+            [NotNullWhen(true)] out string? unusableParameters)
         {
             unusableParameters = null;
             if (parameters.Length <= 1)
             {
                 return false;
             }
+
             var spanParameterName = parameters[parameters.Length - 1].Name;
             var collisionParameters = new List<string>
             {
                 $"{spanParameterName}Span"
             };
+
             for (int i = 0; i < maxOverrides; i++)
             {
                 collisionParameters.Add($"{spanParameterName}{i}");
             }
+
             for (int i = 0; i < parameters.Length - 1; i++)
             {
                 if (collisionParameters.Contains(parameters[i].Name))
@@ -118,6 +134,7 @@ namespace Foxy.Params.SourceGenerator
                     return true;
                 }
             }
+
             return false;
         }
 
@@ -133,10 +150,11 @@ namespace Foxy.Params.SourceGenerator
                     }
                 }
             }
+
             return false;
         }
 
-        private bool IsOutParameter(IParameterSymbol spanParam)
+        private bool IsOutParameter(IParameterSymbol? spanParam)
         {
             return spanParam != null
                 && spanParam.RefKind == RefKind.Out;
@@ -161,7 +179,7 @@ namespace Foxy.Params.SourceGenerator
             return false;
         }
 
-        private bool IsReadOnlySpan(INamedTypeSymbol spanParam)
+        private bool IsReadOnlySpan(INamedTypeSymbol? spanParam)
         {
             return spanParam == null || spanParam.MetadataName == "ReadOnlySpan`1";
         }

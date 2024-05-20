@@ -1,17 +1,17 @@
+using Foxy.Params.SourceGenerator.Helpers;
+using Microsoft.CodeAnalysis;
 using System;
 using System.Collections.Generic;
 
 namespace Foxy.Params.SourceGenerator.Data
 {
-    internal class TypeCandidate : IEquatable<TypeCandidate>
+    internal class TypeCandidate(INamedTypeSymbol containingType) : IEquatable<TypeCandidate>
     {
-        public string Namespace { get; internal set; }
-        public string TypeName { get; internal set; }
-        public string CreateFileName()
+        public INamedTypeSymbol ContainingType { get; } = containingType;
+
+        public static string CreateFileName(INamedTypeSymbol containingType)
         {
-            return Namespace == ""
-                ? $"{TypeName}.g.cs"
-                : $"{Namespace}.{TypeName}.g.cs";
+                return $"{containingType.ToDisplayString(SymbolDisplayFormat.CSharpErrorMessageFormat)}.g.cs";
         }
 
         public override bool Equals(object obj)
@@ -19,19 +19,15 @@ namespace Foxy.Params.SourceGenerator.Data
             return Equals(obj as TypeCandidate);
         }
 
-        public bool Equals(TypeCandidate other)
+        public bool Equals(TypeCandidate? other)
         {
             return !(other is null) &&
-                   Namespace == other.Namespace &&
-                   TypeName == other.TypeName;
+                    SymbolEqualityComparer.Default.Equals(ContainingType, other.ContainingType);
         }
 
         public override int GetHashCode()
         {
-            int hashCode = -96582770;
-            hashCode = hashCode * -1521134295 + EqualityComparer<string>.Default.GetHashCode(Namespace);
-            hashCode = hashCode * -1521134295 + EqualityComparer<string>.Default.GetHashCode(TypeName);
-            return hashCode;
+            return SymbolEqualityComparer.Default.GetHashCode(ContainingType);
         }
 
         public static bool operator ==(TypeCandidate left, TypeCandidate right)
