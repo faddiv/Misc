@@ -56,20 +56,22 @@ public static class InterpolatedComparer
             }
         }
 
-        public void AppendFormatted<T>(T? t)
+        public void AppendFormatted<T>(T t)
+            where T : struct
         {
             if (ShouldSkip(t))
             {
                 return;
             }
 
-            if (t is IFormattable formattable)
+            if (t is IFormattable)
             {
-                if (formattable is ISpanFormattable spanFormattable)
+                if (t is ISpanFormattable)
                 {
                     Span<char> space = stackalloc char[64];
-
-                    if (spanFormattable.TryFormat(space, out var charsWritten, ReadOnlySpan<char>.Empty, null))
+                    // When the t checked with is ISpanFormattable it becomes constrained abd calling with cast
+                    // doesn't do boxing. The expection is enum hovewer it can be handled only with internal api. 
+                    if (((ISpanFormattable)t).TryFormat(space, out var charsWritten, ReadOnlySpan<char>.Empty, null))
                     {
                         if (charsWritten > space.Length)
                         {
@@ -89,6 +91,25 @@ public static class InterpolatedComparer
                         return;
                     }
                 }
+
+                var formattedValue = ((IFormattable)t).ToString(null, null);
+                AppendFormatted(formattedValue);
+            }
+            else
+            {
+                AppendFormatted(t.ToString());
+            }
+        }
+
+        public void AppendFormatted(object? t)
+        {
+            if (ShouldSkip(t))
+            {
+                return;
+            }
+
+            if (t is IFormattable formattable)
+            {
                 var formattedValue = formattable.ToString(null, null);
                 AppendFormatted(formattedValue);
             }
