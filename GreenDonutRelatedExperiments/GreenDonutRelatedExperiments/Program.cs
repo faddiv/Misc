@@ -2,5 +2,10 @@
 using BenchmarkDotNet.Running;
 using GreenDonutRelatedExperiments;
 
-await SubscriptionBenchmarks.Test();
-BenchmarkRunner.Run<SubscriptionBenchmarks>();
+await SubscriptionBenchmarks.TestAsync();
+await PublishBenchmarks.TestAsync();
+BenchmarkRunner.Run(
+[
+    typeof(SubscriptionBenchmarks),
+    typeof(PublishBenchmarks),
+]);

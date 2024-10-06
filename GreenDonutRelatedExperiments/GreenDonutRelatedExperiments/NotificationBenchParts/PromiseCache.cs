@@ -1,7 +1,7 @@
 using System.Buffers;
 using System.Collections.Concurrent;
+using System.Runtime.InteropServices;
 using GreenDonutRelatedExperiments.NotificationCommon;
-using GreenDonutRelatedExperiments.NotificationV1;
 
 namespace GreenDonutRelatedExperiments.NotificationBenchParts;
 
@@ -156,17 +156,37 @@ public sealed class PromiseCache(int size) : IPromiseCache
 
         var clonedPromise = promise.Clone();
 
-        List<Subscription> clone;
-        lock (subscriptions)
+        Span<Subscription> clone = default;
+        Subscription[]? array = null;
+        try
         {
-            clone = [.. subscriptions];
-        }
-
-        foreach (var subscription in clone)
-        {
-            if (subscription is Subscription<T> casted)
+            lock (subscriptions)
             {
-                casted.OnNext(key, clonedPromise);
+                if (subscriptions.Count == 0)
+                {
+                    return;
+                }
+                else
+                {
+                    array = ArrayPool<Subscription>.Shared.Rent(subscriptions.Count);
+                    clone = array.AsSpan(0, subscriptions.Count);
+                    subscriptions.CopyTo(clone);
+                }
+            }
+
+            foreach (var subscription in clone)
+            {
+                if (subscription is Subscription<T> casted)
+                {
+                    casted.OnNext(key, clonedPromise);
+                }
+            }
+        }
+        finally
+        {
+            if (array is not null)
+            {
+                ArrayPool<Subscription>.Shared.Return(array, true);
             }
         }
     }
