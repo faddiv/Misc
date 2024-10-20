@@ -1,4 +1,5 @@
 using BenchmarkDotNet.Attributes;
+using System.Diagnostics;
 using System.Runtime.InteropServices;
 
 namespace GreenDonutRelatedExperiments;
@@ -9,15 +10,29 @@ public class FalseSharingBenchmarks
     public int[] _values = new int[32];
     public Values2 values;
     // Cache line 64 bytes sometimes 128 bytes
+    public ValueHolder[] valueHolders =
+    [
+        new ValueHolder(),
+        new ValueHolder(),
+    ];
 
     [GlobalSetup]
     public void Setup()
     {
+        
     }
 
     [GlobalCleanup]
     public void Cleanup()
     {
+    }
+
+    [Benchmark]
+    public void ValueHolders()
+    {
+        Parallel.Invoke(
+            () => Increment(ref valueHolders[0]._value),
+            () => Increment(ref valueHolders[1]._value));
     }
 
     [Benchmark]
@@ -75,4 +90,10 @@ public struct Values2
     public int _value8;
     public int _value9;
     public int _value10;
+}
+
+public class ValueHolder
+{
+    public int _value;
+
 }
