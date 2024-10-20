@@ -4,12 +4,11 @@ using System.Runtime.InteropServices;
 namespace GreenDonutRelatedExperiments;
 
 [ShortRunJob]
-
 public class FalseSharingBenchmarks
 {
     public int[] _values = new int[32];
     public Values2 values;
-
+    // Cache line 64 bytes sometimes 128 bytes
 
     [GlobalSetup]
     public void Setup()
