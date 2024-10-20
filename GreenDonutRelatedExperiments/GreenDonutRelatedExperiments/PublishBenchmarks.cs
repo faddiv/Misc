@@ -7,12 +7,13 @@ namespace GreenDonutRelatedExperiments;
 [MemoryDiagnoser]
 public class PublishBenchmarks
 {
+    private const int _subscribtionCount = 16;
     private readonly NotificationV1.PromiseCache _cacheV1 = new NotificationV1.PromiseCache(10);
     private readonly PromiseCache _cache = new PromiseCache(10);
     private PromiseCacheKey _key = new PromiseCacheKey("Type", "Key");
     private readonly List<IDisposable> _subs = new List<IDisposable>();
 
-    public bool[] Notifieds { get; } = new bool[100];
+    public bool[] Notifieds { get; } = new bool[_subscribtionCount];
     public ManualResetEvent evt = new(false);
 
     [Params(false, true)]
@@ -23,7 +24,7 @@ public class PublishBenchmarks
     {
         if (Subscribe)
         {
-            for (int i = 0; i < 99; i++)
+            for (int i = 0; i < _subscribtionCount - 1; i++)
             {
                 var index = i;
                 var sub = _cache.Subscribe<string>((cache, promise) =>
@@ -41,12 +42,12 @@ public class PublishBenchmarks
             {
                 var sub = _cache.Subscribe<string>((cache, promise) =>
                 {
-                    Notifieds[99] = true;
+                    Notifieds[_subscribtionCount - 1] = true;
                     evt.Set();
                 }, null);
                 sub = _cacheV1.Subscribe<string>((cache, promise) =>
                 {
-                    Notifieds[99] = true;
+                    Notifieds[_subscribtionCount - 1] = true;
                     evt.Set();
                 }, null);
                 _subs.Add(sub);

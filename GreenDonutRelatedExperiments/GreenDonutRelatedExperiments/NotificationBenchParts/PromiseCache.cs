@@ -1,5 +1,6 @@
 using System.Buffers;
 using System.Collections.Concurrent;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using GreenDonutRelatedExperiments.NotificationCommon;
 
@@ -162,16 +163,21 @@ public sealed class PromiseCache(int size) : IPromiseCache
         {
             lock (subscriptions)
             {
-                if (subscriptions.Count == 0)
+                int count = subscriptions.Count;
+                if (count == 0)
                 {
                     return;
                 }
-                else
+                if(count > 16)
                 {
-                    array = ArrayPool<Subscription>.Shared.Rent(subscriptions.Count);
-                    clone = array.AsSpan(0, subscriptions.Count);
-                    subscriptions.CopyTo(clone);
+                    array = ArrayPool<Subscription>.Shared.Rent(count);
+                    clone = array.AsSpan(0, count);
+                } else
+                {
+                    var stack = new StackArray16<Subscription>();
+                    clone = MemoryMarshal.CreateSpan(ref stack.first!, count);
                 }
+                subscriptions.CopyTo(clone);
             }
 
             foreach (var subscription in clone)
@@ -196,4 +202,10 @@ public sealed class PromiseCache(int size) : IPromiseCache
         Interlocked.Add(ref _usage, value);
     }
 
+}
+
+[InlineArray(16)]
+internal struct StackArray16<T>
+{
+    public T first;
 }

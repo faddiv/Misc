@@ -2,10 +2,13 @@
 using BenchmarkDotNet.Running;
 using GreenDonutRelatedExperiments;
 
-await SubscriptionBenchmarks.TestAsync();
-await PublishBenchmarks.TestAsync();
+//await SubscriptionBenchmarks.TestAsync();
+//await PublishBenchmarks.TestAsync();
+
 BenchmarkRunner.Run(
 [
-    typeof(SubscriptionBenchmarks),
-    typeof(PublishBenchmarks),
+    //typeof(StackAllocBenchmarks)
+    //typeof(SubscriptionBenchmarks),
+    //typeof(PublishBenchmarks),
+    typeof(FalseSharingBenchmarks),
 ]);
