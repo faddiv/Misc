@@ -12,7 +12,9 @@ BenchmarkRunner.Run(
     //typeof(StackAllocBenchmarks)
     //typeof(SubscriptionBenchmarks),
     //typeof(PublishBenchmarks),
-    typeof(FalseSharingBenchmarks),
+    //typeof(FalseSharingBenchmarks),
+    //typeof(GetOrAddCasesOnConcurrentDictionary),
+    typeof(GetOrAddWithObjectPoolOnConcurrentDictionary)
 ]);
 /* Getting the Processor id on which the Thread runs. Maybe this is good for true thread sharing
 ConcurrentDictionary<int, int> processors = new();
