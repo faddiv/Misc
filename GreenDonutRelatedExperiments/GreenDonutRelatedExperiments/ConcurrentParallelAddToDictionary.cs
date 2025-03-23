@@ -11,6 +11,7 @@ public class ConcurrentParallelAddToDictionary
     private readonly object _lock = new();
     private readonly string[] _results = new string[Elements];
     private ConcurrentDictionary<int, string> _concurrentDictionary = new();
+
     // ReSharper disable once CollectionNeverQueried.Local
     private Dictionary<int, string> _dictionary = new();
 
@@ -40,6 +41,7 @@ public class ConcurrentParallelAddToDictionary
         {
             _dictionary = new Dictionary<int, string>();
         }
+
         for (int i = 0; i < Elements; i++)
         {
             _tasks[i] = Task.Factory.StartNew(Implementation, i);
@@ -62,12 +64,13 @@ public class ConcurrentParallelAddToDictionary
     }
 
     [Benchmark]
-    public async Task<string[]> AddToDictionaryWithParallel()
+    public async Task<string[]> AddToDictionaryWithLockAndParallel()
     {
         lock (_lock)
         {
             _dictionary = new Dictionary<int, string>();
         }
+
         await Parallel.ForAsync(0, Elements, Implementation);
         return _results;
 
@@ -99,6 +102,51 @@ public class ConcurrentParallelAddToDictionary
             return ValueTask.CompletedTask;
         }
     }
+
+    [Benchmark]
+    public async Task<string[]> AddToDictionarySerial()
+    {
+        lock (_lock)
+        {
+            _dictionary = new Dictionary<int, string>();
+        }
+
+        for (int i = 0; i < Elements; i++)
+        {
+            Implementation(i);
+        }
+
+        return _results;
+
+        void Implementation(int j)
+        {
+            var value = j.ToString();
+            lock (_lock)
+            {
+                _dictionary.Add(j, value);
+            }
+
+            _results[j] = value;
+        }
+    }
+
+    [Benchmark]
+    public async Task<string[]> AddToConcurrentDictionarySerial()
+    {
+        _concurrentDictionary = new ConcurrentDictionary<int, string>();
+        for (int i = 0; i < Elements; i++)
+        {
+            Implementation(i);
+        }
+
+        return _results;
+
+        void Implementation(int j)
+        {
+            var value = j.ToString();
+            _results[j] = _concurrentDictionary.GetOrAdd(j, value);
+        }
+    }
 }
 /*
 Elements: 50
@@ -112,10 +160,12 @@ Elements: 50
 
 /*
 Elements: 500
-    | Method                                | Mean     | Error   | StdDev  | Gen0    | Gen1   | Allocated |
-    |-------------------------------------- |---------:|--------:|--------:|--------:|-------:|----------:|
-    | AddToConcurrentDictionary             | 216.3 us | 4.32 us | 7.33 us | 37.5977 | 0.4883 | 150.69 KB |
-    | AddToDictionaryWithLock               | 352.7 us | 6.94 us | 7.12 us | 33.2031 | 0.4883 | 127.68 KB |
-    | AddToDictionaryWithParallel           | 272.3 us | 1.03 us | 0.96 us | 15.1367 | 0.4883 |  53.67 KB |
-    | AddToConcurrentDictionaryWithParallel | 150.7 us | 1.17 us | 1.10 us | 19.5313 | 0.4883 |  76.89 KB |
+    | Method                                | Mean      | Error    | StdDev    | Gen0    | Gen1   | Allocated |
+    |-------------------------------------- |----------:|---------:|----------:|--------:|-------:|----------:|
+    | AddToConcurrentDictionary             | 216.3 us  | 4.32 us  | 7.33 us   | 37.5977 | 0.4883 | 150.69 KB |
+    | AddToDictionaryWithLock               | 352.7 us  | 6.94 us  | 7.12 us   | 33.2031 | 0.4883 | 127.68 KB |
+    | AddToDictionaryWithParallel           | 272.3 us  | 1.03 us  | 0.96 us   | 15.1367 | 0.4883 |  53.67 KB |
+    | AddToConcurrentDictionaryWithParallel | 150.7 us  | 1.17 us  | 1.10 us   | 19.5313 | 0.4883 |  76.89 KB |
+    | AddToDictionarySerial                 |  15.89 us | 0.102 us |  0.091 us | 13.0310 | 0.0305 |  53.29 KB |
+    | AddToConcurrentDictionarySerial       |  38.10 us | 0.320 us |  0.299 us | 18.4326 |      - |  75.29 KB |
 */
