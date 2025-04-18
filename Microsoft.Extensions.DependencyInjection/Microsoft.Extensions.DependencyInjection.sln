@@ -1,0 +1,28 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestRunner", "TestRunner\TestRunner.csproj", "{82ED9D32-5528-4293-848C-A1419D875DB2}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.Extensions.DependencyInjection.Abstractions", "Microsoft.Extensions.DependencyInjection.Abstractions\Microsoft.Extensions.DependencyInjection.Abstractions.csproj", "{5D94CB20-3CDD-4BA7-A480-C28EB780D708}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.Extensions.DependencyInjection", "Microsoft.Extensions.DependencyInjection\Microsoft.Extensions.DependencyInjection.csproj", "{45C5EE26-769B-4C09-BD20-F32B96A1451A}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{82ED9D32-5528-4293-848C-A1419D875DB2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{82ED9D32-5528-4293-848C-A1419D875DB2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{82ED9D32-5528-4293-848C-A1419D875DB2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{82ED9D32-5528-4293-848C-A1419D875DB2}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5D94CB20-3CDD-4BA7-A480-C28EB780D708}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5D94CB20-3CDD-4BA7-A480-C28EB780D708}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5D94CB20-3CDD-4BA7-A480-C28EB780D708}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5D94CB20-3CDD-4BA7-A480-C28EB780D708}.Release|Any CPU.Build.0 = Release|Any CPU
+		{45C5EE26-769B-4C09-BD20-F32B96A1451A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{45C5EE26-769B-4C09-BD20-F32B96A1451A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{45C5EE26-769B-4C09-BD20-F32B96A1451A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{45C5EE26-769B-4C09-BD20-F32B96A1451A}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal
