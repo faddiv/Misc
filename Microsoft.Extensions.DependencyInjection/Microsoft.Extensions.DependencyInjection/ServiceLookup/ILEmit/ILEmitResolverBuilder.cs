@@ -257,6 +257,11 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
             return null;
         }
 
+        protected override object? VisitFactoryClass(FactoryClassCallSite factoryClassCallSite, ILEmitResolverBuilderContext argument)
+        {
+            throw new NotImplementedException("I can't implement this.");
+        }
+
         private static void AddConstant(ILEmitResolverBuilderContext argument, object? value)
         {
             argument.Constants ??= new List<object?>();

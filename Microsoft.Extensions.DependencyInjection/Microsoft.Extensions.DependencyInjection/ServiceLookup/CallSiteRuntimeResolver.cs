@@ -187,6 +187,25 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
         {
             return factoryCallSite.Factory(context.Scope);
         }
+
+        protected override object VisitFactoryClass(FactoryClassCallSite factoryClassCallSite, RuntimeResolverContext context)
+        {
+            object?[] parameterValues;
+            if (factoryClassCallSite.ParameterCallSites.Length == 0)
+            {
+                parameterValues = [];
+            }
+            else
+            {
+                parameterValues = new object?[factoryClassCallSite.ParameterCallSites.Length];
+                for (int index = 0; index < parameterValues.Length; index++)
+                {
+                    parameterValues[index] = VisitCallSite(factoryClassCallSite.ParameterCallSites[index], context);
+                }
+            }
+
+            return factoryClassCallSite.Factory.CreateInstance(parameterValues);
+        }
     }
 
     internal struct RuntimeResolverContext

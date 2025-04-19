@@ -4,10 +4,22 @@
     <TargetFramework>net8.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
+    <RootNamespace>Microsoft.Extensions.DependencyInjection</RootNamespace>
   </PropertyGroup>
 
   <ItemGroup>
-    <Folder Include="Resources\Common\" />
+    <Compile Update="FactoryClass{TDependency1, TDependency2,TService}.cs">
+      <DependentUpon>DependencyFactory.cs</DependentUpon>
+    </Compile>
+    <Compile Update="FactoryClass{TDependency1,TDependency2,TDependency3,TService}.cs">
+      <DependentUpon>DependencyFactory.cs</DependentUpon>
+    </Compile>
+    <Compile Update="FactoryClass{TDependency1,TService}.cs">
+      <DependentUpon>DependencyFactory.cs</DependentUpon>
+    </Compile>
+    <Compile Update="FactoryClass{TService}.cs">
+      <DependentUpon>DependencyFactory.cs</DependentUpon>
+    </Compile>
   </ItemGroup>
 
 </Project>

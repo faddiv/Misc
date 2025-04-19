@@ -98,6 +98,17 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
 
         protected override Type? VisitFactory(FactoryCallSite factoryCallSite, CallSiteValidatorState state) => null;
 
+        protected override Type? VisitFactoryClass(FactoryClassCallSite factoryClassCallSite, CallSiteValidatorState state)
+        {
+            Type? result = null;
+            foreach (ServiceCallSite parameterCallSite in factoryClassCallSite.ParameterCallSites)
+            {
+                Type? scoped =  VisitCallSite(parameterCallSite, state);
+                result ??= scoped;
+            }
+            return result;
+        }
+
         internal struct CallSiteValidatorState
         {
             [DisallowNull]

@@ -42,6 +42,8 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
             {
                 case CallSiteKind.Factory:
                     return VisitFactory((FactoryCallSite)callSite, argument);
+                case CallSiteKind.FactoryClass:
+                    return VisitFactoryClass((FactoryClassCallSite)callSite, argument);
                 case  CallSiteKind.IEnumerable:
                     return VisitIEnumerable((IEnumerableCallSite)callSite, argument);
                 case CallSiteKind.Constructor:
@@ -84,5 +86,7 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
         protected abstract TResult VisitIEnumerable(IEnumerableCallSite enumerableCallSite, TArgument argument);
 
         protected abstract TResult VisitFactory(FactoryCallSite factoryCallSite, TArgument argument);
+
+        protected abstract TResult VisitFactoryClass(FactoryClassCallSite factoryClassCallSite, TArgument argument);
     }
 }

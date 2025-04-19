@@ -153,6 +153,16 @@ namespace Microsoft.Extensions.DependencyInjection
             return services.AddTransient(typeof(TService), implementationFactory);
         }
 
+        public static IServiceCollection AddTransient(
+            this IServiceCollection services,
+            FactoryClass factory)
+        {
+            ThrowHelper.ThrowIfNull(services);
+            ThrowHelper.ThrowIfNull(factory);
+
+            return Add(services, factory, ServiceLifetime.Transient);
+        }
+
         /// <summary>
         /// Adds a scoped service of the type specified in <paramref name="serviceType"/> with an
         /// implementation of the type specified in <paramref name="implementationType"/> to the
@@ -293,6 +303,16 @@ namespace Microsoft.Extensions.DependencyInjection
             ThrowHelper.ThrowIfNull(implementationFactory);
 
             return services.AddScoped(typeof(TService), implementationFactory);
+        }
+
+        public static IServiceCollection AddScoped(
+            this IServiceCollection services,
+            FactoryClass factory)
+        {
+            ThrowHelper.ThrowIfNull(services);
+            ThrowHelper.ThrowIfNull(factory);
+
+            return Add(services, factory, ServiceLifetime.Scoped);
         }
 
 
@@ -479,7 +499,21 @@ namespace Microsoft.Extensions.DependencyInjection
             ThrowHelper.ThrowIfNull(services);
             ThrowHelper.ThrowIfNull(implementationInstance);
 
+            if (implementationInstance is FactoryClass factoryClass)
+            {
+                return Add(services, factoryClass, ServiceLifetime.Singleton);
+            }
             return services.AddSingleton(typeof(TService), implementationInstance);
+        }
+
+        public static IServiceCollection AddSingleton(
+            this IServiceCollection services,
+            FactoryClass factory)
+        {
+            ThrowHelper.ThrowIfNull(services);
+            ThrowHelper.ThrowIfNull(factory);
+
+            return Add(services, factory, ServiceLifetime.Singleton);
         }
 
         private static IServiceCollection Add(
@@ -500,6 +534,17 @@ namespace Microsoft.Extensions.DependencyInjection
             ServiceLifetime lifetime)
         {
             var descriptor = new ServiceDescriptor(serviceType, implementationFactory, lifetime);
+            collection.Add(descriptor);
+            return collection;
+        }
+
+        private static IServiceCollection Add(
+            IServiceCollection collection,
+            FactoryClass factory,
+            ServiceLifetime lifetime)
+        {
+            var serviceType = factory.ServiceType;
+            var descriptor = new ServiceDescriptor(serviceType, factory, lifetime);
             collection.Add(descriptor);
             return collection;
         }

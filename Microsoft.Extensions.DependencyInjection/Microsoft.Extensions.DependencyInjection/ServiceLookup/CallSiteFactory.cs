@@ -384,6 +384,10 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
                 {
                     callSite = new FactoryCallSite(lifetime, descriptor.ServiceType, descriptor.ImplementationFactory);
                 }
+                else if (!descriptor.IsKeyedService && descriptor.FactoryClass != null)
+                {
+                    callSite = CreateFactoryClassCallSite(lifetime, serviceIdentifier, descriptor.FactoryClass, callSiteChain);
+                }
                 else if (descriptor.IsKeyedService && descriptor.KeyedImplementationFactory != null)
                 {
                     callSite = new FactoryCallSite(lifetime, descriptor.ServiceType, serviceIdentifier.ServiceKey!, descriptor.KeyedImplementationFactory);
@@ -450,6 +454,43 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
             }
 
             return null;
+        }
+
+        private ServiceCallSite CreateFactoryClassCallSite(
+            ResultCache lifetime,
+            ServiceIdentifier serviceIdentifier,
+            FactoryClass descriptorFactoryClass,
+            CallSiteChain callSiteChain)
+        {
+            try
+            {
+                callSiteChain.Add(serviceIdentifier);
+                var parameterTypes = descriptorFactoryClass.ParameterTypes;
+                var parameterCallSites = new ServiceCallSite[parameterTypes.Length];
+
+                for (int index = 0; index < parameterTypes.Length; index++)
+                {
+                    var parameterType = parameterTypes[index];
+                    var callSite = GetCallSite(ServiceIdentifier.FromServiceType(parameterType), callSiteChain);
+                    if (callSite == null)
+                    {
+                        throw new InvalidOperationException(SR.Format(SR.CannotResolveService,
+                            parameterType,
+                            descriptorFactoryClass.ServiceType));
+                    }
+                    parameterCallSites[index] = callSite;
+                }
+
+                return new FactoryClassCallSite(
+                    lifetime,
+                    descriptorFactoryClass.ServiceType,
+                    descriptorFactoryClass,
+                    parameterCallSites);
+            }
+            finally
+            {
+                callSiteChain.Remove(serviceIdentifier);
+            }
         }
 
         private ConstructorCallSite CreateConstructorCallSite(

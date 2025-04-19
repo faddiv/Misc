@@ -25,6 +25,26 @@ namespace Microsoft.Extensions.DependencyInjection
             return stringBuilder.ToString();
         }
 
+        protected override object? VisitFactoryClass(FactoryClassCallSite factoryClassCallSite, CallSiteFormatterContext argument)
+        {
+            argument.WriteProperty("factoryClass", factoryClassCallSite.Factory.GetType());
+
+            if (factoryClassCallSite.ParameterCallSites.Length > 0)
+            {
+                argument.StartProperty("arguments");
+
+                CallSiteFormatterContext childContext = argument.StartArray();
+                foreach (ServiceCallSite parameter in factoryClassCallSite.ParameterCallSites)
+                {
+                    childContext.StartArrayItem();
+                    VisitCallSite(parameter, childContext);
+                }
+                argument.EndArray();
+            }
+
+            return null;
+        }
+
         protected override object? VisitConstructor(ConstructorCallSite constructorCallSite, CallSiteFormatterContext argument)
         {
             argument.WriteProperty("implementationType", constructorCallSite.ImplementationType);

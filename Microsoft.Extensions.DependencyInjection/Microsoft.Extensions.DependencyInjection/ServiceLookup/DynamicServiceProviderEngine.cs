@@ -47,7 +47,8 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
 
                     CallBack(null);
                 }
-                var result = CallSiteRuntimeResolver.Instance.Resolve(callSite, scope);
+                var result = _serviceProvider.GetService(new ServiceIdentifier(callSite.Key, callSite.ServiceType), scope );
+                    //CallSiteRuntimeResolver.Instance.Resolve(callSite, scope);
                 return result;
             };
         }

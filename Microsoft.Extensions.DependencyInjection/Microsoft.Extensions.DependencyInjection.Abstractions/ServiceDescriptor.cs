@@ -97,6 +97,18 @@ namespace Microsoft.Extensions.DependencyInjection
             _implementationFactory = factory;
         }
 
+        public ServiceDescriptor(
+            Type serviceType,
+            FactoryClass factory,
+            ServiceLifetime lifetime)
+            : this(serviceType, serviceKey: null, lifetime)
+        {
+            ThrowHelper.ThrowIfNull(serviceType);
+            ThrowHelper.ThrowIfNull(factory);
+
+            _implementationFactory = factory;
+        }
+
         /// <summary>
         /// Initializes a new instance of <see cref="ServiceDescriptor"/> with the specified <paramref name="factory"/>.
         /// </summary>
@@ -220,7 +232,11 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <remarks>
         /// If <see cref="IsKeyedService"/> is <see langword="true"/>, <see cref="KeyedImplementationFactory"/> should be called instead.
         /// </remarks>
-        public Func<IServiceProvider, object>? ImplementationFactory => IsKeyedService ? null : (Func<IServiceProvider, object>?) _implementationFactory;
+        public Func<IServiceProvider, object>? ImplementationFactory =>
+            IsKeyedService ? null : _implementationFactory as Func<IServiceProvider, object>;
+
+        public FactoryClass? FactoryClass =>
+            IsKeyedService ? null : _implementationFactory as FactoryClass;
 
         /// <summary>
         /// Gets the factory used for creating Keyed service instances,
@@ -279,6 +295,11 @@ namespace Microsoft.Extensions.DependencyInjection
                     return lifetime + $"{nameof(ImplementationFactory)}: {ImplementationFactory.Method}";
                 }
 
+                if (FactoryClass != null)
+                {
+                    return lifetime + $"{nameof(FactoryClass)}: {FactoryClass.GetType().FullName}";
+                }
+
                 return lifetime + $"{nameof(ImplementationInstance)}: {ImplementationInstance}";
             }
         }
@@ -302,6 +323,10 @@ namespace Microsoft.Extensions.DependencyInjection
                     Debug.Assert(typeArguments.Length == 2);
 
                     return typeArguments[1];
+                }
+                else if (FactoryClass != null)
+                {
+                    return FactoryClass.ServiceType;
                 }
             }
             else
@@ -1042,6 +1067,10 @@ namespace Microsoft.Extensions.DependencyInjection
                 else if (ImplementationFactory != null)
                 {
                     debugText += $@", ImplementationFactory = {ImplementationFactory.Method}";
+                }
+                else if (FactoryClass != null)
+                {
+                    debugText += $@", DependencyFactory = {FactoryClass.GetType().FullName}";
                 }
                 else
                 {

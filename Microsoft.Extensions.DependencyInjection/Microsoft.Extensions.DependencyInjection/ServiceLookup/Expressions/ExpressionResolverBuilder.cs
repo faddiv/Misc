@@ -9,6 +9,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
+using System.Runtime.InteropServices;
 using AgileObjects.ReadableExpressions;
 
 namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
@@ -168,6 +169,37 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
             return Expression.Invoke(GetCaptureDisposable(scope), service);
         }
 
+        protected override Expression VisitFactoryClass(
+            FactoryClassCallSite callSite,
+            object? context)
+        {
+            var factoryConstant = Expression.Constant(callSite.Factory);
+            var createInstanceMethod = typeof(FactoryClassWrapper)
+                .GetMethod(nameof(FactoryClassWrapper.CreateInstance))!;
+            var parameterTypes = callSite.Factory.ParameterTypes;
+            Expression[] parameterExpressions;
+            if (callSite.ParameterCallSites.Length == 0)
+            {
+                parameterExpressions = [];
+            }
+            else
+            {
+                parameterExpressions = new Expression[callSite.ParameterCallSites.Length];
+                for (int i = 0; i < parameterExpressions.Length; i++)
+                {
+                    var visitCallSite = VisitCallSite(callSite.ParameterCallSites[i], context);
+                    visitCallSite = Convert(visitCallSite, parameterTypes[i]);
+                    parameterExpressions[i] = visitCallSite;
+                }
+            }
+
+            var newArrayExpression = Expression.NewArrayInit(typeof(object), parameterExpressions);
+
+            Expression expression = Expression.Call(createInstanceMethod, factoryConstant, newArrayExpression);
+
+            return expression;
+        }
+
         protected override Expression VisitConstructor(ConstructorCallSite callSite, object? context)
         {
             ParameterInfo[] parameters = callSite.ConstructorInfo.GetParameters();
@@ -181,7 +213,9 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
                 parameterExpressions = new Expression[callSite.ParameterCallSites.Length];
                 for (int i = 0; i < parameterExpressions.Length; i++)
                 {
-                    parameterExpressions[i] = Convert(VisitCallSite(callSite.ParameterCallSites[i], context), parameters[i].ParameterType);
+                    var parameterType = parameters[i].ParameterType;
+                    var visitCallSite = VisitCallSite(callSite.ParameterCallSites[i], context);
+                    parameterExpressions[i] = Convert(visitCallSite, parameterType);
                 }
             }
 

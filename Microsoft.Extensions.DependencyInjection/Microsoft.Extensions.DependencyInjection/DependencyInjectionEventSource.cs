@@ -254,6 +254,11 @@ namespace Microsoft.Extensions.DependencyInjection
                 builder.Append("\"implementationFactory\": \"");
                 builder.Append(descriptor.ImplementationFactory.Method);
             }
+            else if (!descriptor.IsKeyedService && descriptor.FactoryClass != null)
+            {
+                builder.Append("\"dependencyFactory\": \"");
+                builder.Append(descriptor.FactoryClass.GetType());
+            }
             else if (descriptor.IsKeyedService && descriptor.KeyedImplementationFactory != null)
             {
                 builder.Append("\"implementationFactory\": \"");
