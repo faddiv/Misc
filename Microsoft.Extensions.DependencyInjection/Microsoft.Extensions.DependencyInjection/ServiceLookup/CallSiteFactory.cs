@@ -466,19 +466,20 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
             {
                 callSiteChain.Add(serviceIdentifier);
                 var parameterTypes = descriptorFactoryClass.ParameterTypes;
-                var parameterCallSites = new ServiceCallSite[parameterTypes.Length];
+                var parameterCallSites = parameterTypes.Length > 0
+                    ? new ServiceCallSite[parameterTypes.Length]
+                    : [];
 
                 for (int index = 0; index < parameterTypes.Length; index++)
                 {
                     var parameterType = parameterTypes[index];
                     var callSite = GetCallSite(ServiceIdentifier.FromServiceType(parameterType), callSiteChain);
-                    if (callSite == null)
-                    {
-                        throw new InvalidOperationException(SR.Format(SR.CannotResolveService,
-                            parameterType,
-                            descriptorFactoryClass.ServiceType));
-                    }
-                    parameterCallSites[index] = callSite;
+                    parameterCallSites[index] =
+                        callSite ??
+                        throw new InvalidOperationException(
+                            SR.Format(SR.CannotResolveService,
+                                parameterType,
+                                descriptorFactoryClass.ServiceType));
                 }
 
                 return new FactoryClassCallSite(
