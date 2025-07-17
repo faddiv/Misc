@@ -12,10 +12,12 @@ builder.Services
     });
 builder.Services
     .AddGraphQLServer()
-    .RegisterDbContext<TestDbContext>(DbContextKind.Pooled)
+    .RegisterDbContextFactory<TestDbContext>()
     .AddProjections()
     .AddFiltering()
     .AddSorting()
+    .AddGlobalObjectIdentification()
+    .AddGraphQLDemoTypes()
     .AddQueryType<Query>();
 var app = builder.Build();
 
