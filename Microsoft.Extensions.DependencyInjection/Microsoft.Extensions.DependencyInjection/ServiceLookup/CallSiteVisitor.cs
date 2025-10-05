@@ -50,6 +50,8 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
                     return VisitConstant((ConstantCallSite)callSite, argument);
                 case CallSiteKind.ServiceProvider:
                     return VisitServiceProvider((ServiceProviderCallSite)callSite, argument);
+                case CallSiteKind.FuncFactory:
+                    return VisitFuncFactory((FuncFactoryCallSite)callSite, argument);
                 default:
                     throw new NotSupportedException(SR.Format(SR.CallSiteTypeNotSupported, callSite.GetType()));
             }
@@ -84,5 +86,10 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
         protected abstract TResult VisitIEnumerable(IEnumerableCallSite enumerableCallSite, TArgument argument);
 
         protected abstract TResult VisitFactory(FactoryCallSite factoryCallSite, TArgument argument);
+
+        protected virtual TResult VisitFuncFactory(FuncFactoryCallSite funcFactoryCallSite, TArgument argument)
+        {
+            throw new NotSupportedException();
+        }
     }
 }

@@ -391,6 +391,9 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
                 else if (descriptor.HasImplementationType())
                 {
                     callSite = CreateConstructorCallSite(lifetime, serviceIdentifier, descriptor.GetImplementationType()!, callSiteChain);
+                } else if (descriptor.HasFuncFactory())
+                {
+                    callSite = CreateFuncFactoryCallSite(lifetime, descriptor.GetFuncFactory()!, serviceIdentifier, callSiteChain);
                 }
                 else
                 {
@@ -551,6 +554,35 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
                     Debug.Assert(parameterCallSites != null);
                     return new ConstructorCallSite(lifetime, serviceIdentifier.ServiceType, bestConstructor, parameterCallSites);
                 }
+            }
+            finally
+            {
+                callSiteChain.Remove(serviceIdentifier);
+            }
+        }
+
+        private FuncFactoryCallSite CreateFuncFactoryCallSite(
+            ResultCache lifetime,
+            Delegate function,
+            ServiceIdentifier serviceIdentifier,
+            CallSiteChain callSiteChain)
+        {
+            try
+            {
+                callSiteChain.Add(serviceIdentifier, null);
+                var paramList = function.Method.GetParameters();
+                if (paramList.Length == 1)
+                {
+                    var dep0Type = paramList[0].ParameterType;
+                    var parameterCallSites = new ServiceCallSite[1];
+                    parameterCallSites[0] = GetCallSite(ServiceIdentifier.FromServiceType(dep0Type), callSiteChain)!;
+                    var returnType = function.Method.ReturnType;
+                    var funcType = typeof(Func<,>).MakeGenericType(dep0Type, returnType);
+                    if (funcType != function.GetType()) throw new InvalidOperationException("Invalid function type");
+                    var factoryType = typeof(Func1FactoryCallSite<,>).MakeGenericType(dep0Type, returnType);
+                    return (FuncFactoryCallSite)Activator.CreateInstance(factoryType, function, lifetime, parameterCallSites)!;
+                }
+                throw new InvalidOperationException("Invalid function type");
             }
             finally
             {

@@ -14,6 +14,8 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
 
         public static bool HasImplementationType(this ServiceDescriptor serviceDescriptor) => GetImplementationType(serviceDescriptor) != null;
 
+        public static bool HasFuncFactory(this ServiceDescriptor serviceDescriptor) => GetFuncFactory(serviceDescriptor) != null;
+
         public static object? GetImplementationInstance(this ServiceDescriptor serviceDescriptor)
         {
             return serviceDescriptor.IsKeyedService
@@ -26,6 +28,11 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
             return serviceDescriptor.IsKeyedService
                 ? serviceDescriptor.KeyedImplementationFactory
                 : serviceDescriptor.ImplementationFactory;
+        }
+
+        public static Delegate? GetFuncFactory(this ServiceDescriptor serviceDescriptor)
+        {
+            return serviceDescriptor.Delegate;
         }
 
         [return: DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)]

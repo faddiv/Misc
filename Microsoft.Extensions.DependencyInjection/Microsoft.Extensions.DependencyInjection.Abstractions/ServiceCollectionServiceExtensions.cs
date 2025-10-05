@@ -490,7 +490,7 @@ namespace Microsoft.Extensions.DependencyInjection
             ThrowHelper.ThrowIfNull(services);
             ThrowHelper.ThrowIfNull(implementationInstance);
 
-            return services.AddSingleton<TService>(sp => implementationInstance());
+            return Add(services, typeof(TService), implementationInstance, ServiceLifetime.Singleton);
         }
 
         public static IServiceCollection AddSingletonFunction<TDep0, TService>(
@@ -502,7 +502,7 @@ namespace Microsoft.Extensions.DependencyInjection
             ThrowHelper.ThrowIfNull(services);
             ThrowHelper.ThrowIfNull(implementationInstance);
 
-            return services.AddSingleton<TService>(sp => implementationInstance(sp.GetService<TDep0>()!));
+            return Add(services, typeof(TService), implementationInstance, ServiceLifetime.Singleton);
         }
 
         public static IServiceCollection AddSingletonFunction<TDep0, TDep1, TService>(
@@ -515,7 +515,7 @@ namespace Microsoft.Extensions.DependencyInjection
             ThrowHelper.ThrowIfNull(services);
             ThrowHelper.ThrowIfNull(implementationInstance);
 
-            return services.AddSingleton<TService>(sp => implementationInstance(sp.GetService<TDep0>()!, sp.GetService<TDep1>()!));
+            return Add(services, typeof(TService), implementationInstance, ServiceLifetime.Singleton);
         }
 
         private static IServiceCollection Add(
@@ -533,6 +533,17 @@ namespace Microsoft.Extensions.DependencyInjection
             IServiceCollection collection,
             Type serviceType,
             Func<IServiceProvider, object> implementationFactory,
+            ServiceLifetime lifetime)
+        {
+            var descriptor = new ServiceDescriptor(serviceType, implementationFactory, lifetime);
+            collection.Add(descriptor);
+            return collection;
+        }
+
+        private static IServiceCollection Add(
+            IServiceCollection collection,
+            Type serviceType,
+            Delegate implementationFactory,
             ServiceLifetime lifetime)
         {
             var descriptor = new ServiceDescriptor(serviceType, implementationFactory, lifetime);

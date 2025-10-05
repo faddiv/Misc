@@ -101,6 +101,24 @@ namespace Microsoft.Extensions.DependencyInjection
         /// Initializes a new instance of <see cref="ServiceDescriptor"/> with the specified <paramref name="factory"/>.
         /// </summary>
         /// <param name="serviceType">The <see cref="Type"/> of the service.</param>
+        /// <param name="factory">A factory used for creating service instances.</param>
+        /// <param name="lifetime">The <see cref="ServiceLifetime"/> of the service.</param>
+        internal ServiceDescriptor(
+            Type serviceType,
+            Delegate factory,
+            ServiceLifetime lifetime)
+            : this(serviceType, serviceKey: null, lifetime)
+        {
+            ThrowHelper.ThrowIfNull(serviceType);
+            ThrowHelper.ThrowIfNull(factory);
+
+            _implementationFactory = factory;
+        }
+
+        /// <summary>
+        /// Initializes a new instance of <see cref="ServiceDescriptor"/> with the specified <paramref name="factory"/>.
+        /// </summary>
+        /// <param name="serviceType">The <see cref="Type"/> of the service.</param>
         /// <param name="serviceKey">The <see cref="ServiceDescriptor.ServiceKey"/> of the service.</param>
         /// <param name="factory">A factory used for creating service instances.</param>
         /// <param name="lifetime">The <see cref="ServiceLifetime"/> of the service.</param>
@@ -220,7 +238,12 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <remarks>
         /// If <see cref="IsKeyedService"/> is <see langword="true"/>, <see cref="KeyedImplementationFactory"/> should be called instead.
         /// </remarks>
-        public Func<IServiceProvider, object>? ImplementationFactory => IsKeyedService ? null : (Func<IServiceProvider, object>?) _implementationFactory;
+        public Func<IServiceProvider, object>? ImplementationFactory => IsKeyedService ? null :  _implementationFactory as Func<IServiceProvider, object>;
+
+        /// <summary>
+        /// If the service is a delegate, this property returns the delegate.
+        /// </summary>
+        public Delegate? Delegate => _implementationFactory as Delegate;
 
         /// <summary>
         /// Gets the factory used for creating Keyed service instances,

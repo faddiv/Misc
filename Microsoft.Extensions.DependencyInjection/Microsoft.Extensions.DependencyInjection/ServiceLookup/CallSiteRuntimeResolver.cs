@@ -70,6 +70,26 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
 #endif
         }
 
+        protected override object? VisitFuncFactory(FuncFactoryCallSite funcFactoryCallSite, RuntimeResolverContext context)
+        {
+
+            object?[] parameterValues;
+            if (funcFactoryCallSite.ParameterCallSites.Length == 0)
+            {
+                parameterValues = Array.Empty<object>();
+            }
+            else
+            {
+                parameterValues = new object?[funcFactoryCallSite.ParameterCallSites.Length];
+                for (int index = 0; index < parameterValues.Length; index++)
+                {
+                    parameterValues[index] = VisitCallSite(funcFactoryCallSite.ParameterCallSites[index], context);
+                }
+            }
+
+            return funcFactoryCallSite.Resolve(parameterValues);
+        }
+
         protected override object? VisitRootCache(ServiceCallSite callSite, RuntimeResolverContext context)
         {
             if (callSite.Value is object value)
