@@ -253,7 +253,7 @@ namespace Microsoft.Extensions.DependencyInjection
         {
             ServiceProviderEngine engine;
 
-#if NET8_0_OR_GREATER
+#if NETFRAMEWORK || NETSTANDARD2_0
             engine = CreateDynamicEngine();
 #else
             if (RuntimeFeature.IsDynamicCodeCompiled && !DisableDynamicEngine)

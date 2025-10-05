@@ -285,24 +285,25 @@ namespace Microsoft.Extensions.DependencyInjection.Tests
         public void CallSiteFactoryResolvesIEnumerableOfOpenGenericServiceAfterResolvingClosedImplementation()
         {
             IServiceCollection descriptors = new ServiceCollection();
-            descriptors.Add(ServiceDescriptor.Scoped(typeof(IFakeOpenGenericService<int>), typeof(FakeIntService)));
+            descriptors.AddSingleton(new PocoClass());
+            descriptors.Add(ServiceDescriptor.Scoped(typeof(IFakeOpenGenericService<PocoClass>), typeof(FakePocoClassService)));
             descriptors.Add(ServiceDescriptor.Scoped(typeof(IFakeOpenGenericService<>), typeof(FakeOpenGenericService<>)));
 
             ServiceProvider provider = descriptors.BuildServiceProvider();
 
-            IFakeOpenGenericService<int> processor = provider.GetService<IFakeOpenGenericService<int>>();
-            IEnumerable<IFakeOpenGenericService<int>> processors = provider.GetService<IEnumerable<IFakeOpenGenericService<int>>>();
+            IFakeOpenGenericService<PocoClass> processor = provider.GetService<IFakeOpenGenericService<PocoClass>>();
+            IEnumerable<IFakeOpenGenericService<PocoClass>> processors = provider.GetService<IEnumerable<IFakeOpenGenericService<PocoClass>>>();
 
             Type[] implementationTypes = processors.Select(p => p.GetType()).ToArray();
-            Assert.Equal(typeof(FakeIntService), processor.GetType());
+            Assert.Equal(typeof(FakePocoClassService), processor.GetType());
             Assert.Equal(2, implementationTypes.Length);
-            Assert.Equal(typeof(FakeIntService), implementationTypes[0]);
-            Assert.Equal(typeof(FakeOpenGenericService<int>), implementationTypes[1]);
+            Assert.Equal(typeof(FakePocoClassService), implementationTypes[0]);
+            Assert.Equal(typeof(FakeOpenGenericService<PocoClass>), implementationTypes[1]);
         }
 
-        private class FakeIntService : IFakeOpenGenericService<int>
+        private class FakePocoClassService : IFakeOpenGenericService<PocoClass>
         {
-            public int Value => 0;
+            public PocoClass Value => new PocoClass();
         }
 
         private interface IServiceG
