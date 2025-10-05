@@ -19,6 +19,9 @@ public class Query
     }
 
     [UseOffsetPaging]
+    [UseProjection]
+    [UseFiltering]
+    [UseSorting]
     public IQueryable<Orders> GetOrdersByOffset(TestDbContext context)
     {
         return context.Orders;
