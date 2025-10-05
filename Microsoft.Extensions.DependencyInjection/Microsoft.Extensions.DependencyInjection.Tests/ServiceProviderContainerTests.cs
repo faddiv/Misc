@@ -430,7 +430,7 @@ namespace Microsoft.Extensions.DependencyInjection.Tests
         {
             public DisposeServiceProviderInCtor(IServiceProvider sp)
             {
-                (sp as IDisposable).Dispose();
+                (sp as IDisposable)?.Dispose();
             }
             public void Dispose() { }
         }
@@ -452,7 +452,7 @@ namespace Microsoft.Extensions.DependencyInjection.Tests
 
             var disposable = sp.GetRequiredService<Disposable>();
             var asyncDisposable = sp.GetRequiredService<AsyncDisposable>();
-            DelayedAsyncDisposableService delayedAsyncDisposableService = null;
+            DelayedAsyncDisposableService? delayedAsyncDisposableService = null;
             if (includeDelayedAsyncDisposable)
             {
                 delayedAsyncDisposableService = sp.GetRequiredService<DelayedAsyncDisposableService>();
@@ -533,8 +533,8 @@ namespace Microsoft.Extensions.DependencyInjection.Tests
             using (var mreForThread2 = new ManualResetEvent(false))
             using (var mreForThread3 = new ManualResetEvent(false))
             {
-                InnerSingleton innerSingleton = null;
-                OuterSingleton outerSingleton = null;
+                InnerSingleton? innerSingleton = null;
+                OuterSingleton? outerSingleton = null;
                 IServiceProvider sp = null;
 
                 // Arrange
