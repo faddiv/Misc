@@ -482,6 +482,42 @@ namespace Microsoft.Extensions.DependencyInjection
             return services.AddSingleton(typeof(TService), implementationInstance);
         }
 
+        public static IServiceCollection AddSingletonFunction<TService>(
+            this IServiceCollection services,
+            Func<TService> implementationInstance)
+            where TService : class
+        {
+            ThrowHelper.ThrowIfNull(services);
+            ThrowHelper.ThrowIfNull(implementationInstance);
+
+            return services.AddSingleton<TService>(sp => implementationInstance());
+        }
+
+        public static IServiceCollection AddSingletonFunction<TDep0, TService>(
+            this IServiceCollection services,
+            Func<TDep0, TService> implementationInstance)
+            where TService : class
+            where TDep0 : class
+        {
+            ThrowHelper.ThrowIfNull(services);
+            ThrowHelper.ThrowIfNull(implementationInstance);
+
+            return services.AddSingleton<TService>(sp => implementationInstance(sp.GetService<TDep0>()!));
+        }
+
+        public static IServiceCollection AddSingletonFunction<TDep0, TDep1, TService>(
+            this IServiceCollection services,
+            Func<TDep0, TDep1, TService> implementationInstance)
+            where TService : class
+            where TDep0 : class
+            where TDep1 : class
+        {
+            ThrowHelper.ThrowIfNull(services);
+            ThrowHelper.ThrowIfNull(implementationInstance);
+
+            return services.AddSingleton<TService>(sp => implementationInstance(sp.GetService<TDep0>()!, sp.GetService<TDep1>()!));
+        }
+
         private static IServiceCollection Add(
             IServiceCollection collection,
             Type serviceType,
