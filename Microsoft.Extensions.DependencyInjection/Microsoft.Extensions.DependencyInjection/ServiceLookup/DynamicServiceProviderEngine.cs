@@ -25,13 +25,13 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
             {
                 // Resolve the result before we increment the call count, this ensures that singletons
                 // won't cause any side effects during the compilation of the resolve function.
-                //var result = CallSiteRuntimeResolver.Instance.Resolve(callSite, scope);
+                var result = CallSiteRuntimeResolver.Instance.Resolve(callSite, scope);
 
-                if (Interlocked.Increment(ref callCount) == 1)
+                if (Interlocked.Increment(ref callCount) == 2)
                 {
                     // Don't capture the ExecutionContext when forking to build the compiled version of the
                     // resolve function
-                    void CallBack(object? _)
+                    _ = ThreadPool.UnsafeQueueUserWorkItem(_ =>
                     {
                         try
                         {
@@ -43,11 +43,10 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
 
                             Debug.Fail($"We should never get exceptions from the background compilation.{Environment.NewLine}{ex}");
                         }
-                    }
-
-                    CallBack(null);
+                    },
+                    null);
                 }
-                var result = CallSiteRuntimeResolver.Instance.Resolve(callSite, scope);
+
                 return result;
             };
         }

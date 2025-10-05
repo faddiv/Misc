@@ -9,6 +9,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection.ServiceLookup;
+using SR = Microsoft.Extensions.DependencyInjection.Abstractions.Resources.SR;
 using ThrowHelper = Microsoft.Extensions.DependencyInjection.ServiceLookup.ThrowHelper;
 
 namespace Microsoft.Extensions.DependencyInjection
@@ -252,7 +253,7 @@ namespace Microsoft.Extensions.DependencyInjection
         {
             ServiceProviderEngine engine;
 
-#if NET8_0_OR_GREATER
+#if NETFRAMEWORK || NETSTANDARD2_0
             engine = CreateDynamicEngine();
 #else
             if (RuntimeFeature.IsDynamicCodeCompiled && !DisableDynamicEngine)

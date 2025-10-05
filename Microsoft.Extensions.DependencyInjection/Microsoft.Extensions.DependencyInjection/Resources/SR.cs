@@ -3,7 +3,7 @@
 
 using System.Resources;
 
-namespace System
+namespace Microsoft.Extensions.DependencyInjection.Resources
 {
     internal static partial class SR
     {
@@ -12,52 +12,37 @@ namespace System
                 ? usingResourceKeys
                 : false;
 
-        public static string MultipleCtorsFoundWithBestLength => GetResourceString("MultipleCtorsFoundWithBestLength");
-        public static string CannotCreateAbstractClasses => GetResourceString("CannotCreateAbstractClasses");
-        public static string UnableToResolveService => GetResourceString("UnableToResolveService");
-        public static string CtorNotLocated => GetResourceString("CtorNotLocated");
-        public static string MultipleCtorsFound => GetResourceString("MultipleCtorsFound");
-        public static string KeyedServicesNotSupported => GetResourceString("KeyedServicesNotSupported");
-        public static string MultipleCtorsMarkedWithAttribute => GetResourceString("MultipleCtorsMarkedWithAttribute");
-        public static string MarkedCtorMissingArgumentTypes => GetResourceString("MarkedCtorMissingArgumentTypes");
-        public static string ServiceCollectionReadOnly => GetResourceString("ServiceCollectionReadOnly");
-        public static string NonKeyedDescriptorMisuse => GetResourceString("NonKeyedDescriptorMisuse");
-        public static string NoServiceRegistered => GetResourceString("NoServiceRegistered");
-
-        public static string TryAddIndistinguishableTypeToEnumerable =>
-            GetResourceString("TryAddIndistinguishableTypeToEnumerable");
-
-        public static string AsyncDisposableServiceDispose => GetResourceString("AsyncDisposableServiceDispose");
+        public static string AsyncDisposableServiceDispose => Strings.AsyncDisposableServiceDispose;
 
         public static string ConstantCantBeConvertedToServiceType =>
-            GetResourceString("ConstantCantBeConvertedToServiceType");
+            Strings.ConstantCantBeConvertedToServiceType;
 
         public static string ImplementationTypeCantBeConvertedToServiceType =>
-            GetResourceString("ImplementationTypeCantBeConvertedToServiceType");
+            Strings.ImplementationTypeCantBeConvertedToServiceType;
 
-        public static string CallSiteTypeNotSupported => GetResourceString("CallSiteTypeNotSupported");
+        public static string CallSiteTypeNotSupported => Strings.CallSiteTypeNotSupported;
 
         public static string DirectScopedResolvedFromRootException =>
-            GetResourceString("DirectScopedResolvedFromRootException");
+            Strings.DirectScopedResolvedFromRootException;
 
-        public static string ScopedResolvedFromRootException => GetResourceString("ScopedResolvedFromRootException");
-        public static string ScopedInSingletonException => GetResourceString("ScopedInSingletonException");
-        public static string CircularDependencyException => GetResourceString("CircularDependencyException");
-        public static string OpenGenericServiceRequiresOpenGenericImplementation => GetResourceString("OpenGenericServiceRequiresOpenGenericImplementation");
-        public static string TypeCannotBeActivated => GetResourceString("TypeCannotBeActivated");
-        public static string ArityOfOpenGenericServiceNotEqualArityOfOpenGenericImplementation => GetResourceString("ArityOfOpenGenericServiceNotEqualArityOfOpenGenericImplementation");
-        public static string TrimmingAnnotationsDoNotMatch => GetResourceString("TrimmingAnnotationsDoNotMatch");
-        public static string TrimmingAnnotationsDoNotMatch_NewConstraint => GetResourceString("TrimmingAnnotationsDoNotMatch_NewConstraint");
-        public static string AotCannotCreateEnumerableValueType => GetResourceString("AotCannotCreateEnumerableValueType");
-        public static string InvalidServiceDescriptor => GetResourceString("InvalidServiceDescriptor");
-        public static string NoConstructorMatch => GetResourceString("NoConstructorMatch");
-        public static string AmbiguousConstructorException => GetResourceString("AmbiguousConstructorException");
-        public static string UnableToActivateTypeException => GetResourceString("UnableToActivateTypeException");
-        public static string CannotResolveService => GetResourceString("CannotResolveService");
-        public static string AotCannotCreateGenericValueType => GetResourceString("AotCannotCreateGenericValueType");
-        public static string InvalidServiceKeyType => GetResourceString("InvalidServiceKeyType");
-        public static string ServiceDescriptorNotExist => GetResourceString("ServiceDescriptorNotExist");
-        public static string GetCaptureDisposableNotSupported => GetResourceString("GetCaptureDisposableNotSupported");
+        public static string ScopedResolvedFromRootException => Strings.ScopedResolvedFromRootException;
+        public static string ScopedInSingletonException => Strings.ScopedInSingletonException;
+        public static string CircularDependencyException => Strings.CircularDependencyException;
+        public static string OpenGenericServiceRequiresOpenGenericImplementation => Strings.OpenGenericServiceRequiresOpenGenericImplementation;
+        public static string TypeCannotBeActivated => Strings.TypeCannotBeActivated;
+        public static string ArityOfOpenGenericServiceNotEqualArityOfOpenGenericImplementation => Strings.ArityOfOpenGenericServiceNotEqualArityOfOpenGenericImplementation;
+        public static string TrimmingAnnotationsDoNotMatch => Strings.TrimmingAnnotationsDoNotMatch;
+        public static string TrimmingAnnotationsDoNotMatch_NewConstraint => Strings.TrimmingAnnotationsDoNotMatch_NewConstraint;
+        public static string AotCannotCreateEnumerableValueType => Strings.AotCannotCreateEnumerableValueType;
+        public static string InvalidServiceDescriptor => Strings.InvalidServiceDescriptor;
+        public static string NoConstructorMatch => Strings.NoConstructorMatch;
+        public static string AmbiguousConstructorException => Strings.AmbiguousConstructorException;
+        public static string UnableToActivateTypeException => Strings.UnableToActivateTypeException;
+        public static string CannotResolveService => Strings.CannotResolveService;
+        public static string AotCannotCreateGenericValueType => Strings.AotCannotCreateGenericValueType;
+        public static string InvalidServiceKeyType => Strings.InvalidServiceKeyType;
+        public static string ServiceDescriptorNotExist => Strings.ServiceDescriptorNotExist;
+        public static string GetCaptureDisposableNotSupported => Strings.GetCaptureDisposableNotSupported;
 
         // This method is used to decide if we need to append the exception message parameters to the message when calling SR.Format.
         // by default it returns the value of System.Resources.UseSystemResourceKeys AppContext switch or false if not specified.

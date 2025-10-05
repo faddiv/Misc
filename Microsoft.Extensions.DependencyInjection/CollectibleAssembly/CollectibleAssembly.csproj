@@ -1,0 +1,11 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <EnableDefaultItems>true</EnableDefaultItems>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Microsoft.Extensions.DependencyInjection.Abstractions\Microsoft.Extensions.DependencyInjection.Abstractions.csproj" />
+    <ProjectReference Include="..\Microsoft.Extensions.DependencyInjection\Microsoft.Extensions.DependencyInjection.csproj" />
+  </ItemGroup>
+</Project>
