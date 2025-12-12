@@ -16,6 +16,7 @@ namespace ProxiesBenchmark.SystemRuntimeRemotingProxies
         {
             _target = target;
         }
+
         public override IMessage Invoke(IMessage msg)
         {
             if (msg is IMethodCallMessage methodCallMsg)
@@ -31,7 +32,10 @@ namespace ProxiesBenchmark.SystemRuntimeRemotingProxies
                     return new ReturnMessage(ex.InnerException, methodCallMsg);
                 }
             }
-            throw new ArgumentException($"Invalid message; expected IMethodCallMessage but {msg?.GetType().FullName ?? "null"} recieved.", nameof(msg));
+
+            throw new ArgumentException(
+                $"Invalid message; expected IMethodCallMessage but {msg?.GetType().FullName ?? "null"} recieved.",
+                nameof(msg));
         }
     }
 }

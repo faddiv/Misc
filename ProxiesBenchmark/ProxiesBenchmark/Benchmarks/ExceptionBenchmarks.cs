@@ -1,6 +1,5 @@
 using BenchmarkDotNet.Attributes;
 using System;
-using BenchmarkDotNet.Jobs;
 using ProxiesBenchmark.CastleProxy;
 using ProxiesBenchmark.DispatchProxyExample;
 using ProxiesBenchmark.LightInjectExample;
@@ -8,10 +7,6 @@ using ProxiesBenchmark.ManuallyImpelemntedProxy;
 
 namespace ProxiesBenchmark.Benchmarks
 {
-    [ArtifactsPath(".\\Benchmarks")]
-    [MemoryDiagnoser]
-    //[SimpleJob(RuntimeMoniker.Net48)]
-    [SimpleJob(RuntimeMoniker.Net80)]
     public class ExceptionBenchmarks : BenchmarksBase
     {
         private Calculator target;

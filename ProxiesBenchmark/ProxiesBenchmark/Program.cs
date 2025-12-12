@@ -1,6 +1,10 @@
 using BenchmarkDotNet.Running;
 using System;
+using BenchmarkDotNet.Configs;
+using BenchmarkDotNet.Diagnosers;
+using BenchmarkDotNet.Environments;
 using BenchmarkDotNet.Jobs;
+using ProxiesBenchmark.Benchmarks;
 using ProxiesBenchmark.CastleProxy;
 using ProxiesBenchmark.DispatchProxyExample;
 using ProxiesBenchmark.LightInjectExample;
@@ -35,7 +39,12 @@ namespace ProxiesBenchmark
             var lightInject = LightInjectProxyHelpers.WithLightInject();
             Console.WriteLine($"WithLightInject: {lightInject.Add(1, 2)}");
 
-            BenchmarkRunner.Run(typeof(Program).Assembly);
+            BenchmarkRunner.Run<MethodCallBenchmarks>(
+                DefaultConfig.Instance
+                    .AddJob(Job.Default.WithRuntime(CoreRuntime.Core80))
+                    //.AddJob(Job.Default.WithRuntime(ClrRuntime.Net48))
+                    .AddDiagnoser(MemoryDiagnoser.Default)
+                    .WithArtifactsPath(@"..\..\..\..\..\Results"));
         }
     }
 }

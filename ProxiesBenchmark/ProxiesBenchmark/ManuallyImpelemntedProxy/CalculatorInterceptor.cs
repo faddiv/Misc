@@ -5,7 +5,13 @@ namespace ProxiesBenchmark.ManuallyImpelemntedProxy
 {
     public class CalculatorInterceptor : ICalculator
     {
+        private ulong callCount = 0;
+        private ulong errorCount = 0;
+        private int lastResult = 0;
+        private ValueTuple<int, int> lastInput = (0, 0);
+
         public string Msg { get; set; }
+
         public CalculatorInterceptor(ICalculator target)
         {
             Target = target;
@@ -13,10 +19,22 @@ namespace ProxiesBenchmark.ManuallyImpelemntedProxy
 
         public ICalculator Target { get; }
 
+        public ulong CallCount => callCount;
+
+        public ulong ErrorCount => errorCount;
+
+        public object LastResult => lastResult;
+
+        public object LastInput => lastInput;
+
         [MethodImpl(MethodImplOptions.NoInlining)]
         public int Add(int a, int b)
         {
-            return Target.Add(a, b);
+            callCount++;
+            lastInput = (a, b);
+            var add = Target.Add(a, b);
+            lastResult = add;
+            return add;
         }
 
         [MethodImpl(MethodImplOptions.NoInlining)]
@@ -28,6 +46,7 @@ namespace ProxiesBenchmark.ManuallyImpelemntedProxy
             }
             catch (Exception ex)
             {
+                errorCount++;
                 Msg = ex.Message;
                 throw;
             }

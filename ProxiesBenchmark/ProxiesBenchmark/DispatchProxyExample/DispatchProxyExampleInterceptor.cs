@@ -1,12 +1,22 @@
-﻿using System.Reflection;
+﻿using System;
+using System.Reflection;
 
 namespace ProxiesBenchmark.DispatchProxyExample
 {
     public class DispatchProxyExampleInterceptor<T> : DispatchProxy where T : class
     {
-        public DispatchProxyExampleInterceptor()
-        {
-        }
+        private ulong callCount = 0;
+        private ulong errorCount = 0;
+        private int lastResult = 0;
+        private ValueTuple<int, int> lastInput = (0, 0);
+
+        public ulong CallCount => callCount;
+
+        public ulong ErrorCount => errorCount;
+
+        public object LastResult => lastResult;
+
+        public object LastInput => lastInput;
 
         public T Target { get; set; }
 
@@ -14,13 +24,20 @@ namespace ProxiesBenchmark.DispatchProxyExample
         {
             try
             {
-                var result = targetMethod.Invoke(Target, args);
+                callCount++;
+                if (args.Length == 2)
+                {
+                    lastInput = ((int)args[0], (int)args[1]);
+                }
 
+                var result = targetMethod.Invoke(Target, args);
+                lastResult = (int)result;
                 return result;
             }
             catch (TargetInvocationException exc)
             {
-                throw exc.InnerException;
+                errorCount++;
+                throw new Exception($"Error in target method {targetMethod.Name}", exc.InnerException);
             }
         }
     }
