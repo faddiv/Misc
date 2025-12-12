@@ -1,10 +1,10 @@
 ﻿using System.Reflection;
 
-namespace ProxiesBenchmark
+namespace ProxiesBenchmark.DispatchProxyExample
 {
-    public class DispatchProxyExampleDecorator<T> : DispatchProxy where T : class
+    public class DispatchProxyExampleInterceptor<T> : DispatchProxy where T : class
     {
-        public DispatchProxyExampleDecorator()
+        public DispatchProxyExampleInterceptor()
         {
         }
 

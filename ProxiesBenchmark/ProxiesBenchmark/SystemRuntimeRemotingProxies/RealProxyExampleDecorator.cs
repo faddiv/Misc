@@ -1,9 +1,10 @@
+#if NET48
 using System;
 using System.Reflection;
 using System.Runtime.Remoting.Messaging;
 using System.Runtime.Remoting.Proxies;
 
-namespace ProxiesBenchmark
+namespace ProxiesBenchmark.SystemRuntimeRemotingProxies
 {
     public class RealProxyExampleDecorator<T> : RealProxy where T : MarshalByRefObject
     {
@@ -34,3 +35,4 @@ namespace ProxiesBenchmark
         }
     }
 }
+#endif

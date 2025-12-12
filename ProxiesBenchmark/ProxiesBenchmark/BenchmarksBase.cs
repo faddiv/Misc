@@ -3,7 +3,7 @@ using BenchmarkDotNet.Mathematics;
 using BenchmarkDotNet.Order;
 using Perfolizer.Mathematics.OutlierDetection;
 
-namespace Foxy.Testing.EntityFrameworkCore.BenchmarkDotNet
+namespace ProxiesBenchmark
 {
     [HtmlExporter, RPlotExporter]
     [Orderer(SummaryOrderPolicy.Default)]

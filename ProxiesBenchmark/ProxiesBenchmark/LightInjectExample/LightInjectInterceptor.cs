@@ -1,7 +1,7 @@
-using LightInject.Interception;
 using System.Reflection;
+using LightInject.Interception;
 
-namespace ProxiesBenchmark
+namespace ProxiesBenchmark.LightInjectExample
 {
     internal class LightInjectInterceptor : IInterceptor
     {

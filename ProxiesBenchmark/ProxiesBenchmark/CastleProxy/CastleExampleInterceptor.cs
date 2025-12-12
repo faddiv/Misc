@@ -1,7 +1,7 @@
 ﻿using System.Reflection;
 using Castle.DynamicProxy;
 
-namespace ProxiesBenchmark
+namespace ProxiesBenchmark.CastleProxy
 {
     public class CastleExampleInterceptor : IInterceptor
     {

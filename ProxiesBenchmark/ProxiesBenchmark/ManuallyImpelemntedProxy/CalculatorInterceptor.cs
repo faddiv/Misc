@@ -1,12 +1,12 @@
 using System;
 using System.Runtime.CompilerServices;
 
-namespace ProxiesBenchmark
+namespace ProxiesBenchmark.ManuallyImpelemntedProxy
 {
-    public class CalculatorProxy : ICalculator
+    public class CalculatorInterceptor : ICalculator
     {
         public string Msg { get; set; }
-        public CalculatorProxy(ICalculator target)
+        public CalculatorInterceptor(ICalculator target)
         {
             Target = target;
         }
