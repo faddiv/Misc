@@ -2,6 +2,7 @@ using BenchmarkDotNet.Attributes;
 using System;
 using ProxiesBenchmark.CastleProxy;
 using ProxiesBenchmark.DispatchProxyExample;
+using ProxiesBenchmark.InterceptorExperiment;
 using ProxiesBenchmark.LightInjectExample;
 using ProxiesBenchmark.ManuallyImpelemntedProxy;
 
@@ -19,6 +20,7 @@ namespace ProxiesBenchmark.Benchmarks
         private ICalculator composite;
         private ICalculator inherited;
         private ICalculator lightInject;
+        private ICalculator experimental;
         private Random rnd = new Random();
         private int a;
         private int b;
@@ -37,6 +39,7 @@ namespace ProxiesBenchmark.Benchmarks
             composite = CastleDynamicProxyHelpers.WithCompositeDynamicProxy<ICalculator>(target);
             inherited = CastleDynamicProxyHelpers.WithInheritedDynamicProxy<Calculator>();
             lightInject = LightInjectProxyHelpers.WithLightInject();
+            experimental = ExperimentalHelpers.WithExperimental(target);
             a = rnd.Next(1000);
             b = rnd.Next(1000);
         }
@@ -69,6 +72,12 @@ namespace ProxiesBenchmark.Benchmarks
         public int WithLightInject()
         {
             return lightInject.Add(a, b);
+        }
+
+        [Benchmark]
+        public int WithExperimental()
+        {
+            return experimental.Add(a, b);
         }
 
 #if NET48

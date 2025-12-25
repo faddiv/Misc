@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang='en'>
+<head>
+<meta charset='utf-8' />
+<title>ProxiesBenchmark.Benchmarks.MethodCallBenchmarks-20251225-164815</title>
+
+<style type="text/css">
+	table { border-collapse: collapse; display: block; width: 100%; overflow: auto; }
+	td, th { padding: 6px 13px; border: 1px solid #ddd; text-align: right; }
+	tr { background-color: #fff; border-top: 1px solid #ccc; }
+	tr:nth-child(even) { background: #f8f8f8; }
+</style>
+</head>
+<body>
+<pre><code>
+BenchmarkDotNet v0.15.8, Windows 11 (10.0.26200.7462/25H2/2025Update/HudsonValley2)
+AMD Ryzen 5 2600 3.40GHz, 1 CPU, 12 logical and 6 physical cores
+.NET SDK 10.0.100
+  [Host]     : .NET 8.0.21 (8.0.21, 8.0.2125.47513), X64 RyuJIT x86-64-v3
+  Job-RYMNDB : .NET 8.0.21 (8.0.21, 8.0.2125.47513), X64 RyuJIT x86-64-v3
+</code></pre>
+<pre><code>OutlierMode=RemoveAll  Runtime=.NET 8.0  
+</code></pre>
+
+<table>
+<thead><tr><th>Method             </th><th>Mean</th><th>Error</th><th>StdDev</th><th>Rank</th><th>Gen0</th><th>Allocated</th>
+</tr>
+</thead><tbody><tr><td>DecorateSimple</td><td>3.619 ns</td><td>0.0657 ns</td><td>0.0615 ns</td><td>1</td><td>-</td><td>-</td>
+</tr><tr><td>WithDispatchProxy</td><td>57.921 ns</td><td>0.8224 ns</td><td>0.7693 ns</td><td>6</td><td>0.0267</td><td>112 B</td>
+</tr><tr><td>WithCompositeDynamicProxy</td><td>55.091 ns</td><td>0.2766 ns</td><td>0.2310 ns</td><td>5</td><td>0.0459</td><td>192 B</td>
+</tr><tr><td>WithInheritedDynamicProxy</td><td>48.373 ns</td><td>0.2579 ns</td><td>0.2154 ns</td><td>4</td><td>0.0459</td><td>192 B</td>
+</tr><tr><td>WithLightInject</td><td>43.791 ns</td><td>0.8511 ns</td><td>0.7961 ns</td><td>3</td><td>0.0363</td><td>152 B</td>
+</tr><tr><td>WithExperimental</td><td>16.644 ns</td><td>0.1875 ns</td><td>0.1662 ns</td><td>2</td><td>-</td><td>-</td>
+</tr></tbody></table>
+</body>
+</html>
