@@ -1,0 +1,16 @@
+{
+  "version": 1,
+  "dependencies": {
+    "net10.0": {
+      "Pidgin": {
+        "type": "Direct",
+        "requested": "[3.*, )",
+        "resolved": "3.5.1",
+        "contentHash": "zU7tkXlF3D6d2GLTjJDomAL3nnl4AwfZvSgSz8D4b+Ry21/clqedYlxBnEAkAU/bkGfEv6uRR7QCdWZUpKrB/g=="
+      },
+      "sqlparsers.core": {
+        "type": "Project"
+      }
+    }
+  }
+}

@@ -1,0 +1,16 @@
+{
+  "version": 1,
+  "dependencies": {
+    "net10.0": {
+      "Superpower": {
+        "type": "Direct",
+        "requested": "[3.*, )",
+        "resolved": "3.2.1",
+        "contentHash": "vyZ9WArpHGIeOMBmRXZGHv23T/BxV9AOgcZd7C4LyMAbW1ZJUs0pFhgVmwAVxNB61tHNuVrtcKnLGzTZMAGV+g=="
+      },
+      "sqlparsers.core": {
+        "type": "Project"
+      }
+    }
+  }
+}

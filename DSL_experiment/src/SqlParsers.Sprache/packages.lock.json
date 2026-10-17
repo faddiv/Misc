@@ -1,0 +1,16 @@
+{
+  "version": 1,
+  "dependencies": {
+    "net10.0": {
+      "Sprache": {
+        "type": "Direct",
+        "requested": "[2.*, )",
+        "resolved": "2.3.1",
+        "contentHash": "Q+mXeiTxiUYG3lKYF6TS82/SyB4F2613Q1yXTMwg4jWGHEEVC3yrzHtNcI4B3qnDI0+eJsezGJ0V+cToUytHWw=="
+      },
+      "sqlparsers.core": {
+        "type": "Project"
+      }
+    }
+  }
+}

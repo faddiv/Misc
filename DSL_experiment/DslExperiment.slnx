@@ -1,0 +1,22 @@
+<Solution>
+  <Folder Name="/Solution Items/">
+    <File Path="Directory.Build.props" />
+    <File Path="global.json" />
+    <File Path="README.md" />
+  </Folder>
+  <Folder Name="/src/">
+    <Project Path="src/SqlParsers.Core/SqlParsers.Core.csproj" />
+    <Project Path="src/SqlParsers.Pidgin/SqlParsers.Pidgin.csproj" />
+    <Project Path="src/SqlParsers.Superpower/SqlParsers.Superpower.csproj" />
+    <Project Path="src/SqlParsers.Parlot/SqlParsers.Parlot.csproj" />
+    <Project Path="src/SqlParsers.Sprache/SqlParsers.Sprache.csproj" />
+    <Project Path="src/SqlParsers.Antlr/SqlParsers.Antlr.csproj" />
+    <Project Path="src/SqlParsers.Irony/SqlParsers.Irony.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/SqlParsers.Tests/SqlParsers.Tests.csproj" />
+  </Folder>
+  <Folder Name="/benchmarks/">
+    <Project Path="benchmarks/SqlParsers.Benchmarks/SqlParsers.Benchmarks.csproj" />
+  </Folder>
+</Solution>

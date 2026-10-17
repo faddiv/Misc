@@ -1,0 +1,25 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <!-- Generated parser code is not nullable-annotated. -->
+    <NoWarn>$(NoWarn);CS3021;CS8618;CS8625</NoWarn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Antlr4.Runtime.Standard" Version="4.13.1" />
+    <!-- Generates the parser at build time. Downloads a Java runtime and the ANTLR tool jar on first build if needed. -->
+    <PackageReference Include="Antlr4BuildTasks" Version="12.*" PrivateAssets="all" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Antlr4 Remove="**/*.g4" />
+    <Antlr4 Include="Grammar/Sql92Select.g4">
+      <Package>SqlParsers.Antlr.Generated</Package>
+      <Listener>false</Listener>
+      <Visitor>false</Visitor>
+    </Antlr4>
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\SqlParsers.Core\SqlParsers.Core.csproj" />
+  </ItemGroup>
+</Project>

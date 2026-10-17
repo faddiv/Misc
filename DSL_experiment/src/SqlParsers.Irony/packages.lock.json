@@ -1,0 +1,16 @@
+{
+  "version": 1,
+  "dependencies": {
+    "net10.0": {
+      "Irony": {
+        "type": "Direct",
+        "requested": "[1.*, )",
+        "resolved": "1.5.3",
+        "contentHash": "wy0LlNq9Bhqy2C9O5burGCJPB9CyWuWf/JHwcnaxnM5wapPEc7uW6MBBzkymrV/pS2UwETK/0nJXzhh5Y6wv4Q=="
+      },
+      "sqlparsers.core": {
+        "type": "Project"
+      }
+    }
+  }
+}
