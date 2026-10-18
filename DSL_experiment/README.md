@@ -34,6 +34,48 @@ conflicts, which is why Farkle's IELR(1) option can accept grammars that Irony r
 `SqlParsers.Core` holds the shared AST (`Ast.cs`), `ISqlParser`, the reserved words, the benchmark queries
 and `SqlFormatter`. `SqlFormatter` writes a fully parenthesized canonical form, and the tests use it to compare trees.
 
+### Reference grammar
+
+[`grammar/sql92-select.ebnf`](grammar/sql92-select.ebnf) is the library-neutral definition of the language, and
+every implementation follows it. It is left-factored (a shared prefix is written once), so recursive-descent and PEG
+parsers can follow it rule by rule without backtracking. LALR and ALL(*) implementations spell some alternatives out
+separately and quote the reference text above them.
+
+All seven implementations are laid out the same way:
+
+- one rule per EBNF rule, with the same name and order, each preceded by the EBNF text it implements;
+- one file per grammar section: `*.Statement.cs`, `*.Queries.cs`, `*.FromClause.cs`, `*.Expressions.cs`
+  (ANTLR: `Grammar/Sql92Select.g4` plus the same split in `AstBuilder/`);
+- tokens in `Lexical.cs` (keywords in `Keywords.cs`, e.g. `K.Select`, for the combinator libraries);
+- AST construction in named methods (`Build.QuerySpecification`, ...), so the rules contain only grammar.
+  Irony keeps each rule's conversion (`ToAst`) right under its BNF; ANTLR has one `ToAst` overload per rule context.
+
+| Library | How rules refer to each other before they are defined |
+|---|---|
+| Parlot | `Rule<T>`, a minimal `Parser<T>` subclass |
+| Pidgin | `Rule<T>`, overriding `Parser<char, T>.TryParse` |
+| Superpower, Sprache | `Rule.Create` / `rule.Define(...)`: a parser delegate bound to a small forwarding object |
+| Irony | `Rule<T> : NonTerminal`, which also carries the `ToAst` conversion |
+| Farkle | built in: `Nonterminal.Create<T>()` and `SetProductions(...)` later |
+| ANTLR | not needed: the `.g4` file is compiled by the ANTLR tool |
+
+Lessons from keeping the restructured parsers at least as fast as the originals:
+
+- **Parlot:** `Deferred<T>` does cycle detection and recursion tracking on every call; using it for every rule made
+  parsing 1.4-1.7x slower and added about 670 bytes per parse. A plain forward reference (`Rule<T>`) is enough
+  because the grammar has no left recursion.
+- **Pidgin and Sprache:** repetitions come back as `IEnumerable<T>`; a `foreach` over them boxes the enumerator and
+  allocates for every repetition, while LINQ (`Aggregate`, `ToArray`) takes a fast path.
+- **Pidgin:** writing `('+' | '-') unaryExpression` as `Map(sign, unaryExpression)` cost about 3%, because every
+  primary passes through that rule. It is written as two alternatives.
+- **Superpower and Sprache:** in a LINQ query only the first `from` source is evaluated once; later sources are
+  evaluated on every parse. Combinators used there (`Optional()`, `Many()`, `Or`, ...) are built beforehand into
+  local variables.
+- **Irony and ANTLR:** the `expression -> orExpression` pass-through level was merged away, saving a parse-tree node
+  per expression. A separate `alias` rule cost ANTLR 2-4% (a rule call and a prediction per select item), so it is
+  inlined.
+- **Farkle:** lists written as explicit rules need an initial capacity of 4 to allocate the same as `SeparatedBy`.
+
 ## Requirements
 
 - .NET 10 SDK
