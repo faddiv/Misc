@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang='en'>
+<head>
+<meta charset='utf-8' />
+<title>SqlParsers.Benchmarks.ParseBenchmarks-20261018-183039</title>
+
+<style type="text/css">
+	table { border-collapse: collapse; display: block; width: 100%; overflow: auto; }
+	td, th { padding: 6px 13px; border: 1px solid #ddd; text-align: right; }
+	tr { background-color: #fff; border-top: 1px solid #ccc; }
+	tr:nth-child(even) { background: #f8f8f8; }
+</style>
+</head>
+<body>
+<pre><code>
+BenchmarkDotNet v0.15.8, Windows 11 (10.0.26300.9711)
+AMD Ryzen 5 2600 3.40GHz, 1 CPU, 12 logical and 6 physical cores
+.NET SDK 10.0.402
+  [Host]     : .NET 10.0.13 (10.0.13, 10.0.1326.50504), X64 RyuJIT x86-64-v3
+  DefaultJob : .NET 10.0.13 (10.0.13, 10.0.1326.50504), X64 RyuJIT x86-64-v3
+</code></pre>
+<pre><code></code></pre>
+
+<table>
+<thead><tr><th>Method</th><th>Query</th><th>Parser</th><th>Mean  </th><th>Error</th><th>StdDev</th><th>Gen0</th><th>Gen1</th><th>Gen2</th><th>Allocated</th>
+</tr>
+</thead><tbody><tr><td>Parse</td><td>Complex</td><td>ANTLR</td><td>144.328 &mu;s</td><td>1.0380 &mu;s</td><td>0.9709 &mu;s</td><td>33.4473</td><td>2.6855</td><td>-</td><td>137.56 KB</td>
+</tr><tr><td>Parse</td><td>Complex</td><td>Farkle</td><td>49.204 &mu;s</td><td>0.1409 &mu;s</td><td>0.1177 &mu;s</td><td>2.8687</td><td>-</td><td>-</td><td>11.81 KB</td>
+</tr><tr><td>Parse</td><td>Complex</td><td>Irony</td><td>172.137 &mu;s</td><td>0.3313 &mu;s</td><td>0.2937 &mu;s</td><td>35.4004</td><td>-</td><td>-</td><td>145.39 KB</td>
+</tr><tr><td>Parse</td><td>Complex</td><td>Parlot</td><td>44.352 &mu;s</td><td>0.0873 &mu;s</td><td>0.0729 &mu;s</td><td>3.1738</td><td>-</td><td>-</td><td>13.19 KB</td>
+</tr><tr><td>Parse</td><td>Complex</td><td>Pidgin</td><td>169.273 &mu;s</td><td>0.5726 &mu;s</td><td>0.5076 &mu;s</td><td>3.6621</td><td>-</td><td>-</td><td>15.49 KB</td>
+</tr><tr><td>Parse</td><td>Complex</td><td>Sprache</td><td>304.630 &mu;s</td><td>5.9953 &mu;s</td><td>5.6080 &mu;s</td><td>106.4453</td><td>16.1133</td><td>-</td><td>435.21 KB</td>
+</tr><tr><td>Parse</td><td>Complex</td><td>Superpower</td><td>123.908 &mu;s</td><td>0.8704 &mu;s</td><td>0.7716 &mu;s</td><td>13.4277</td><td>-</td><td>-</td><td>55.25 KB</td>
+</tr><tr><td>Parse</td><td>Large</td><td>ANTLR</td><td>3,937.220 &mu;s</td><td>12.2185 &mu;s</td><td>10.2030 &mu;s</td><td>500.0000</td><td>492.1875</td><td>-</td><td>3066.11 KB</td>
+</tr><tr><td>Parse</td><td>Large</td><td>Farkle</td><td>867.069 &mu;s</td><td>6.4269 &mu;s</td><td>6.0117 &mu;s</td><td>41.0156</td><td>-</td><td>-</td><td>168.85 KB</td>
+</tr><tr><td>Parse</td><td>Large</td><td>Irony</td><td>3,755.291 &mu;s</td><td>24.6384 &mu;s</td><td>21.8413 &mu;s</td><td>464.8438</td><td>378.9063</td><td>-</td><td>2676.61 KB</td>
+</tr><tr><td>Parse</td><td>Large</td><td>Parlot</td><td>749.983 &mu;s</td><td>1.9185 &mu;s</td><td>1.6020 &mu;s</td><td>61.5234</td><td>5.8594</td><td>-</td><td>252.95 KB</td>
+</tr><tr><td>Parse</td><td>Large</td><td>Pidgin</td><td>3,912.861 &mu;s</td><td>11.9598 &mu;s</td><td>9.9870 &mu;s</td><td>62.5000</td><td>7.8125</td><td>-</td><td>270.13 KB</td>
+</tr><tr><td>Parse</td><td>Large</td><td>Sprache</td><td>7,385.341 &mu;s</td><td>87.9756 &mu;s</td><td>82.2925 &mu;s</td><td>1664.0625</td><td>421.8750</td><td>242.1875</td><td>9943.98 KB</td>
+</tr><tr><td>Parse</td><td>Large</td><td>Superpower</td><td>2,328.419 &mu;s</td><td>34.4006 &mu;s</td><td>32.1783 &mu;s</td><td>238.2813</td><td>78.1250</td><td>78.1250</td><td>1054.47 KB</td>
+</tr><tr><td>Parse</td><td>Medium</td><td>ANTLR</td><td>77.117 &mu;s</td><td>0.9955 &mu;s</td><td>0.9312 &mu;s</td><td>20.0195</td><td>0.1221</td><td>-</td><td>82.09 KB</td>
+</tr><tr><td>Parse</td><td>Medium</td><td>Farkle</td><td>25.823 &mu;s</td><td>0.1969 &mu;s</td><td>0.1842 &mu;s</td><td>1.6174</td><td>-</td><td>-</td><td>6.7 KB</td>
+</tr><tr><td>Parse</td><td>Medium</td><td>Irony</td><td>92.736 &mu;s</td><td>0.4651 &mu;s</td><td>0.4123 &mu;s</td><td>20.0195</td><td>0.4883</td><td>-</td><td>82.24 KB</td>
+</tr><tr><td>Parse</td><td>Medium</td><td>Parlot</td><td>22.462 &mu;s</td><td>0.0685 &mu;s</td><td>0.0608 &mu;s</td><td>2.0142</td><td>-</td><td>-</td><td>8.3 KB</td>
+</tr><tr><td>Parse</td><td>Medium</td><td>Pidgin</td><td>89.461 &mu;s</td><td>0.1555 &mu;s</td><td>0.1214 &mu;s</td><td>2.1973</td><td>-</td><td>-</td><td>9.27 KB</td>
+</tr><tr><td>Parse</td><td>Medium</td><td>Sprache</td><td>141.101 &mu;s</td><td>1.9203 &mu;s</td><td>1.7963 &mu;s</td><td>59.3262</td><td>-</td><td>-</td><td>243.13 KB</td>
+</tr><tr><td>Parse</td><td>Medium</td><td>Superpower</td><td>61.501 &mu;s</td><td>0.7256 &mu;s</td><td>0.6787 &mu;s</td><td>6.8359</td><td>-</td><td>-</td><td>28.38 KB</td>
+</tr><tr><td>Parse</td><td>Simple</td><td>ANTLR</td><td>10.438 &mu;s</td><td>0.1282 &mu;s</td><td>0.1199 &mu;s</td><td>3.0212</td><td>-</td><td>-</td><td>12.38 KB</td>
+</tr><tr><td>Parse</td><td>Simple</td><td>Farkle</td><td>3.559 &mu;s</td><td>0.0122 &mu;s</td><td>0.0108 &mu;s</td><td>0.2556</td><td>-</td><td>-</td><td>1.05 KB</td>
+</tr><tr><td>Parse</td><td>Simple</td><td>Irony</td><td>11.122 &mu;s</td><td>0.0366 &mu;s</td><td>0.0342 &mu;s</td><td>2.8229</td><td>-</td><td>-</td><td>11.58 KB</td>
+</tr><tr><td>Parse</td><td>Simple</td><td>Parlot</td><td>3.652 &mu;s</td><td>0.0162 &mu;s</td><td>0.0151 &mu;s</td><td>0.3128</td><td>-</td><td>-</td><td>1.28 KB</td>
+</tr><tr><td>Parse</td><td>Simple</td><td>Pidgin</td><td>15.456 &mu;s</td><td>0.1008 &mu;s</td><td>0.0893 &mu;s</td><td>0.3357</td><td>-</td><td>-</td><td>1.48 KB</td>
+</tr><tr><td>Parse</td><td>Simple</td><td>Sprache</td><td>22.693 &mu;s</td><td>0.3402 &mu;s</td><td>0.3182 &mu;s</td><td>9.1858</td><td>-</td><td>-</td><td>37.58 KB</td>
+</tr><tr><td>Parse</td><td>Simple</td><td>Superpower</td><td>10.616 &mu;s</td><td>0.0905 &mu;s</td><td>0.0846 &mu;s</td><td>0.9918</td><td>-</td><td>-</td><td>4.09 KB</td>
+</tr></tbody></table>
+</body>
+</html>
