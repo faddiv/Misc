@@ -10,6 +10,11 @@ namespace SqlParsers.Antlr;
 /// sections of the grammar: <c>.Statement.cs</c>, <c>.Queries.cs</c>, <c>.FromClause.cs</c>, <c>.Expressions.cs</c>.
 /// Optional parts of a rule come back from ANTLR as <c>null</c> contexts.
 /// </para>
+/// <para>
+/// SingleChild: the accessors for repeated children (<c>c.andExpression()</c>) collect them into a new list and
+/// array on every call. Most chain rules (<c>expression</c>, <c>additiveExpression</c>, <c>queryTerm</c>, ...)
+/// have a single child, so their conversions check <c>ChildCount == 1</c> first and take that child directly.
+/// </para>
 /// </summary>
 internal static partial class AntlrAstBuilder
 {

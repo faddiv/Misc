@@ -8,6 +8,7 @@ internal static partial class AntlrAstBuilder
     // queryExpression : queryTerm (unionOperator queryTerm)* ;
     private static QueryExpression ToAst(QueryExpressionContext c)
     {
+        if (c.ChildCount == 1) return ToAst((QueryTermContext)c.GetChild(0));
         var result = ToAst(c.queryTerm(0));
         var operators = c.unionOperator();
         for (var i = 0; i < operators.Length; i++)
@@ -23,6 +24,7 @@ internal static partial class AntlrAstBuilder
     // intersectOperator : INTERSECT ALL? ;
     private static QueryExpression ToAst(QueryTermContext c)
     {
+        if (c.ChildCount == 1) return ToAst((QueryPrimaryContext)c.GetChild(0));
         var result = ToAst(c.queryPrimary(0));
         var operators = c.intersectOperator();
         for (var i = 0; i < operators.Length; i++)
@@ -40,6 +42,7 @@ internal static partial class AntlrAstBuilder
     // subqueryExpression : subqueryTerm (unionOperator queryTerm)* ;
     private static QueryExpression ToAst(SubqueryExpressionContext c)
     {
+        if (c.ChildCount == 1) return ToAst((SubqueryTermContext)c.GetChild(0));
         var result = ToAst(c.subqueryTerm());
         var operators = c.unionOperator();
         for (var i = 0; i < operators.Length; i++)
@@ -50,6 +53,7 @@ internal static partial class AntlrAstBuilder
     // subqueryTerm : querySpecification (intersectOperator queryPrimary)* ;
     private static QueryExpression ToAst(SubqueryTermContext c)
     {
+        if (c.ChildCount == 1) return ToAst((QuerySpecificationContext)c.GetChild(0));
         var result = ToAst(c.querySpecification());
         var operators = c.intersectOperator();
         for (var i = 0; i < operators.Length; i++)

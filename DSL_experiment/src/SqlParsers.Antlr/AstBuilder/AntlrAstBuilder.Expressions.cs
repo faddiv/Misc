@@ -9,6 +9,7 @@ internal static partial class AntlrAstBuilder
     // expression : andExpression (OR andExpression)* ;
     private static Expression ToAst(ExpressionContext c)
     {
+        if (c.ChildCount == 1) return ToAst((AndExpressionContext)c.GetChild(0));   // single child: see AntlrAstBuilder
         var operands = c.andExpression();
         var result = ToAst(operands[0]);
         for (var i = 1; i < operands.Length; i++)
@@ -19,6 +20,7 @@ internal static partial class AntlrAstBuilder
     // andExpression : notExpression (AND notExpression)* ;
     private static Expression ToAst(AndExpressionContext c)
     {
+        if (c.ChildCount == 1) return ToAst((NotExpressionContext)c.GetChild(0));
         var operands = c.notExpression();
         var result = ToAst(operands[0]);
         for (var i = 1; i < operands.Length; i++)
@@ -83,6 +85,7 @@ internal static partial class AntlrAstBuilder
     // additiveOperator : PLUS | MINUS | CONCAT ;
     private static Expression ToAst(AdditiveExpressionContext c)
     {
+        if (c.ChildCount == 1) return ToAst((MultiplicativeExpressionContext)c.GetChild(0));
         var operands = c.multiplicativeExpression();
         var operators = c.additiveOperator();
         var result = ToAst(operands[0]);
@@ -103,6 +106,7 @@ internal static partial class AntlrAstBuilder
     // multiplicativeOperator : STAR | SLASH ;
     private static Expression ToAst(MultiplicativeExpressionContext c)
     {
+        if (c.ChildCount == 1) return ToAst((UnaryExpressionContext)c.GetChild(0));
         var operands = c.unaryExpression();
         var operators = c.multiplicativeOperator();
         var result = ToAst(operands[0]);
@@ -166,7 +170,8 @@ internal static partial class AntlrAstBuilder
                 : throw new SqlParseException($"Invalid type parameter '{n.GetText()}'")).ToArray());
 
     // qualifiedName : identifier (DOT identifier)* ;
-    private static string[] ToAst(QualifiedNameContext c) => c.identifier().Select(ToAst).ToArray();
+    private static string[] ToAst(QualifiedNameContext c) =>
+        c.ChildCount == 1 ? [ToAst((IdentifierContext)c.GetChild(0))] : c.identifier().Select(ToAst).ToArray();
 
     // identifier : IDENTIFIER | QUOTED_IDENTIFIER ;
     private static string ToAst(IdentifierContext c) =>
