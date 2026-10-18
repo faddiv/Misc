@@ -1,0 +1,24 @@
+{
+  "version": 1,
+  "dependencies": {
+    "net10.0": {
+      "Farkle": {
+        "type": "Direct",
+        "requested": "[7.*, )",
+        "resolved": "7.1.1",
+        "contentHash": "5NefgSer+C9c+e+zu1T937gb4Y0AEIEHHiunkW6iUvb+RYJciWXgBtZ3SvoeD7sjtCE3XGV1UekQNaFocZljEg==",
+        "dependencies": {
+          "BitCollections": "1.0.1"
+        }
+      },
+      "BitCollections": {
+        "type": "Transitive",
+        "resolved": "1.0.1",
+        "contentHash": "NtlRPGyXZk2DWA+5Ox16oEWYjZxLmCPd7LKpIJpN49Pjy4Rz0/+8rPf9c6KEb/vdb/4zDMLLB/KIDIo30sHMuA=="
+      },
+      "sqlparsers.core": {
+        "type": "Project"
+      }
+    }
+  }
+}

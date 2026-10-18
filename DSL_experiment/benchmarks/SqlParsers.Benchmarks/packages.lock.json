@@ -30,10 +30,23 @@
         "resolved": "0.15.8",
         "contentHash": "hfucY0ycAsB0SsoaZcaAp9oq5wlWBJcylvEJb9pmvdYUx6PD6S4mDiYnZWjdjAlLhIpe/xtGCwzORfzAzPqvzA=="
       },
+      "BitCollections": {
+        "type": "Transitive",
+        "resolved": "1.0.1",
+        "contentHash": "NtlRPGyXZk2DWA+5Ox16oEWYjZxLmCPd7LKpIJpN49Pjy4Rz0/+8rPf9c6KEb/vdb/4zDMLLB/KIDIo30sHMuA=="
+      },
       "CommandLineParser": {
         "type": "Transitive",
         "resolved": "2.9.1",
         "contentHash": "OE0sl1/sQ37bjVsPKKtwQlWDgqaxWgtme3xZz7JssWUzg5JpMIyHgCTY9MVMxOg48fJ1AgGT3tgdH5m/kQ5xhA=="
+      },
+      "Farkle": {
+        "type": "Transitive",
+        "resolved": "7.1.1",
+        "contentHash": "5NefgSer+C9c+e+zu1T937gb4Y0AEIEHHiunkW6iUvb+RYJciWXgBtZ3SvoeD7sjtCE3XGV1UekQNaFocZljEg==",
+        "dependencies": {
+          "BitCollections": "1.0.1"
+        }
       },
       "Gee.External.Capstone": {
         "type": "Transitive",
@@ -205,6 +218,13 @@
       },
       "sqlparsers.core": {
         "type": "Project"
+      },
+      "sqlparsers.farkle": {
+        "type": "Project",
+        "dependencies": {
+          "Farkle": "[7.*, )",
+          "SqlParsers.Core": "[1.0.0, )"
+        }
       },
       "sqlparsers.irony": {
         "type": "Project",

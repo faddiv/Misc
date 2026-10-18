@@ -2,6 +2,7 @@ using BenchmarkDotNet.Attributes;
 using BenchmarkDotNet.Configs;
 using SqlParsers.Antlr;
 using SqlParsers.Ast;
+using SqlParsers.Farkle;
 using SqlParsers.Irony;
 using SqlParsers.Parlot;
 using SqlParsers.Pidgin;
@@ -26,6 +27,7 @@ public class ParseBenchmarks
         ["Sprache"] = () => new SpracheSqlParser(),
         ["ANTLR"] = () => new AntlrSqlParser(),
         ["Irony"] = () => new IronySqlParser(),
+        ["Farkle"] = () => new FarkleSqlParser(),
     };
 
     private ISqlParser _parser = null!;

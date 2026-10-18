@@ -17,5 +17,6 @@
     <ProjectReference Include="..\..\src\SqlParsers.Sprache\SqlParsers.Sprache.csproj" />
     <ProjectReference Include="..\..\src\SqlParsers.Antlr\SqlParsers.Antlr.csproj" />
     <ProjectReference Include="..\..\src\SqlParsers.Irony\SqlParsers.Irony.csproj" />
+    <ProjectReference Include="..\..\src\SqlParsers.Farkle\SqlParsers.Farkle.csproj" />
   </ItemGroup>
 </Project>

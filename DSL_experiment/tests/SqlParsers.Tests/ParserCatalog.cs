@@ -1,4 +1,5 @@
 using SqlParsers.Antlr;
+using SqlParsers.Farkle;
 using SqlParsers.Irony;
 using SqlParsers.Parlot;
 using SqlParsers.Pidgin;
@@ -17,6 +18,7 @@ public static class ParserCatalog
         new SpracheSqlParser(),
         new AntlrSqlParser(),
         new IronySqlParser(),
+        new FarkleSqlParser(),
     ];
 
     public static IEnumerable<string> Names => All.Select(p => p.Name);
