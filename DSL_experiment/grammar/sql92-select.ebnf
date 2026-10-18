@@ -1,14 +1,16 @@
 (*
   SQL-92 SELECT subset: the reference grammar for every parser in this repository.
 
-  Notation (W3C-style EBNF):
+  Notation: W3C-style EBNF, see https://en.wikipedia.org/wiki/EBNF
     UPPERCASE word   keyword; case-insensitive and reserved
     'x'              literal symbol
-    X?  X*  X+       optional, zero or more, one or more
-    A | B            alternatives;  ( ... ) grouping;  (* ... *) comment
+    X?  X+           optional, one or more; a trailing star means zero or more
+    A | B            alternatives; parentheses group
 
-  The rules are left-factored (a common prefix is written once), so recursive-descent and PEG
-  implementations can follow them literally without backtracking. LALR and ALL(*) implementations
+  Comments contain no parentheses or stars, because EBNF highlighters do not handle them there.
+
+  The rules are left-factored: a common prefix is written once. Recursive-descent and PEG
+  implementations can therefore follow them literally without backtracking. LALR and ALL-star implementations
   accept the same language; their grammars may spell the alternatives out separately.
   The tests check that all implementations produce identical trees.
 *)
@@ -27,7 +29,7 @@ unionOperator            ::= (UNION | EXCEPT) ALL?
 queryTerm                ::= queryPrimary (INTERSECT ALL? queryPrimary)*
 queryPrimary             ::= querySpecification | '(' queryExpression ')'
 
-(* A subquery inside an expression must start with SELECT, so that '(' stays unambiguous. *)
+(* A subquery inside an expression must start with SELECT, so that an opening parenthesis stays unambiguous. *)
 subquery                 ::= '(' subqueryExpression ')'
 subqueryExpression       ::= subqueryTerm (unionOperator queryTerm)*
 subqueryTerm             ::= querySpecification (INTERSECT ALL? queryPrimary)*
@@ -45,7 +47,7 @@ alias                    ::= AS? identifier
 
 (* ===================================================================== FROM clause *)
 
-(* Joins are left-associative: a JOIN b JOIN c = (a JOIN b) JOIN c. *)
+(* Joins are left-associative: in a JOIN b JOIN c, a JOIN b is joined with c. *)
 tableReference           ::= tablePrimary joinPart*
 joinPart                 ::= CROSS JOIN tablePrimary
                            | NATURAL joinType? JOIN tablePrimary
@@ -58,7 +60,8 @@ tablePrimary             ::= qualifiedName alias?
 
 (* ===================================================================== expressions *)
 
-(* Precedence, lowest to highest: OR < AND < NOT < predicate < + - || < * / < unary + - < primary *)
+(* Precedence, lowest to highest: OR, AND, NOT, predicate, additive + - ||, multiplicative,
+   unary + -, primary *)
 expression               ::= andExpression (OR andExpression)*
 andExpression            ::= notExpression (AND notExpression)*
 notExpression            ::= NOT notExpression | predicate
@@ -88,7 +91,7 @@ primary                  ::= NUMBER
 caseExpression           ::= CASE expression? (WHEN expression THEN expression)+ (ELSE expression)? END
 castExpression           ::= CAST '(' expression AS dataType ')'
 functionArguments        ::= '*' | setQuantifier? expression (',' expression)*
-dataType                 ::= IDENTIFIER+ ('(' INTEGER (',' INTEGER)* ')')?    (* e.g. DOUBLE PRECISION, DECIMAL(10, 2) *)
+dataType                 ::= IDENTIFIER+ ('(' INTEGER (',' INTEGER)* ')')?    (* e.g. DOUBLE PRECISION, or DECIMAL with precision and scale *)
 
 (* ===================================================================== names *)
 
@@ -107,4 +110,5 @@ INTEGER                  ::= [0-9]+
    FROM FULL GROUP HAVING IN INNER INTERSECT IS JOIN LEFT LIKE NATURAL NOT NULL ON OR ORDER OUTER RIGHT
    SELECT SOME THEN UNION USING WHEN WHERE *)
 
-(* Whitespace and line comments ('--' up to the end of the line) may appear between any two tokens. *)
+(* Whitespace and line comments may appear between any two tokens. A line comment starts with '--'
+   and runs to the end of the line. *)
