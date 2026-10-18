@@ -3,7 +3,7 @@ using SqlParsers.Ast;
 
 namespace SqlParsers.Irony;
 
-/// <summary>Irony LALR(1) parser driven by <see cref="Sql92SelectGrammar"/>, plus a parse-tree to AST conversion.</summary>
+/// <summary>Irony LALR(1) parser driven by <see cref="Sql92SelectGrammar"/>. The grammar lives in <c>Grammar/</c>.</summary>
 public sealed class IronySqlParser : ISqlParser
 {
     // Building the LALR tables is expensive, so the language is shared. Irony's Parser keeps
@@ -22,7 +22,7 @@ public sealed class IronySqlParser : ISqlParser
             throw new SqlParseException(string.Join("; ", messages));
         }
 
-        return IronyAstBuilder.Statement(tree.Root);
+        return tree.Root.ToAst<SelectStatement>();
     }
 
     private static LanguageData CreateLanguage()
