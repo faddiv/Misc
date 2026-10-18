@@ -1,5 +1,11 @@
-// SQL-92 SELECT subset. Mirrors the precedence levels used by the combinator implementations:
-//   OR < AND < NOT < predicate (comparison, IS NULL, BETWEEN, IN, LIKE) < + - || < * / < unary + - < primary
+// ANTLR implementation of grammar/sql92-select.ebnf.
+//
+// The rules follow the reference grammar one to one, with the same names and order. ANTLR's ALL(*) prediction
+// does not need the reference grammar's left-factoring, so a few rules spell their alternatives out separately
+// (predicateSuffix, primary); the reference text is quoted above each of them. WHERE, GROUP BY, HAVING, CASE operand
+// and ELSE get small rules of their own, so the AST builder can reach them by name.
+//
+// Precedence, lowest to highest: OR < AND < NOT < predicate < + - || < * / < unary + - < primary
 grammar Sql92Select;
 
 options { caseInsensitive = true; }
@@ -54,6 +60,9 @@ selectItem
     | expression (AS? identifier)?      # expressionItem
     ;
 
+// Reference: alias ::= AS? identifier. Inlined here and in tablePrimary: a separate rule costs ANTLR a rule call
+// and an extra prediction for every select item, which made parsing 2-4% slower.
+
 // ------------------------------------------------------------------ FROM clause
 
 tableReference : tablePrimary joinPart* ;
@@ -73,21 +82,25 @@ joinSpecification
 
 tablePrimary
     : qualifiedName (AS? identifier)?                  # namedTable
-    | LPAREN queryExpression RPAREN AS? identifier     # derivedTable
+    | LPAREN queryExpression RPAREN AS? identifier     # derivedTable    // a derived table needs an alias
     ;
 
 // ------------------------------------------------------------------ expressions
 
-expression : orExpression ;
-
-orExpression : andExpression (OR andExpression)* ;
+expression : andExpression (OR andExpression)* ;
 
 andExpression : notExpression (AND notExpression)* ;
 
 notExpression : NOT notExpression | predicate ;
 
+// A predicate has at most one suffix, so a = b = c is rejected.
 predicate : additiveExpression predicateSuffix? ;
 
+// Reference: predicateSuffix ::= comparisonOperator ( (ANY | SOME | ALL) subquery | additiveExpression )
+//                              | IS NOT? NULL
+//                              | NOT? ( BETWEEN additiveExpression AND additiveExpression
+//                                     | IN '(' ( subqueryExpression | expression (',' expression)* ) ')'
+//                                     | LIKE additiveExpression (ESCAPE additiveExpression)? )
 predicateSuffix
     : comparisonOperator (ANY | SOME | ALL) subquery                                # quantifiedComparison
     | comparisonOperator additiveExpression                                         # comparison
@@ -110,6 +123,8 @@ multiplicativeOperator : STAR | SLASH ;
 
 unaryExpression : (PLUS | MINUS) unaryExpression | primary ;
 
+// Reference: primary ::= ... | qualifiedName ('(' functionArguments? ')')?
+//                          | '(' (subqueryExpression | expression) ')'
 primary
     : NUMBER                                                # numberLiteral
     | STRING                                                # stringLiteral

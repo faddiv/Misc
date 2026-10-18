@@ -19,7 +19,7 @@ public sealed class AntlrSqlParser : ISqlParser
         parser.RemoveErrorListeners();
         parser.AddErrorListener(ThrowingErrorListener.Instance);
 
-        return AntlrAstBuilder.Statement(parser.statement());
+        return AntlrAstBuilder.ToAst(parser.statement());
     }
 }
 
