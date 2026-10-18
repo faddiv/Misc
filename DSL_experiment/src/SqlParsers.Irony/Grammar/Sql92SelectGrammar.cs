@@ -24,6 +24,7 @@ internal sealed partial class Sql92SelectGrammar : Grammar
 {
     public Sql92SelectGrammar() : base(caseSensitive: false)
     {
+        UseOrdinalKeyTerms();
         DefineStatement();
         DefineQueries();
         DefineFromClause();
