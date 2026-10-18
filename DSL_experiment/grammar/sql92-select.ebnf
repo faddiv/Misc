@@ -1,0 +1,110 @@
+(*
+  SQL-92 SELECT subset: the reference grammar for every parser in this repository.
+
+  Notation (W3C-style EBNF):
+    UPPERCASE word   keyword; case-insensitive and reserved
+    'x'              literal symbol
+    X?  X*  X+       optional, zero or more, one or more
+    A | B            alternatives;  ( ... ) grouping;  (* ... *) comment
+
+  The rules are left-factored (a common prefix is written once), so recursive-descent and PEG
+  implementations can follow them literally without backtracking. LALR and ALL(*) implementations
+  accept the same language; their grammars may spell the alternatives out separately.
+  The tests check that all implementations produce identical trees.
+*)
+
+(* ===================================================================== statement *)
+
+statement                ::= queryExpression orderByClause? ';'?
+orderByClause            ::= ORDER BY orderItem (',' orderItem)*
+orderItem                ::= expression (ASC | DESC)?
+
+(* ===================================================================== query expressions *)
+
+(* UNION and EXCEPT are left-associative; INTERSECT binds tighter. *)
+queryExpression          ::= queryTerm (unionOperator queryTerm)*
+unionOperator            ::= (UNION | EXCEPT) ALL?
+queryTerm                ::= queryPrimary (INTERSECT ALL? queryPrimary)*
+queryPrimary             ::= querySpecification | '(' queryExpression ')'
+
+(* A subquery inside an expression must start with SELECT, so that '(' stays unambiguous. *)
+subquery                 ::= '(' subqueryExpression ')'
+subqueryExpression       ::= subqueryTerm (unionOperator queryTerm)*
+subqueryTerm             ::= querySpecification (INTERSECT ALL? queryPrimary)*
+
+querySpecification       ::= SELECT setQuantifier? selectList
+                             FROM tableReference (',' tableReference)*
+                             (WHERE expression)?
+                             (GROUP BY expression (',' expression)*)?
+                             (HAVING expression)?
+setQuantifier            ::= DISTINCT | ALL
+selectList               ::= '*' | selectItem (',' selectItem)*
+selectItem               ::= qualifiedName '.' '*'
+                           | expression alias?
+alias                    ::= AS? identifier
+
+(* ===================================================================== FROM clause *)
+
+(* Joins are left-associative: a JOIN b JOIN c = (a JOIN b) JOIN c. *)
+tableReference           ::= tablePrimary joinPart*
+joinPart                 ::= CROSS JOIN tablePrimary
+                           | NATURAL joinType? JOIN tablePrimary
+                           | joinType? JOIN tablePrimary joinSpecification
+joinType                 ::= INNER | (LEFT | RIGHT | FULL) OUTER?
+joinSpecification        ::= ON expression
+                           | USING '(' identifier (',' identifier)* ')'
+tablePrimary             ::= qualifiedName alias?
+                           | '(' queryExpression ')' alias          (* a derived table needs an alias *)
+
+(* ===================================================================== expressions *)
+
+(* Precedence, lowest to highest: OR < AND < NOT < predicate < + - || < * / < unary + - < primary *)
+expression               ::= andExpression (OR andExpression)*
+andExpression            ::= notExpression (AND notExpression)*
+notExpression            ::= NOT notExpression | predicate
+
+(* A predicate has at most one suffix, so a = b = c is rejected. *)
+predicate                ::= additiveExpression predicateSuffix?
+predicateSuffix          ::= comparisonOperator ( (ANY | SOME | ALL) subquery
+                                                | additiveExpression )
+                           | IS NOT? NULL
+                           | NOT? ( BETWEEN additiveExpression AND additiveExpression
+                                  | IN '(' ( subqueryExpression | expression (',' expression)* ) ')'
+                                  | LIKE additiveExpression (ESCAPE additiveExpression)? )
+comparisonOperator       ::= '=' | '<>' | '<' | '>' | '<=' | '>='
+
+additiveExpression       ::= multiplicativeExpression (('+' | '-' | '||') multiplicativeExpression)*
+multiplicativeExpression ::= unaryExpression (('*' | '/') unaryExpression)*
+unaryExpression          ::= ('+' | '-') unaryExpression | primary
+
+primary                  ::= NUMBER
+                           | STRING
+                           | NULL
+                           | caseExpression
+                           | castExpression
+                           | EXISTS subquery
+                           | qualifiedName ('(' functionArguments? ')')?     (* column reference or function call *)
+                           | '(' (subqueryExpression | expression) ')'       (* scalar subquery or parentheses *)
+caseExpression           ::= CASE expression? (WHEN expression THEN expression)+ (ELSE expression)? END
+castExpression           ::= CAST '(' expression AS dataType ')'
+functionArguments        ::= '*' | setQuantifier? expression (',' expression)*
+dataType                 ::= IDENTIFIER+ ('(' INTEGER (',' INTEGER)* ')')?    (* e.g. DOUBLE PRECISION, DECIMAL(10, 2) *)
+
+(* ===================================================================== names *)
+
+qualifiedName            ::= identifier ('.' identifier)*
+identifier               ::= IDENTIFIER | QUOTED_IDENTIFIER
+
+(* ===================================================================== lexical *)
+
+IDENTIFIER               ::= [A-Za-z_] [A-Za-z0-9_]*                 (* excluding the keywords below *)
+QUOTED_IDENTIFIER        ::= '"' ( [^"] | '""' )+ '"'
+STRING                   ::= "'" ( [^'] | "''" )* "'"
+NUMBER                   ::= ( [0-9]+ ('.' [0-9]*)? | '.' [0-9]+ ) ( [eE] [+-]? [0-9]+ )?
+INTEGER                  ::= [0-9]+
+
+(* Keywords: ALL AND ANY AS ASC BETWEEN BY CASE CAST CROSS DESC DISTINCT ELSE END ESCAPE EXCEPT EXISTS
+   FROM FULL GROUP HAVING IN INNER INTERSECT IS JOIN LEFT LIKE NATURAL NOT NULL ON OR ORDER OUTER RIGHT
+   SELECT SOME THEN UNION USING WHEN WHERE *)
+
+(* Whitespace and line comments ('--' up to the end of the line) may appear between any two tokens. *)

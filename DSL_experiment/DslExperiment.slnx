@@ -2,6 +2,7 @@
   <Folder Name="/Solution Items/">
     <File Path="Directory.Build.props" />
     <File Path="global.json" />
+    <File Path="grammar/sql92-select.ebnf" />
     <File Path="README.md" />
   </Folder>
   <Folder Name="/src/">
