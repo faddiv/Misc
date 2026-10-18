@@ -6,7 +6,8 @@ namespace SqlParsers.Sprache;
 /// <summary>
 /// Lexical rules of <c>grammar/sql92-select.ebnf</c>. Sprache is scannerless, so every token parser here also
 /// skips the whitespace and comments that follow it (see <see cref="Token{T}"/>). Sprache's <c>Or</c> always
-/// backtracks, so no <c>Try</c> is needed anywhere.
+/// backtracks, so no <c>Try</c> is needed anywhere. Keywords, identifiers, punctuation and trivia are primitive
+/// parsers (see <c>PrimitiveParsers.cs</c>).
 /// <para>
 /// In a LINQ query only the first <c>from</c> source is evaluated once; later sources are evaluated on every parse.
 /// Combinators used there are therefore built beforehand, into the fields below.
@@ -14,41 +15,17 @@ namespace SqlParsers.Sprache;
 /// </summary>
 internal static class Lex
 {
-    // Static fields initialize in textual order: the helpers used by Token and Keyword must stay first.
-
-    private static readonly Parser<IEnumerable<char>> RestOfLine =
-        Parse.CharExcept(c => c == '\r' || c == '\n', "end of line").Many();
-
     // Whitespace and line comments between tokens:  ( [ \t\r\n]+ | '--' up to the end of the line )*
-    public static readonly Parser<IEnumerable<string>> Skip =
-        Parse.WhiteSpace.AtLeastOnce().Return(string.Empty)
-            .Or(from _ in Parse.String("--") from __ in RestOfLine select string.Empty)
-            .Many();
-
-    private static readonly Parser<char> IdentifierPart = Parse.LetterOrDigit.Or(Parse.Char('_'));
-    private static readonly Parser<string> IdentifierTail = IdentifierPart.Many().Text();
-    private static readonly Parser<object> NotIdentifierPart = IdentifierPart.Not();
-
-    private static readonly Parser<string> Word =
-        from head in Parse.Letter.Or(Parse.Char('_'))
-        from tail in IdentifierTail
-        select head + tail;
+    public static readonly Parser<string> Skip = input => Result.Success(string.Empty, PrimitiveParsers.SkipTrivia(input));
 
     /// <summary>A token: <paramref name="parser"/> followed by any whitespace or comments.</summary>
-    public static Parser<T> Token<T>(Parser<T> parser) =>
-        from value in parser
-        from _ in Skip
-        select value;
+    public static Parser<T> Token<T>(Parser<T> parser) => PrimitiveParsers.Token(parser);
 
-    public static Parser<char> Symbol(char c) => Token(Parse.Char(c));
-
-    public static Parser<string> Operator(string text) => Token(Parse.String(text).Text());
+    /// <summary>A punctuation or operator token.</summary>
+    public static Parser<string> Symbol(string text) => PrimitiveParsers.Symbol(text);
 
     /// <summary>A case-insensitive keyword. The whole word must match, so SELECT does not match SELECTED.</summary>
-    public static Parser<string> Keyword(string keyword) => Token(
-        from _ in Parse.IgnoreCase(keyword)
-        from __ in NotIdentifierPart
-        select keyword);
+    public static Parser<string> Keyword(string keyword) => PrimitiveParsers.Keyword(keyword);
 
     /// <summary><c>'(' p ')'</c></summary>
     public static Parser<T> Parens<T>(Parser<T> parser) =>
@@ -59,17 +36,17 @@ internal static class Lex
 
     // ------------------------------------------------------------ punctuation
 
-    public static readonly Parser<char> LParen = Symbol('(');
-    public static readonly Parser<char> RParen = Symbol(')');
-    public static readonly Parser<char> Comma = Symbol(',');
-    public static readonly Parser<char> Dot = Symbol('.');
-    public static readonly Parser<char> Star = Symbol('*');
-    public static readonly Parser<char> Semicolon = Symbol(';');
+    public static readonly Parser<string> LParen = Symbol("(");
+    public static readonly Parser<string> RParen = Symbol(")");
+    public static readonly Parser<string> Comma = Symbol(",");
+    public static readonly Parser<string> Dot = Symbol(".");
+    public static readonly Parser<string> Star = Symbol("*");
+    public static readonly Parser<string> Semicolon = Symbol(";");
 
     // ------------------------------------------------------------ tokens
 
     // IDENTIFIER ::= [A-Za-z_] [A-Za-z0-9_]*   (excluding the keywords)
-    public static readonly Parser<string> Identifier = Token(Word.Where(w => !SqlKeywords.IsReserved(w)));
+    public static readonly Parser<string> Identifier = PrimitiveParsers.Identifier();
 
     // QUOTED_IDENTIFIER ::= '"' ( [^"] | '""' )+ '"'
     private static readonly Parser<string> QuotedIdentifierBody =

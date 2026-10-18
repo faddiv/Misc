@@ -10,7 +10,7 @@ public sealed class SpracheSqlParser : ISqlParser
 
     public SelectStatement Parse(string sql)
     {
-        var result = SpracheGrammar.Statement.TryParse(sql);
+        var result = SpracheGrammar.Statement(SourceInput.Start(sql));
         return result.WasSuccessful ? result.Value : throw new SqlParseException(result.ToString() ?? "Invalid SQL");
     }
 }

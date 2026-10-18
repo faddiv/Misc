@@ -97,30 +97,30 @@ internal sealed partial class SpracheGrammar
         // comparisonOperator ::= '=' | '<>' | '<' | '>' | '<=' | '>='
         //   (two-character operators are tried first)
         comparisonOperator.Define(
-            Lex.Operator("<>").Return(BinaryOperator.NotEqual)
-                .Or(Lex.Operator("<=").Return(BinaryOperator.LessThanOrEqual))
-                .Or(Lex.Operator(">=").Return(BinaryOperator.GreaterThanOrEqual))
-                .Or(Lex.Operator("=").Return(BinaryOperator.Equal))
-                .Or(Lex.Operator("<").Return(BinaryOperator.LessThan))
-                .Or(Lex.Operator(">").Return(BinaryOperator.GreaterThan)));
+            Lex.Symbol("<>").Return(BinaryOperator.NotEqual)
+                .Or(Lex.Symbol("<=").Return(BinaryOperator.LessThanOrEqual))
+                .Or(Lex.Symbol(">=").Return(BinaryOperator.GreaterThanOrEqual))
+                .Or(Lex.Symbol("=").Return(BinaryOperator.Equal))
+                .Or(Lex.Symbol("<").Return(BinaryOperator.LessThan))
+                .Or(Lex.Symbol(">").Return(BinaryOperator.GreaterThan)));
 
         // additiveExpression ::= multiplicativeExpression (('+' | '-' | '||') multiplicativeExpression)*
         additiveExpression.Define(LeftAssociative(
             multiplicativeExpression,
-            Lex.Operator("||").Return(BinaryOperator.Concat)
-                .Or(Lex.Symbol('+').Return(BinaryOperator.Add))
-                .Or(Lex.Symbol('-').Return(BinaryOperator.Subtract))));
+            Lex.Symbol("||").Return(BinaryOperator.Concat)
+                .Or(Lex.Symbol("+").Return(BinaryOperator.Add))
+                .Or(Lex.Symbol("-").Return(BinaryOperator.Subtract))));
 
         // multiplicativeExpression ::= unaryExpression (('*' | '/') unaryExpression)*
         multiplicativeExpression.Define(LeftAssociative(
             unaryExpression,
             Lex.Star.Return(BinaryOperator.Multiply)
-                .Or(Lex.Symbol('/').Return(BinaryOperator.Divide))));
+                .Or(Lex.Symbol("/").Return(BinaryOperator.Divide))));
 
         // unaryExpression ::= ('+' | '-') unaryExpression | primary
         //   Written as two alternatives, the cheapest form for the rule every primary passes through.
-        var plus = Lex.Symbol('+');
-        var minus = Lex.Symbol('-');
+        var plus = Lex.Symbol("+");
+        var minus = Lex.Symbol("-");
         unaryExpression.Define(
             (from _ in plus from operand in unaryExpression select Build.Plus(operand))
             .Or(from _ in minus from operand in unaryExpression select Build.Minus(operand))
@@ -203,5 +203,5 @@ internal sealed partial class SpracheGrammar
 
     /// <summary><c>operand (op operand)*</c>, folded to the left.</summary>
     private static Parser<Expression> LeftAssociative(Parser<Expression> operand, Parser<BinaryOperator> op) =>
-        Parse.ChainOperator(op, operand, Build.Binary);
+        Combinators.ChainOperator(op, operand, Build.Binary);
 }
