@@ -94,27 +94,29 @@ internal sealed partial class SuperpowerGrammar
             from completion in negatableCompletion
             select Build.Negatable(negated, completion)));
 
-        // comparisonOperator ::= '=' | '<>' | '<' | '>' | '<=' | '>='   (one token each)
-        comparisonOperator.Define(Parse.OneOf(
-            Token.EqualTo(SqlToken.Equal).Value(BinaryOperator.Equal),
-            Token.EqualTo(SqlToken.NotEqual).Value(BinaryOperator.NotEqual),
-            Token.EqualTo(SqlToken.LessThan).Value(BinaryOperator.LessThan),
-            Token.EqualTo(SqlToken.GreaterThan).Value(BinaryOperator.GreaterThan),
-            Token.EqualTo(SqlToken.LessThanOrEqual).Value(BinaryOperator.LessThanOrEqual),
-            Token.EqualTo(SqlToken.GreaterThanOrEqual).Value(BinaryOperator.GreaterThanOrEqual)));
+        // comparisonOperator ::= '=' | '<>' | '<' | '>' | '<=' | '>='   (one token each, see Lex.OneOf)
+        comparisonOperator.Define(Lex.OneOf(
+            (SqlToken.Equal, BinaryOperator.Equal),
+            (SqlToken.NotEqual, BinaryOperator.NotEqual),
+            (SqlToken.LessThan, BinaryOperator.LessThan),
+            (SqlToken.GreaterThan, BinaryOperator.GreaterThan),
+            (SqlToken.LessThanOrEqual, BinaryOperator.LessThanOrEqual),
+            (SqlToken.GreaterThanOrEqual, BinaryOperator.GreaterThanOrEqual)));
 
         // additiveExpression ::= multiplicativeExpression (('+' | '-' | '||') multiplicativeExpression)*
         additiveExpression.Define(LeftAssociative(
             multiplicativeExpression,
-            Lex.Concat.Value(BinaryOperator.Concat)
-                .Or(Lex.Plus.Value(BinaryOperator.Add))
-                .Or(Lex.Minus.Value(BinaryOperator.Subtract))));
+            Lex.OneOf(
+                (SqlToken.Plus, BinaryOperator.Add),
+                (SqlToken.Minus, BinaryOperator.Subtract),
+                (SqlToken.Concat, BinaryOperator.Concat))));
 
         // multiplicativeExpression ::= unaryExpression (('*' | '/') unaryExpression)*
         multiplicativeExpression.Define(LeftAssociative(
             unaryExpression,
-            Lex.Star.Value(BinaryOperator.Multiply)
-                .Or(Lex.Slash.Value(BinaryOperator.Divide))));
+            Lex.OneOf(
+                (SqlToken.Star, BinaryOperator.Multiply),
+                (SqlToken.Slash, BinaryOperator.Divide))));
 
         // unaryExpression ::= ('+' | '-') unaryExpression | primary
         //   Written as two alternatives, the cheapest form for the rule every primary passes through.
@@ -131,20 +133,23 @@ internal sealed partial class SuperpowerGrammar
         //           | EXISTS subquery
         //           | qualifiedName ('(' functionArguments? ')')?
         //           | '(' (subqueryExpression | expression) ')'
+        //   The alternatives start with different tokens, so their order does not change the language. They are
+        //   tried most frequent first: every alternative that fails before the right one costs a merge of
+        //   Superpower's "expected" lists (an allocation).
         var optionalCallArguments = Lex.Parens(functionArguments.Optional()).Select(Build.OrNoArguments).Optional();
         primary.Define(Parse.OneOf(
-            Lex.Number.Select(Build.Number),
-            Lex.String.Select(Build.String),
-            K.Null.Value(Build.Null),
-            caseExpression,
-            castExpression,
-            K.Exists.IgnoreThen(subquery).Select(Build.Exists),
             from name in qualifiedName
             from arguments in optionalCallArguments
             select Build.ColumnOrFunctionCall(name, arguments),
+            Lex.Number.Select(Build.Number),
+            Lex.String.Select(Build.String),
             Lex.Parens(
                 subqueryExpression.Select(Build.ScalarSubquery)
-                    .Or(expression))));
+                    .Or(expression)),
+            K.Null.Value(Build.Null),
+            caseExpression,
+            castExpression,
+            K.Exists.IgnoreThen(subquery).Select(Build.Exists)));
 
         // caseExpression ::= CASE expression? (WHEN expression THEN expression)+ (ELSE expression)? END
         var whenClause =
