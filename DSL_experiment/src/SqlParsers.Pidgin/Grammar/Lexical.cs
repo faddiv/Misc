@@ -8,24 +8,18 @@ namespace SqlParsers.Pidgin;
 /// Lexical rules of <c>grammar/sql92-select.ebnf</c>. Pidgin is scannerless, so every token parser here also
 /// skips the whitespace and comments that follow it (see <see cref="Token{T}"/>).
 /// <para>
-/// Pidgin does not backtrack after consuming input, so token parsers that can fail part-way (keywords,
-/// identifiers, multi-character operators) are wrapped in <c>Try</c>. A failed token then consumes nothing.
+/// Pidgin does not backtrack after consuming input, so token parsers that can fail part-way (multi-character
+/// operators, the escaped quotes) are wrapped in <c>Try</c>. A failed token then consumes nothing. Keywords, identifiers
+/// and trivia are primitive parsers (<see cref="KeywordParser"/>, <see cref="IdentifierParser"/>,
+/// <see cref="TriviaParser"/>), see <c>PrimitiveParsers.cs</c>.
 /// </para>
 /// </summary>
 internal static class Lex
 {
-    // Static fields initialize in textual order: Skip, IdentifierPart and Word must stay first.
+    // Static fields initialize in textual order: Skip must stay first.
 
     // Whitespace and line comments between tokens:  ( [ \t\r\n]+ | '--' up to the end of the line )*
-    public static readonly Parser<char, Unit> Skip =
-        Whitespace.SkipAtLeastOnce()
-            .Or(Try(Parser.String("--")).Then(Parser<char>.Token(c => c != '\r' && c != '\n').SkipMany()))
-            .SkipMany();
-
-    private static readonly Parser<char, char> IdentifierPart = LetterOrDigit.Or(Char('_'));
-
-    private static readonly Parser<char, string> Word =
-        Letter.Or(Char('_')).Then(IdentifierPart.ManyString(), (head, tail) => head + tail);
+    public static readonly Parser<char, Unit> Skip = new TriviaParser();
 
     /// <summary>A token: <paramref name="parser"/> followed by any whitespace or comments.</summary>
     public static Parser<char, T> Token<T>(Parser<char, T> parser) => parser.Before(Skip);
@@ -35,7 +29,7 @@ internal static class Lex
     public static Parser<char, string> Operator(string text) => Token(Try(Parser.String(text)));
 
     /// <summary>A case-insensitive keyword. The whole word must match, so SELECT does not match SELECTED.</summary>
-    public static Parser<char, Unit> Keyword(string keyword) => Token(Try(CIString(keyword).Then(Not(IdentifierPart))));
+    public static Parser<char, Unit> Keyword(string keyword) => Token(new KeywordParser(keyword));
 
     /// <summary><c>'(' p ')'</c></summary>
     public static Parser<char, T> Parens<T>(Parser<char, T> parser) => LParen.Then(parser).Before(RParen);
@@ -52,8 +46,7 @@ internal static class Lex
     // ------------------------------------------------------------ tokens
 
     // IDENTIFIER ::= [A-Za-z_] [A-Za-z0-9_]*   (excluding the keywords)
-    public static readonly Parser<char, string> Identifier =
-        Token(Try(Word.Assert(w => !SqlKeywords.IsReserved(w), "identifier")));
+    public static readonly Parser<char, string> Identifier = Token(new IdentifierParser());
 
     // QUOTED_IDENTIFIER ::= '"' ( [^"] | '""' )+ '"'
     public static readonly Parser<char, string> QuotedIdentifier = Token(
