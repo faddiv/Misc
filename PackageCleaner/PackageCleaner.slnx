@@ -1,0 +1,4 @@
+<Solution>
+  <Project Path="PackageCleaner/PackageCleaner.csproj" />
+  <Project Path="PackageCleaner.Tests/PackageCleaner.Tests.csproj" />
+</Solution>
