@@ -9,10 +9,10 @@ public sealed record ScanResult(
 /// <summary>Finds the files that describe package usage below the given folders.</summary>
 public static class ProjectScanner
 {
-    private static readonly HashSet<string> SkippedFolders =
+    private static readonly HashSet<string> _skippedFolders =
         new([".git", "node_modules", "bin", "obj", ".vs", ".idea"], StringComparer.OrdinalIgnoreCase);
 
-    private static readonly HashSet<string> ProjectExtensions =
+    private static readonly HashSet<string> _projectExtensions =
         new([".csproj", ".fsproj", ".vbproj"], StringComparer.OrdinalIgnoreCase);
 
     public static ScanResult Scan(IEnumerable<string> folders, TextWriter log)
@@ -46,7 +46,7 @@ public static class ProjectScanner
             var hasProject = false;
             foreach (var file in entries.OfType<FileInfo>())
             {
-                if (ProjectExtensions.Contains(file.Extension))
+                if (_projectExtensions.Contains(file.Extension))
                 {
                     projects.Add(file.FullName);
                     hasProject = true;
@@ -79,7 +79,7 @@ public static class ProjectScanner
 
             foreach (var directory in entries.OfType<DirectoryInfo>())
             {
-                if (!SkippedFolders.Contains(directory.Name) && !directory.Attributes.HasFlag(FileAttributes.ReparsePoint))
+                if (!_skippedFolders.Contains(directory.Name) && !directory.Attributes.HasFlag(FileAttributes.ReparsePoint))
                 {
                     pending.Push(directory.FullName);
                 }

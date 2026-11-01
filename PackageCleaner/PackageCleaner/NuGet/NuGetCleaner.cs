@@ -5,11 +5,13 @@ namespace PackageCleaner.NuGet;
 /// <summary>Removes packages from the global packages folder that no project under the scanned folders uses.</summary>
 public sealed class NuGetCleaner(string? packagesPath, TextWriter log) : ICleaner
 {
+    private readonly TextWriter _log = log;
+    private readonly string? _packagesPath = packagesPath;
     public string Name => "nuget";
 
     public IReadOnlyList<CleanupItem> Scan(IReadOnlyList<string> folders)
     {
-        var collected = UsedPackagesCollector.Collect(ProjectScanner.Scan(folders, log), log);
+        var collected = UsedPackagesCollector.Collect(ProjectScanner.Scan(folders, _log), _log);
 
         if (collected.RestoredProjects.Count == 0)
         {
@@ -17,15 +19,15 @@ public sealed class NuGetCleaner(string? packagesPath, TextWriter log) : ICleane
                 "No restored project found, so nothing can be told apart from unused packages. Check the folders.");
         }
 
-        log.WriteLine($"Restored projects: {collected.RestoredProjects.Count}");
+        _log.WriteLine($"Restored projects: {collected.RestoredProjects.Count}");
         foreach (var project in collected.IgnoredProjects)
         {
-            log.WriteLine($"Ignored, not restored: {project}");
+            _log.WriteLine($"Ignored, not restored: {project}");
         }
 
-        var path = packagesPath ?? SettingsUtility.GetGlobalPackagesFolder(
+        var path = _packagesPath ?? SettingsUtility.GetGlobalPackagesFolder(
             Settings.LoadDefaultSettings(Directory.GetCurrentDirectory()));
-        log.WriteLine($"Packages folder: {path}");
+        _log.WriteLine($"Packages folder: {path}");
 
         // Leftovers go first, because deleting a re-downloaded version needs the name a leftover may hold.
         return PackageCache.List(path)

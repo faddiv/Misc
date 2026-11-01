@@ -3,6 +3,10 @@ namespace PackageCleaner;
 /// <summary>Scans with every cleaner, then shows one combined list and asks once before deleting anything.</summary>
 public sealed class CleanerRunner(TextWriter output, TextReader input, bool isInteractive)
 {
+    private readonly TextWriter _output = output;
+    private readonly TextReader _input = input;
+    private readonly bool _isInteractive = isInteractive;
+
     public int Run(IReadOnlyList<ICleaner> cleaners, IReadOnlyList<string> folders, bool dryRun, bool yes)
     {
         var items = new List<(ICleaner Cleaner, CleanupItem Item)>();
@@ -15,23 +19,23 @@ public sealed class CleanerRunner(TextWriter output, TextReader input, bool isIn
         }
         catch (CleanerException e)
         {
-            output.WriteLine($"error: {e.Message} Nothing was deleted.");
+            _output.WriteLine($"error: {e.Message} Nothing was deleted.");
             return 1;
         }
 
         if (items.Count == 0)
         {
-            output.WriteLine("Nothing to clean.");
+            _output.WriteLine("Nothing to clean.");
             return 0;
         }
 
         foreach (var (cleaner, item) in items)
         {
-            output.WriteLine($"{cleaner.Name}: {item.Name} ({FormatSize(item.Size)})");
+            _output.WriteLine($"{cleaner.Name}: {item.Name} ({FormatSize(item.Size)})");
         }
 
         var summary = $"{items.Count} items, {FormatSize(items.Sum(entry => entry.Item.Size))}";
-        output.WriteLine($"Total: {summary}");
+        _output.WriteLine($"Total: {summary}");
 
         if (dryRun)
         {
@@ -40,16 +44,16 @@ public sealed class CleanerRunner(TextWriter output, TextReader input, bool isIn
 
         if (!yes)
         {
-            if (!isInteractive)
+            if (!_isInteractive)
             {
-                output.WriteLine("error: Input is not interactive, pass --yes to delete. Nothing was deleted.");
+                _output.WriteLine("error: Input is not interactive, pass --yes to delete. Nothing was deleted.");
                 return 1;
             }
 
-            output.Write($"Delete {summary}? [y/N] ");
-            if (input.ReadLine()?.Trim().ToLowerInvariant() is not ("y" or "yes"))
+            _output.Write($"Delete {summary}? [y/N] ");
+            if (_input.ReadLine()?.Trim().ToLowerInvariant() is not ("y" or "yes"))
             {
-                output.WriteLine("Nothing was deleted.");
+                _output.WriteLine("Nothing was deleted.");
                 return 0;
             }
         }
@@ -70,12 +74,12 @@ public sealed class CleanerRunner(TextWriter output, TextReader input, bool isIn
             }
             catch (Exception e) when (e is IOException or UnauthorizedAccessException)
             {
-                output.WriteLine($"warning: can't delete {item.Name}: {e.Message}");
+                _output.WriteLine($"warning: can't delete {item.Name}: {e.Message}");
                 failed++;
             }
         }
 
-        output.WriteLine($"Deleted {items.Count - failed} items, freed {FormatSize(freed)}. Failed: {failed}.");
+        _output.WriteLine($"Deleted {items.Count - failed} items, freed {FormatSize(freed)}. Failed: {failed}.");
         return failed == 0 ? 0 : 1;
     }
 

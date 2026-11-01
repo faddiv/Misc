@@ -13,7 +13,7 @@ public sealed record CollectedPackages(
 public static class UsedPackagesCollector
 {
     // global.json and dotnet-tools.json are edited by hand, and the SDK accepts comments in them.
-    private static readonly JsonDocumentOptions HandWrittenJson = new()
+    private static readonly JsonDocumentOptions _handWrittenJson = new()
     {
         AllowTrailingCommas = true,
         CommentHandling = JsonCommentHandling.Skip,
@@ -76,18 +76,18 @@ public static class UsedPackagesCollector
                 }
             }
 
-            if (root.TryGetProperty("project", out var project)
-                && project.TryGetProperty("frameworks", out var frameworks))
+            if (!root.TryGetProperty("project", out var project)
+                || !project.TryGetProperty("frameworks", out var frameworks))
+                return;
+
+            foreach (var framework in frameworks.EnumerateObject())
             {
-                foreach (var framework in frameworks.EnumerateObject())
+                if (!framework.Value.TryGetProperty("downloadDependencies", out var downloads))
+                    continue;
+
+                foreach (var download in downloads.EnumerateArray())
                 {
-                    if (framework.Value.TryGetProperty("downloadDependencies", out var downloads))
-                    {
-                        foreach (var download in downloads.EnumerateArray())
-                        {
-                            used.Add(download.GetProperty("name").GetString()!, download.GetProperty("version").GetString());
-                        }
-                    }
+                    used.Add(download.GetProperty("name").GetString()!, download.GetProperty("version").GetString());
                 }
             }
         }
@@ -182,7 +182,7 @@ public static class UsedPackagesCollector
     {
         try
         {
-            using var document = JsonDocument.Parse(File.ReadAllText(file), HandWrittenJson);
+            using var document = JsonDocument.Parse(File.ReadAllText(file), _handWrittenJson);
             read(document.RootElement);
         }
         catch (Exception e) when (e is JsonException or IOException or UnauthorizedAccessException
